@@ -7,7 +7,7 @@ namespace p3a {
 
 template <
   class T,
-  class Allocator = host_allocator,
+  class Allocator = allocator,
   class ExecutionPolicy = serial_execution>
 class vector {
  public:
