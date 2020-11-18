@@ -36,6 +36,10 @@ set(P3A_HEADERS
   p3a_reduce.hpp
   p3a_quantity.hpp
   p3a_polyhedron.hpp
+  p3a_scalar.hpp
+  p3a_identity3x3.hpp
+  p3a_memory.hpp
+  p3a_dimension.hpp
   )
 
 add_library(p3a INTERFACE)
