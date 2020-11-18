@@ -80,6 +80,33 @@ CPL_NEVER_INLINE void copy(
   }
 }
 
+#ifdef __CUDACC__
+
+template <class ForwardIt1, class ForwardIt2>
+CPL_NEVER_INLINE void copy(
+    cuda_execution policy,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  using value_type = typename std::iterator_traits<ForwardIt2>::value_type;
+  if constexpr (std::is_trivially_copyable_v<value_type>) {
+    cudaMemcpy(
+        &*d_first,
+        &*first,
+        sizeof(value_type) * std::size_t(last - first), 
+        cudaMemcpyDefault);
+  } else {
+    for_each(policy, first, last,
+    [=] CPL_DEVICE (value_type& ref) CPL_ALWAYS_INLINE {
+      auto& d_ref = *(d_first + (&ref - &*first));
+      d_ref = ref;
+    });
+  }
+}
+
+#endif
+
 template <class ForwardIt, class T>
 CPL_NEVER_INLINE void fill(
     serial_execution,
