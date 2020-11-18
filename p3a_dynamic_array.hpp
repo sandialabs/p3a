@@ -116,4 +116,16 @@ class dynamic_array {
   [[nodiscard]] CPL_ALWAYS_INLINE constexpr T const& operator[](size_type pos) const { return m_begin[pos]; }
 };
 
+#ifdef __CUDACC__
+template <class T>
+using device_array = dynamic_array<T, cuda_device_allocator, cuda_execution>;
+template <class T>
+using mirror_array = dynamic_array<T, cuda_host_allocator, serial_execution>;
+#else
+template <class T>
+using device_array = dynamic_array<T, allocator, serial_execution>;
+template <class T>
+using mirror_array = dynamic_array<T, allocator, serial_execution>;
+#endif
+
 }
