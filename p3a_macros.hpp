@@ -10,3 +10,11 @@
 #define CPL_ALWAYS_INLINE __attribute__((always_inline))
 #define CPL_NEVER_INLINE __attribute__((noinline))
 #endif
+
+#if defined(__CUDACC__)
+#define CPL_HOST __host__
+#define CPL_DEVICE __device__
+#else
+#define CPL_HOST
+#define CPL_DEVICE
+#endif
