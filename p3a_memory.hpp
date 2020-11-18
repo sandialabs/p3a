@@ -92,4 +92,22 @@ CPL_NEVER_INLINE void fill(
   }
 }
 
+#ifdef __CUDACC__
+
+template <class ForwardIt, class T>
+CPL_NEVER_INLINE void fill(
+    cuda_execution policy,
+    ForwardIt first,
+    ForwardIt last,
+    T value)
+{
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  for_each(policy, first, last,
+  [=] CPL_DEVICE (value_type& range_value) CPL_ALWAYS_INLINE {
+    range_value = value;
+  });
+}
+
+#endif
+
 }
