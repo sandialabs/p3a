@@ -4,7 +4,7 @@ namespace p3a {
 
 template <class Functor>
 CPL_NEVER_INLINE void for_each(
-    execution::serial_policy,
+    serial_execution,
     grid3 grid,
     Functor functor)
 {
@@ -19,7 +19,7 @@ CPL_NEVER_INLINE void for_each(
 
 template <class Functor>
 CPL_ALWAYS_INLINE constexpr void for_each(
-    execution::local_policy,
+    local_execution,
     grid3 const& grid,
     Functor const& functor)
 {
@@ -34,7 +34,7 @@ CPL_ALWAYS_INLINE constexpr void for_each(
 
 template <class Functor>
 CPL_NEVER_INLINE void for_each(
-    execution::serial_policy,
+    serial_execution,
     subgrid3 subgrid,
     Functor functor)
 {
@@ -49,7 +49,7 @@ CPL_NEVER_INLINE void for_each(
 
 template <class Functor>
 CPL_ALWAYS_INLINE constexpr void for_each(
-    execution::local_policy,
+    local_execution,
     subgrid3 const& subgrid,
     Functor const& functor)
 {

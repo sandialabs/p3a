@@ -7,9 +7,7 @@
 
 namespace p3a {
 
-namespace execution {
-
-class serial_policy {
+class serial_execution {
  public:
   using size_type = std::int64_t;
   template <class T>
@@ -24,13 +22,11 @@ class serial_policy {
   }
 };
 
-inline constexpr serial_policy serial = {};
+inline constexpr serial_execution serial = {};
 
-class local_policy {
+class local_execution {
 };
 
-inline constexpr local_policy local = {};
-
-}
+inline constexpr local_execution local = {};
 
 }

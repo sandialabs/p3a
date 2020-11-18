@@ -8,7 +8,7 @@ namespace p3a {
 
 template <class InputIt, class ForwardIt>
 CPL_NEVER_INLINE void uninitialized_move(
-    execution::serial_policy,
+    serial_execution,
     InputIt first,
     InputIt last,
     ForwardIt d_first)
@@ -21,7 +21,7 @@ CPL_NEVER_INLINE void uninitialized_move(
 
 template <class T>
 CPL_ALWAYS_INLINE void destroy_at(
-    execution::serial_policy,
+    serial_execution,
     T* p)
 {
   p->~T();
@@ -29,7 +29,7 @@ CPL_ALWAYS_INLINE void destroy_at(
 
 template <class ForwardIt>
 CPL_NEVER_INLINE void destroy(
-    execution::serial_policy policy,
+    serial_execution policy,
     ForwardIt first,
     ForwardIt last)
 {
@@ -43,7 +43,7 @@ CPL_NEVER_INLINE void destroy(
 
 template <class ForwardIt>
 CPL_NEVER_INLINE void uninitialized_default_construct(
-    execution::serial_policy,
+    serial_execution,
     ForwardIt first,
     ForwardIt last)
 {
@@ -57,7 +57,7 @@ CPL_NEVER_INLINE void uninitialized_default_construct(
 
 template <class ForwardIt, class T>
 CPL_NEVER_INLINE void uninitialized_fill(
-    execution::serial_policy,
+    serial_execution,
     ForwardIt first,
     ForwardIt last,
     T const& value)
@@ -70,7 +70,7 @@ CPL_NEVER_INLINE void uninitialized_fill(
 
 template <class ForwardIt1, class ForwardIt2>
 CPL_NEVER_INLINE void copy(
-    execution::serial_policy,
+    serial_execution,
     ForwardIt1 first,
     ForwardIt1 last,
     ForwardIt2 d_first)
@@ -82,7 +82,7 @@ CPL_NEVER_INLINE void copy(
 
 template <class ForwardIt, class T>
 CPL_NEVER_INLINE void fill(
-    execution::serial_policy,
+    serial_execution,
     ForwardIt first,
     ForwardIt last,
     const T& value)

@@ -4,7 +4,7 @@
 
 namespace p3a {
 
-template <class T, class ExecutionPolicy = execution::serial_policy>
+template <class T, class ExecutionPolicy = serial_execution>
 class vector {
  public:
   using size_type = std::int64_t;

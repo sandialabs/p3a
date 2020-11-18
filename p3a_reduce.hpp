@@ -27,7 +27,7 @@ template <
     class BinaryOp,
     class UnaryOp>
 T transform_reduce(
-    execution::serial_policy,
+    serial_execution,
     subgrid3 subgrid,
     T init,
     BinaryOp binary_op,
