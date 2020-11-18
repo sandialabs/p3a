@@ -78,4 +78,10 @@ maximum(T const& a, T const& b)
   return condition(a < b, b, a);
 }
 
+template <class T>
+[[nodiscard]] CPL_ALWAYS_INLINE inline constexpr
+T ceildiv(T a, T b) {
+  return (a / b) + ((a % b) ? 1 : 0);
+}
+
 }
