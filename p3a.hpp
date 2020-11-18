@@ -11,7 +11,7 @@
 #include "p3a_symmetric3x3.hpp"
 #include "p3a_matrix3x3.hpp"
 #include "p3a_execution.hpp"
-#include "p3a_vector.hpp"
+#include "p3a_dynamic_array.hpp"
 #include "p3a_for_each.hpp"
 #include "p3a_reduce.hpp"
 #include "p3a_quantity.hpp"

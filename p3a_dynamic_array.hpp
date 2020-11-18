@@ -9,7 +9,7 @@ template <
   class T,
   class Allocator = allocator,
   class ExecutionPolicy = serial_execution>
-class vector {
+class dynamic_array {
  public:
   using size_type = std::int64_t;
   using iterator = T*;
@@ -24,12 +24,12 @@ class vector {
   allocator_type m_allocator;
   execution_policy m_execution_policy;
  public:
-  CPL_NEVER_INLINE vector()
+  CPL_NEVER_INLINE dynamic_array()
    :m_begin(nullptr)
    ,m_size(0)
    ,m_capacity(0)
   {}
-  CPL_NEVER_INLINE ~vector()
+  CPL_NEVER_INLINE ~dynamic_array()
   {
     if (m_begin != nullptr) {
       m_allocator.deallocate(m_begin, m_capacity);
@@ -38,7 +38,7 @@ class vector {
       m_capacity = 0;
     }
   }
-  CPL_NEVER_INLINE vector(vector&& other)
+  CPL_NEVER_INLINE dynamic_array(dynamic_array&& other)
     :m_begin(other.m_begin)
     ,m_size(other.m_size)
     ,m_capacity(other.m_capacity)
@@ -48,7 +48,7 @@ class vector {
     other.m_size = 0;
     other.m_capacity = 0;
   }
-  CPL_NEVER_INLINE vector& operator=(vector&& other)
+  CPL_NEVER_INLINE dynamic_array& operator=(dynamic_array&& other)
   {
     m_begin = other.m_begin;
     m_size = other.m_size;
@@ -59,10 +59,10 @@ class vector {
     other.m_capacity = 0;
     return *this;
   }
-  vector(vector const& other) = delete;
-  vector& operator=(vector const& other) = delete;
-  explicit vector(size_type size_in)
-    :vector()
+  dynamic_array(dynamic_array const& other) = delete;
+  dynamic_array& operator=(dynamic_array const& other) = delete;
+  explicit dynamic_array(size_type size_in)
+    :dynamic_array()
   {
     resize(size_in);
   }
