@@ -1,21 +1,27 @@
 #pragma once
 
 #include "p3a_memory.hpp"
+#include "p3a_allocator.hpp"
 
 namespace p3a {
 
-template <class T, class ExecutionPolicy = serial_execution>
+template <
+  class T,
+  class Allocator = host_allocator,
+  class ExecutionPolicy = serial_execution>
 class vector {
  public:
   using size_type = std::int64_t;
   using iterator = T*;
   using const_iterator = T const*;
+  using allocator_type = Allocator;
   using execution_policy = ExecutionPolicy;
   using value_type = T;
  private:
   T* m_begin;
   size_type m_size;
   size_type m_capacity;
+  allocator_type m_allocator;
   execution_policy m_execution_policy;
  public:
   CPL_NEVER_INLINE vector()
@@ -26,7 +32,7 @@ class vector {
   CPL_NEVER_INLINE ~vector()
   {
     if (m_begin != nullptr) {
-      m_execution_policy.deallocate(m_begin, m_capacity);
+      m_allocator.deallocate(m_begin, m_capacity);
       m_begin = nullptr;
       m_size = 0;
       m_capacity = 0;
@@ -63,10 +69,10 @@ class vector {
  private:
   CPL_NEVER_INLINE void increase_capacity(size_type new_capacity)
   {
-    T* const new_allocation = m_execution_policy.template allocate<T>(new_capacity);
+    T* const new_allocation = m_allocator.template allocate<T>(new_capacity);
     uninitialized_move(m_execution_policy, m_begin, m_begin + m_size, new_allocation);
     destroy(m_execution_policy, m_begin, m_begin + m_size);
-    m_execution_policy.deallocate(m_begin, m_capacity);
+    m_allocator.deallocate(m_begin, m_capacity);
     m_begin = new_allocation;
     m_capacity = new_capacity;
   }

@@ -39,6 +39,7 @@ set(P3A_HEADERS
   p3a_scalar.hpp
   p3a_identity3x3.hpp
   p3a_memory.hpp
+  p3a_allocator.hpp
   p3a_dimension.hpp
   )
 
