@@ -5,7 +5,7 @@
 namespace p3a {
 
 template <class T, int N>
-class array {
+class static_array {
   T m_members[N];
  public:
   using reference = T&;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "p3a_macros.hpp"
-#include "p3a_array.hpp"
+#include "p3a_static_array.hpp"
 #include "p3a_constants.hpp"
 #include "p3a_functions.hpp"
 #include "p3a_vector3.hpp"

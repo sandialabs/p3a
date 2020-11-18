@@ -21,7 +21,7 @@ endif()
 set(P3A_HEADERS
   p3a.hpp
   p3a_macros.hpp
-  p3a_array.hpp
+  p3a_static_array.hpp
   p3a_constants.hpp
   p3a_functions.hpp
   p3a_vector3.hpp
