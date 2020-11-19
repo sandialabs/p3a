@@ -7,7 +7,7 @@ namespace p3a {
 
 template <
   class T,
-  class Allocator = allocator,
+  class Allocator = allocator<T>,
   class ExecutionPolicy = serial_execution>
 class dynamic_array {
  public:
@@ -69,7 +69,7 @@ class dynamic_array {
  private:
   CPL_NEVER_INLINE void increase_capacity(size_type new_capacity)
   {
-    T* const new_allocation = m_allocator.template allocate<T>(new_capacity);
+    T* const new_allocation = m_allocator.allocate(new_capacity);
     uninitialized_move(m_execution_policy, m_begin, m_begin + m_size, new_allocation);
     destroy(m_execution_policy, m_begin, m_begin + m_size);
     m_allocator.deallocate(m_begin, m_capacity);
