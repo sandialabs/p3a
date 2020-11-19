@@ -208,8 +208,8 @@ class reducer<T, cuda_execution> {
   int m_scratch_size;
   T* m_scratch1;
   T* m_scratch2;
-  static constexpr int threads_per_block = impl::reducer_threads_per_block;
-  static constexpr int grid_threads_per_block = impl::grid_reducer_threads_per_block;
+  static constexpr int threads_per_block = details::reducer_threads_per_block;
+  static constexpr int grid_threads_per_block = details::grid_reducer_threads_per_block;
   static vector3<int> get_block_grid(vector3<int> user_grid) {
     return vector3<int>(
         (user_grid.x() + grid_threads_per_block - 1) / grid_threads_per_block,
@@ -228,7 +228,7 @@ class reducer<T, cuda_execution> {
     dim3 const dimGrid(blocks, 1, 1);
     int const smemSize = threads_per_block * sizeof(T);
     cudaStream_t const cuda_stream = m_policy.cuda_stream();
-    impl::cuda_reduce<<<
+    details::cuda_reduce<<<
       dimGrid,
       dimBlock,
       smemSize,
@@ -242,7 +242,7 @@ class reducer<T, cuda_execution> {
     dim3 dimGrid(block_grid.x(), block_grid.y(), block_grid.z());
     int smemSize = grid_threads_per_block * sizeof(T);
     cudaStream_t cuda_stream = m_policy.cuda_stream();
-    impl::cuda_grid_reduce<<<
+    details::cuda_grid_reduce<<<
       dimGrid,
       dimBlock,
       smemSize,

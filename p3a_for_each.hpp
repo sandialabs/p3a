@@ -60,7 +60,7 @@ void for_each(
   dim3 const cuda_block(32, 1, 1);
   dim3 const cuda_grid(ceildiv(unsigned(n), cuda_block.x), 1, 1);
   std::size_t const shared_memory_bytes = 0;
-  cudaStream_t const cuda_stream = policy.cuda_stream();
+  cudaStream_t const cuda_stream = nullptr;
   details::cuda_for_each<<<
     cuda_grid,
     cuda_block,
@@ -134,7 +134,7 @@ void grid_for_each(
       limits.y(),
       limits.z());
   std::size_t const shared_memory_bytes = 0;
-  cudaStream_t const cuda_stream = policy.cuda_stream();
+  cudaStream_t const cuda_stream = nullptr;
   details::cuda_grid_for_each<<<
     cuda_grid,
     cuda_block,

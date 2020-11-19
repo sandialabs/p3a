@@ -2,6 +2,7 @@
 
 #include <iterator>
 
+#include "p3a_macros.hpp"
 #include "p3a_execution.hpp"
 
 namespace p3a {

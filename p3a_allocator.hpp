@@ -56,15 +56,19 @@ class cuda_device_allocator {
 #endif
 
 #ifdef __CUDACC__
-using device_allocator = cuda_device_allocator;
+template <class T>
+using device_allocator = cuda_device_allocator<T>;
 #else
-using device_allocator = allocator;
+template <class T>
+using device_allocator = allocator<T>;
 #endif
 
 #ifdef __CUDACC__
-using mirror_allocator = cuda_host_allocator;
+template <class T>
+using mirror_allocator = cuda_host_allocator<T>;
 #else
-using mirror_allocator = allocator;
+template <class T>
+using mirror_allocator = allocator<T>;
 #endif
 
 }
