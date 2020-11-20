@@ -18,3 +18,7 @@
 #define P3A_HOST
 #define P3A_DEVICE
 #endif
+
+#ifndef __CUDACC_EXTENDED_LAMBDA__
+#error "P3A uses CUDA extended lambdas. Please recompile with --expt-extended-lambda"
+#endif
