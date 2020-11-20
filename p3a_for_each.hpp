@@ -6,7 +6,7 @@
 namespace p3a {
 
 template <class ForwardIt, class UnaryFunction>
-P3A_ALWAYS_INLINE inline constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 void for_each(
     local_execution,
     ForwardIt first,
@@ -71,7 +71,7 @@ void for_each(
 #endif
 
 template <class Functor>
-P3A_ALWAYS_INLINE constexpr void for_each(
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr void for_each(
     local_execution,
     grid3 const& grid,
     Functor const& functor)
@@ -172,7 +172,7 @@ P3A_NEVER_INLINE void for_each(
 }
 
 template <class Functor>
-P3A_ALWAYS_INLINE constexpr void for_each(
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr void for_each(
     local_execution,
     subgrid3 const& subgrid,
     Functor const& functor)
