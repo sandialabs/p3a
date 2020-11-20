@@ -24,12 +24,12 @@ class dynamic_array {
   allocator_type m_allocator;
   execution_policy m_execution_policy;
  public:
-  CPL_NEVER_INLINE dynamic_array()
+  P3A_NEVER_INLINE dynamic_array()
    :m_begin(nullptr)
    ,m_size(0)
    ,m_capacity(0)
   {}
-  CPL_NEVER_INLINE ~dynamic_array()
+  P3A_NEVER_INLINE ~dynamic_array()
   {
     if (m_begin != nullptr) {
       m_allocator.deallocate(m_begin, m_capacity);
@@ -38,7 +38,7 @@ class dynamic_array {
       m_capacity = 0;
     }
   }
-  CPL_NEVER_INLINE dynamic_array(dynamic_array&& other)
+  P3A_NEVER_INLINE dynamic_array(dynamic_array&& other)
     :m_begin(other.m_begin)
     ,m_size(other.m_size)
     ,m_capacity(other.m_capacity)
@@ -48,7 +48,7 @@ class dynamic_array {
     other.m_size = 0;
     other.m_capacity = 0;
   }
-  CPL_NEVER_INLINE dynamic_array& operator=(dynamic_array&& other)
+  P3A_NEVER_INLINE dynamic_array& operator=(dynamic_array&& other)
   {
     m_begin = other.m_begin;
     m_size = other.m_size;
@@ -67,7 +67,7 @@ class dynamic_array {
     resize(size_in);
   }
  private:
-  CPL_NEVER_INLINE void increase_capacity(size_type new_capacity)
+  P3A_NEVER_INLINE void increase_capacity(size_type new_capacity)
   {
     T* const new_allocation = m_allocator.allocate(new_capacity);
     uninitialized_move(m_execution_policy, m_begin, m_begin + m_size, new_allocation);
@@ -77,13 +77,13 @@ class dynamic_array {
     m_capacity = new_capacity;
   }
  public:
-  CPL_NEVER_INLINE void reserve(size_type const count)
+  P3A_NEVER_INLINE void reserve(size_type const count)
   {
     if (count <= m_capacity) return;
     size_type const new_capacity = maximum(count, 2 * m_capacity);
     increase_capacity(new_capacity);
   }
-  CPL_NEVER_INLINE void resize(size_type const count)
+  P3A_NEVER_INLINE void resize(size_type const count)
   {
     if (m_size == count) return;
     reserve(count);
@@ -92,7 +92,7 @@ class dynamic_array {
     uninitialized_default_construct(m_execution_policy, m_begin + common_size, m_begin + count);
     m_size = count;
   }
-  CPL_NEVER_INLINE void resize(size_type const count, value_type const& value)
+  P3A_NEVER_INLINE void resize(size_type const count, value_type const& value)
   {
     if (m_size == count) return;
     reserve(count);
@@ -101,19 +101,19 @@ class dynamic_array {
     uninitialized_fill(m_execution_policy, m_begin + common_size, m_begin + count, value);
     m_size = count;
   }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr T* data() { return m_begin; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr T const* data() const { return m_begin; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr iterator begin() { return m_begin; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr const_iterator begin() const { return m_begin; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr const_iterator cbegin() const { return m_begin; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr iterator end() { return m_begin + m_size; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr const_iterator end() const { return m_begin + m_size; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr const_iterator cend() const { return m_begin + m_size; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr size_type size() const { return m_size; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr size_type capacity() const { return m_capacity; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr bool empty() const { return m_size == 0; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr T& operator[](size_type pos) { return m_begin[pos]; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr T const& operator[](size_type pos) const { return m_begin[pos]; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr T* data() { return m_begin; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr T const* data() const { return m_begin; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr iterator begin() { return m_begin; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator begin() const { return m_begin; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator cbegin() const { return m_begin; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr iterator end() { return m_begin + m_size; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator end() const { return m_begin + m_size; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator cend() const { return m_begin + m_size; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr size_type size() const { return m_size; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr size_type capacity() const { return m_capacity; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr bool empty() const { return m_size == 0; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr T& operator[](size_type pos) { return m_begin[pos]; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr T const& operator[](size_type pos) const { return m_begin[pos]; }
 };
 
 #ifdef __CUDACC__

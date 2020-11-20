@@ -5,7 +5,7 @@ namespace p3a {
 template <class T>
 class minimizer {
  public:
-  CPL_ALWAYS_INLINE constexpr
+  P3A_ALWAYS_INLINE constexpr
   T operator()(T const& a, T const& b) const {
     return minimum(a, b);
   }
@@ -15,7 +15,7 @@ template <class T> inline constexpr minimizer<T> minimizes = {};
 template <class T>
 class adder {
  public:
-  CPL_ALWAYS_INLINE constexpr
+  P3A_ALWAYS_INLINE constexpr
   T operator()(T const& a, T const& b) const {
     return a + b;
   }
@@ -25,7 +25,7 @@ template <class T> inline constexpr adder<T> adds = {};
 template <class T>
 class identity {
  public:
-  CPL_ALWAYS_INLINE constexpr T const&
+  P3A_ALWAYS_INLINE constexpr T const&
   operator()(T const& a) const {
     return a;
   }
@@ -47,12 +47,12 @@ class reducer<T, serial_execution> {
   reducer(reducer const&) = delete;
   reducer& operator=(reducer const&) = delete;
   template <class BinaryOp, class UnaryOp>
-  [[nodiscard]] CPL_NEVER_INLINE
+  [[nodiscard]] P3A_NEVER_INLINE
   T transform_reduce(
       subgrid3 grid,
       T init, BinaryOp binary_op, UnaryOp unary_op) {
     for_each(m_policy, grid,
-    [&] (vector3<int> const& item) CPL_ALWAYS_INLINE {
+    [&] (vector3<int> const& item) P3A_ALWAYS_INLINE {
       init = binary_op(std::move(init), unary_op(item));
     });
     return init;
@@ -63,7 +63,7 @@ template <
     class T,
     class BinaryOp,
     class UnaryOp>
-[[nodiscard]] CPL_NEVER_INLINE
+[[nodiscard]] P3A_NEVER_INLINE
 T transform_reduce(
     serial_execution policy,
     subgrid3 subgrid,
@@ -293,7 +293,7 @@ template <
     class T,
     class BinaryOp,
     class UnaryOp>
-[[nodiscard]] CPL_NEVER_INLINE
+[[nodiscard]] P3A_NEVER_INLINE
 T transform_reduce(
     cuda_execution policy,
     subgrid3 subgrid,

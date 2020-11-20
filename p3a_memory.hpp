@@ -8,7 +8,7 @@
 namespace p3a {
 
 template <class InputIt, class ForwardIt>
-CPL_NEVER_INLINE void uninitialized_move(
+P3A_NEVER_INLINE void uninitialized_move(
     serial_execution,
     InputIt first,
     InputIt last,
@@ -21,7 +21,7 @@ CPL_NEVER_INLINE void uninitialized_move(
 }
 
 template <class T>
-CPL_ALWAYS_INLINE void destroy_at(
+P3A_ALWAYS_INLINE void destroy_at(
     serial_execution,
     T* p)
 {
@@ -29,7 +29,7 @@ CPL_ALWAYS_INLINE void destroy_at(
 }
 
 template <class ForwardIt>
-CPL_NEVER_INLINE void destroy(
+P3A_NEVER_INLINE void destroy(
     serial_execution policy,
     ForwardIt first,
     ForwardIt last)
@@ -43,7 +43,7 @@ CPL_NEVER_INLINE void destroy(
 }
 
 template <class ForwardIt>
-CPL_NEVER_INLINE void uninitialized_default_construct(
+P3A_NEVER_INLINE void uninitialized_default_construct(
     serial_execution,
     ForwardIt first,
     ForwardIt last)
@@ -57,7 +57,7 @@ CPL_NEVER_INLINE void uninitialized_default_construct(
 }
 
 template <class ForwardIt, class T>
-CPL_NEVER_INLINE void uninitialized_fill(
+P3A_NEVER_INLINE void uninitialized_fill(
     serial_execution,
     ForwardIt first,
     ForwardIt last,
@@ -70,7 +70,7 @@ CPL_NEVER_INLINE void uninitialized_fill(
 }
 
 template <class ForwardIt1, class ForwardIt2>
-CPL_NEVER_INLINE void copy(
+P3A_NEVER_INLINE void copy(
     serial_execution,
     ForwardIt1 first,
     ForwardIt1 last,
@@ -84,7 +84,7 @@ CPL_NEVER_INLINE void copy(
 #ifdef __CUDACC__
 
 template <class ForwardIt1, class ForwardIt2>
-CPL_NEVER_INLINE void copy(
+P3A_NEVER_INLINE void copy(
     cuda_execution policy,
     ForwardIt1 first,
     ForwardIt1 last,
@@ -99,7 +99,7 @@ CPL_NEVER_INLINE void copy(
         cudaMemcpyDefault);
   } else {
     for_each(policy, first, last,
-    [=] CPL_DEVICE (value_type& ref) CPL_ALWAYS_INLINE {
+    [=] P3A_DEVICE (value_type& ref) P3A_ALWAYS_INLINE {
       auto& d_ref = *(d_first + (&ref - &*first));
       d_ref = ref;
     });
@@ -109,7 +109,7 @@ CPL_NEVER_INLINE void copy(
 #endif
 
 template <class ForwardIt, class T>
-CPL_NEVER_INLINE void fill(
+P3A_NEVER_INLINE void fill(
     serial_execution,
     ForwardIt first,
     ForwardIt last,
@@ -123,7 +123,7 @@ CPL_NEVER_INLINE void fill(
 #ifdef __CUDACC__
 
 template <class ForwardIt, class T>
-CPL_NEVER_INLINE void fill(
+P3A_NEVER_INLINE void fill(
     cuda_execution policy,
     ForwardIt first,
     ForwardIt last,
@@ -131,7 +131,7 @@ CPL_NEVER_INLINE void fill(
 {
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
   for_each(policy, first, last,
-  [=] CPL_DEVICE (value_type& range_value) CPL_ALWAYS_INLINE {
+  [=] P3A_DEVICE (value_type& range_value) P3A_ALWAYS_INLINE {
     range_value = value;
   });
 }

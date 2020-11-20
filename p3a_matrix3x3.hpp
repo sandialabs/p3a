@@ -14,8 +14,8 @@ class matrix3x3 {
   T m_zy;
   T m_zz;
  public:
-  CPL_ALWAYS_INLINE constexpr matrix3x3() = default;
-  CPL_ALWAYS_INLINE constexpr
+  P3A_ALWAYS_INLINE constexpr matrix3x3() = default;
+  P3A_ALWAYS_INLINE constexpr
   matrix3x3(
       T const& a, T const& b, T const& c,
       T const& d, T const& e, T const& f,
@@ -31,43 +31,43 @@ class matrix3x3 {
     ,m_zz(i)
   {
   }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T const& xx() const { return m_xx; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T const& xy() const { return m_xy; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T const& xz() const { return m_xz; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T const& yx() const { return m_yx; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T const& yy() const { return m_yy; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T const& yz() const { return m_yz; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T const& zx() const { return m_zx; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T const& zy() const { return m_zy; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T const& zz() const { return m_zz; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T& xx() { return m_xx; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T& xy() { return m_xy; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T& xz() { return m_xz; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T& yx() { return m_yx; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T& yy() { return m_yy; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T& yz() { return m_yz; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T& zx() { return m_zx; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T& zy() { return m_zy; }
-  [[nodiscard]] CPL_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
   T& zz() { return m_zz; }
-  [[nodiscard]] CPL_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE static constexpr
   matrix3x3<T> zero()
   {
     return matrix3x3<T>(
@@ -78,7 +78,7 @@ class matrix3x3 {
 };
 
 template <class T>
-[[nodiscard]] CPL_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE constexpr
 symmetric3x3<T> symmetric(matrix3x3<T> const& a)
 {
   return symmetric3x3<T>(
@@ -91,7 +91,7 @@ symmetric3x3<T> symmetric(matrix3x3<T> const& a)
 }
 
 template <class T>
-CPL_ALWAYS_INLINE constexpr
+P3A_ALWAYS_INLINE constexpr
 void operator+=(matrix3x3<T>& a, matrix3x3<T> const& b)
 {
   a.xx() += b.xx();
@@ -106,7 +106,7 @@ void operator+=(matrix3x3<T>& a, matrix3x3<T> const& b)
 }
 
 template <class A, class B>
-[[nodiscard]] CPL_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<B>, matrix3x3<decltype(A() / B())>>::type
 operator/(matrix3x3<A> const& a, B const& b)
 {
@@ -118,7 +118,7 @@ operator/(matrix3x3<A> const& a, B const& b)
 }
 
 template <class A, class B>
-[[nodiscard]] CPL_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE constexpr
 auto operator*(matrix3x3<A> const& a, vector3<B> const& b)
 {
   using result_type = decltype(a.xx() * b.x());
@@ -129,7 +129,7 @@ auto operator*(matrix3x3<A> const& a, vector3<B> const& b)
 }
 
 template <class A, class B>
-[[nodiscard]] CPL_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE constexpr
 auto outer_product(vector3<A> const& a, vector3<B> const& b)
 {
   using result_type = decltype(a.x() * b.x());
@@ -140,7 +140,7 @@ auto outer_product(vector3<A> const& a, vector3<B> const& b)
 }
 
 template <class T>
-[[nodiscard]] CPL_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE constexpr
 auto determinant(matrix3x3<T> const& m)
 {
   T const& a = m.xx();
@@ -162,7 +162,7 @@ auto determinant(matrix3x3<T> const& m)
 }
 
 template <class T>
-[[nodiscard]] CPL_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE constexpr
 auto inverse(matrix3x3<T> const& m)
 {
   T const& a = m.xx();

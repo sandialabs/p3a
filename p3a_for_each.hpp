@@ -6,7 +6,7 @@
 namespace p3a {
 
 template <class ForwardIt, class UnaryFunction>
-CPL_ALWAYS_INLINE inline constexpr
+P3A_ALWAYS_INLINE inline constexpr
 void for_each(
     local_execution,
     ForwardIt first,
@@ -19,7 +19,7 @@ void for_each(
 }
 
 template <class ForwardIt, class UnaryFunction>
-CPL_NEVER_INLINE
+P3A_NEVER_INLINE
 void for_each(
     serial_execution,
     ForwardIt first,
@@ -48,7 +48,7 @@ void cuda_for_each(F f, ForwardIt first, ForwardIt last) {
 }
 
 template <class ForwardIt, class UnaryFunction>
-CPL_NEVER_INLINE
+P3A_NEVER_INLINE
 void for_each(
     cuda_execution policy,
     ForwardIt first,
@@ -71,7 +71,7 @@ void for_each(
 #endif
 
 template <class Functor>
-CPL_ALWAYS_INLINE constexpr void for_each(
+P3A_ALWAYS_INLINE constexpr void for_each(
     local_execution,
     grid3 const& grid,
     Functor const& functor)
@@ -86,7 +86,7 @@ CPL_ALWAYS_INLINE constexpr void for_each(
 }
 
 template <class Functor>
-CPL_NEVER_INLINE void for_each(
+P3A_NEVER_INLINE void for_each(
     serial_execution,
     grid3 grid,
     Functor functor)
@@ -119,7 +119,7 @@ __global__ void cuda_grid_for_each(
 }
 
 template <class F>
-CPL_NEVER_INLINE
+P3A_NEVER_INLINE
 void grid_for_each(
     cuda_execution policy,
     vector3<int> first,
@@ -145,7 +145,7 @@ void grid_for_each(
 }
 
 template <class F>
-CPL_NEVER_INLINE
+P3A_NEVER_INLINE
 void for_each(
     cuda_execution policy,
     grid3 grid,
@@ -157,7 +157,7 @@ void for_each(
 #endif
 
 template <class Functor>
-CPL_NEVER_INLINE void for_each(
+P3A_NEVER_INLINE void for_each(
     serial_execution,
     subgrid3 subgrid,
     Functor functor)
@@ -172,7 +172,7 @@ CPL_NEVER_INLINE void for_each(
 }
 
 template <class Functor>
-CPL_ALWAYS_INLINE constexpr void for_each(
+P3A_ALWAYS_INLINE constexpr void for_each(
     local_execution,
     subgrid3 const& subgrid,
     Functor const& functor)
@@ -189,7 +189,7 @@ CPL_ALWAYS_INLINE constexpr void for_each(
 #ifdef __CUDACC__
 
 template <class F>
-CPL_NEVER_INLINE
+P3A_NEVER_INLINE
 void for_each(
     cuda_execution policy,
     subgrid3 grid,
