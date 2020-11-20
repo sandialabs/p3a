@@ -31,7 +31,7 @@ class quantity {
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
   quantity zero()
   {
-    return quantity(zero_value<T>);
+    return quantity(zero_value<T>());
   }
 };
 
@@ -294,8 +294,5 @@ template <class T>
 using kinematic_viscosity_quantity = quantity<T, kinematic_viscosity_dimension>;
 template <class T>
 using dynamic_viscosity_quantity = quantity<T, dynamic_viscosity_dimension>;
-
-template <class T>
-inline adimensional_quantity<T> constexpr one = one_value<adimensional_quantity<T>>;
 
 }

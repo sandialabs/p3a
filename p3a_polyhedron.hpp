@@ -50,19 +50,19 @@ void polyhedron<T, MaxVerts>::clip(
   length_quantity<T> smin, smax;
   // calculate signed distances to the clip plane
   onv = this->nverts;
-  smin = maximum_value<T>;
-  smax = minimum_value<T>;
+  smin = maximum_value<T>();
+  smax = minimum_value<T>();
   // for marking clipped vertices
   int clipped[MaxVerts] = {};  // all initialized to zero
   for (v = 0; v < onv; ++v) {
     sdists[v] = distance + dot_product(this->verts[v].pos, normal);
     if (sdists[v] < smin) smin = sdists[v];
     if (sdists[v] > smax) smax = sdists[v];
-    if (sdists[v] < zero_value<length_quantity<T>>) clipped[v] = 1;
+    if (sdists[v] < zero_value<length_quantity<T>>()) clipped[v] = 1;
   }
   // skip this face if the poly lies entirely on one side of it
-  if (smin >= zero_value<length_quantity<T>>) return;
-  if (smax <= zero_value<length_quantity<T>>) {
+  if (smin >= zero_value<length_quantity<T>>()) return;
+  if (smax <= zero_value<length_quantity<T>>()) {
     this->nverts = 0;
     return;
   }
@@ -117,8 +117,8 @@ void polyhedron<T, MaxVerts>::clip(
 template <class T, int MaxVerts>
 volume_quantity<T> polyhedron<T, MaxVerts>::volume() const
 {
-  if (this->nverts <= 0) return zero_value<volume_quantity<T>>;
-  volume_quantity<T> sixv = zero_value<volume_quantity<T>>;
+  if (this->nverts <= 0) return zero_value<volume_quantity<T>>();
+  volume_quantity<T> sixv = zero_value<volume_quantity<T>>();
   int np, vcur, vnext, pnext;
   // zero the moment
   // for keeping track of which edges have been visited

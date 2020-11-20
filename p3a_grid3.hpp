@@ -92,6 +92,16 @@ class subgrid3 {
   {
     return !operator==(other);
   }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  vector3<int> extents() const
+  {
+    return m_box.upper() - m_box.lower();
+  }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  int size() const
+  {
+    return extents().volume();
+  }
 };
 
 }

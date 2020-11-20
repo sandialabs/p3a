@@ -1,11 +1,15 @@
 #pragma once
 
+#ifdef __CUDACC__
+#include <cooperative_groups.h>
+#endif
+
 namespace p3a {
 
 template <class T>
 class minimizer {
  public:
-  P3A_ALWAYS_INLINE constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T operator()(T const& a, T const& b) const {
     return minimum(a, b);
   }
@@ -15,7 +19,7 @@ template <class T> inline constexpr minimizer<T> minimizes = {};
 template <class T>
 class adder {
  public:
-  P3A_ALWAYS_INLINE constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T operator()(T const& a, T const& b) const {
     return a + b;
   }
@@ -25,7 +29,7 @@ template <class T> inline constexpr adder<T> adds = {};
 template <class T>
 class identity {
  public:
-  P3A_ALWAYS_INLINE constexpr T const&
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr T const&
   operator()(T const& a) const {
     return a;
   }
@@ -71,7 +75,7 @@ T transform_reduce(
     BinaryOp binary_op,
     UnaryOp unary_op)
 {
-  reducer<T, serial_execution> r(policy, subgrid.volume());
+  reducer<T, serial_execution> r(policy, subgrid.size());
   r.transform_reduce(subgrid, init, binary_op, unary_op);
   return init;
 }
@@ -227,7 +231,7 @@ class reducer<T, cuda_execution> {
     dim3 const dimBlock(threads_per_block, 1, 1);
     dim3 const dimGrid(blocks, 1, 1);
     int const smemSize = threads_per_block * sizeof(T);
-    cudaStream_t const cuda_stream = m_policy.cuda_stream();
+    cudaStream_t const cuda_stream = nullptr;
     details::cuda_reduce<<<
       dimGrid,
       dimBlock,
@@ -238,10 +242,10 @@ class reducer<T, cuda_execution> {
   void grid_reduction_pass(
       vector3<int> first, vector3<int> last, vector3<int> block_grid,
       T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
-    dim3 dimBlock(grid_threads_per_block, 1, 1);
-    dim3 dimGrid(block_grid.x(), block_grid.y(), block_grid.z());
-    int smemSize = grid_threads_per_block * sizeof(T);
-    cudaStream_t cuda_stream = m_policy.cuda_stream();
+    dim3 const dimBlock(grid_threads_per_block, 1, 1);
+    dim3 const dimGrid(block_grid.x(), block_grid.y(), block_grid.z());
+    int const smemSize = grid_threads_per_block * sizeof(T);
+    cudaStream_t const cuda_stream = nullptr;
     details::cuda_grid_reduce<<<
       dimGrid,
       dimBlock,
@@ -287,6 +291,59 @@ class reducer<T, cuda_execution> {
     memcpy(m_policy, &host_result, device_result_ptr, sizeof(T));
     return host_result;
   }
+  template <class BinaryOp, class UnaryOp>
+  T grid_reduce_to_host(vector3<int> first, vector3<int> last, T init, BinaryOp binop, UnaryOp unop) {
+    T host_result = init;
+    T const* device_result_ptr = this->grid_reduce_on_device(first, last, init, binop, unop);
+    cudaMemcpy(&host_result, device_result_ptr, sizeof(T), cudaMemcpyDefault);
+    return host_result;
+  }
+ public:
+  reducer()
+    :m_scratch_size(0)
+    ,m_scratch1(nullptr)
+    ,m_scratch2(nullptr)
+  {}
+  reducer(cuda_execution policy_in, std::ptrdiff_t max_size)
+    :m_policy(policy_in)
+  {
+    m_scratch_size = int(max_size);
+    m_scratch1 = m_allocator.allocate(m_scratch_size);
+    m_scratch2 = m_allocator.allocate(m_scratch_size);
+  }
+  reducer(reducer&& other)
+    :m_policy(other.m_policy)
+    ,m_allocator(other.m_allocator)
+    ,m_scratch_size(other.m_scratch_size)
+    ,m_scratch1(other.m_scratch1)
+    ,m_scratch2(other.m_scratch2)
+  {
+    other.m_scratch_size = 0;
+    other.m_scratch1 = nullptr;
+    other.m_scratch2 = nullptr;
+  }
+  reducer(reducer const&) = delete;
+  reducer& operator=(reducer const&) = delete;
+  ~reducer() {
+    m_allocator.deallocate(m_scratch1, m_scratch_size);
+    m_allocator.deallocate(m_scratch2, m_scratch_size);
+    m_scratch1 = nullptr;
+    m_scratch2 = nullptr;
+  }
+  template <class BinaryOp, class UnaryOp>
+  [[nodiscard]]
+  T transform_reduce(
+      subgrid3 grid,
+      T init, BinaryOp binop, UnaryOp unop) {
+    return this->grid_reduce_to_host(grid.lower(), grid.upper(), init, binop, unop);
+  }
+  template <class ForwardIt, class BinaryOp, class UnaryOp>
+  [[nodiscard]]
+  T transform_reduce(
+      ForwardIt first, ForwardIt last,
+      T init, BinaryOp binop, UnaryOp unop) {
+    return this->reduce_to_host(last - first, first, init, binop, unop);
+  }
 };
 
 template <
@@ -301,7 +358,7 @@ T transform_reduce(
     BinaryOp binary_op,
     UnaryOp unary_op)
 {
-  reducer<T, cuda_execution> r(policy, subgrid.volume());
+  reducer<T, cuda_execution> r(policy, subgrid.size());
   r.transform_reduce(subgrid, init, binary_op, unary_op);
   return init;
 }
