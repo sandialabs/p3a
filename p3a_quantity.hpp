@@ -13,22 +13,22 @@ template <
 class quantity {
   T m_value;
  public:
-  P3A_ALWAYS_INLINE constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   quantity(T const& value_in)
     :m_value(value_in)
   {}
   P3A_ALWAYS_INLINE quantity() = default;
-  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& value() const
   {
     return m_value;
   }
-  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T& value()
   {
     return m_value;
   }
-  [[nodiscard]] P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
   quantity zero()
   {
     return quantity(zero_value<T>);
@@ -41,7 +41,7 @@ struct is_scalar_helper<quantity<T, Dimension>> {
 };
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 quantity<T, Dimension> operator+(
     quantity<T, Dimension> const& a,
     quantity<T, Dimension> const& b)
@@ -50,7 +50,7 @@ quantity<T, Dimension> operator+(
 }
 
 template <class T, class Dimension>
-P3A_ALWAYS_INLINE constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 quantity<T, Dimension>& operator+=(
     quantity<T, Dimension>& a,
     quantity<T, Dimension> const& b)
@@ -60,7 +60,7 @@ quantity<T, Dimension>& operator+=(
 }
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 quantity<T, Dimension> operator-(
     quantity<T, Dimension> const& a)
 {
@@ -68,7 +68,7 @@ quantity<T, Dimension> operator-(
 }
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 quantity<T, Dimension> operator-(
     quantity<T, Dimension> const& a,
     quantity<T, Dimension> const& b)
@@ -77,7 +77,7 @@ quantity<T, Dimension> operator-(
 }
 
 template <class T, class Dimension>
-P3A_ALWAYS_INLINE constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 quantity<T, Dimension>& operator-=(
     quantity<T, Dimension>& a,
     quantity<T, Dimension> const& b)
@@ -87,7 +87,7 @@ quantity<T, Dimension>& operator-=(
 }
 
 template <class T, class Dimension>
-P3A_ALWAYS_INLINE constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 quantity<T, Dimension>& operator*=(
     quantity<T, Dimension>& a,
     quantity<T, adimensional> const& b)
@@ -97,7 +97,7 @@ quantity<T, Dimension>& operator*=(
 }
 
 template <class T, class ADimension, class BDimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator/(
     quantity<T, ADimension> const& a,
     quantity<T, BDimension> const& b)
@@ -107,7 +107,7 @@ auto operator/(
 }
 
 template <class A, class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<A>, quantity<T, dimension_quotient<adimensional, Dimension>>>::type
 operator/(
     A const& a,
@@ -118,7 +118,7 @@ operator/(
 }
 
 template <class T, class Dimension, class B>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<B>, quantity<T, Dimension>>::type
 operator/(
     quantity<T, Dimension> const& a,
@@ -128,8 +128,9 @@ operator/(
 }
 
 template <class T, class Dimension, class B>
-P3A_ALWAYS_INLINE constexpr
-typename std::enable_if<is_scalar<B>, quantity<T, Dimension>&>::type operator/=(
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+typename std::enable_if<is_scalar<B>, quantity<T, Dimension>&>::type
+operator/=(
     quantity<T, Dimension>& a,
     B const& b)
 {
@@ -138,7 +139,7 @@ typename std::enable_if<is_scalar<B>, quantity<T, Dimension>&>::type operator/=(
 }
 
 template <class T, class ADimension, class BDimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(
     quantity<T, ADimension> const& a,
     quantity<T, BDimension> const& b)
@@ -147,7 +148,7 @@ auto operator*(
 }
 
 template <class A, class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<A>, quantity<T, Dimension>>::type operator*(
     A const& a,
     quantity<T, Dimension> const& b)
@@ -156,7 +157,7 @@ typename std::enable_if<is_scalar<A>, quantity<T, Dimension>>::type operator*(
 }
 
 template <class T, class Dimension, class B>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<B>, quantity<T, Dimension>>::type operator*(
     quantity<T, Dimension> const& a,
     B const& b)
@@ -165,7 +166,7 @@ typename std::enable_if<is_scalar<B>, quantity<T, Dimension>>::type operator*(
 }
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator==(
     quantity<T, Dimension> const& a,
     quantity<T, Dimension> const& b)
@@ -174,7 +175,7 @@ auto operator==(
 }
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator!=(
     quantity<T, Dimension> const& a,
     quantity<T, Dimension> const& b)
@@ -183,7 +184,7 @@ auto operator!=(
 }
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator>(
     quantity<T, Dimension> const& a,
     quantity<T, Dimension> const& b)
@@ -192,7 +193,7 @@ auto operator>(
 }
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator>=(
     quantity<T, Dimension> const& a,
     quantity<T, Dimension> const& b)
@@ -201,7 +202,7 @@ auto operator>=(
 }
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator<=(
     quantity<T, Dimension> const& a,
     quantity<T, Dimension> const& b)
@@ -210,7 +211,7 @@ auto operator<=(
 }
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator<(
     quantity<T, Dimension> const& a,
     quantity<T, Dimension> const& b)
@@ -219,7 +220,7 @@ auto operator<(
 }
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE inline
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
 auto square_root(quantity<T, Dimension> const& a)
 {
   using result_dimension = dimension_root<Dimension, 2>;
@@ -227,7 +228,7 @@ auto square_root(quantity<T, Dimension> const& a)
 }
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_ALWAYS_INLINE
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE
 quantity<T, Dimension> absolute_value(quantity<T, Dimension> const& a)
 {
   return quantity<T, Dimension>(absolute_value(a.value()));
