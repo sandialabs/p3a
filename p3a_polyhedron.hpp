@@ -20,7 +20,9 @@ struct polyhedron {
   };
   vertex verts[max_verts]; /*!< Vertex buffer. */
   int nverts;                 /*!< Number of vertices in the buffer. */
-  [[nodiscard]] volume_quantity<T> volume() const;
+  [[nodiscard]] P3A_HOST P3A_DEVICE inline
+  volume_quantity<T> volume() const;
+  P3A_HOST P3A_DEVICE inline
   void clip(
       vector3<adimensional_quantity<T>> const& normal,
       length_quantity<T> const& distance);
@@ -38,6 +40,7 @@ struct polyhedron {
  *
  */
 template <class T, int MaxVerts>
+P3A_HOST P3A_DEVICE inline
 void polyhedron<T, MaxVerts>::clip(
       vector3<adimensional_quantity<T>> const& normal,
       length_quantity<T> const& distance)
@@ -115,6 +118,7 @@ void polyhedron<T, MaxVerts>::clip(
 }
 
 template <class T, int MaxVerts>
+[[nodiscard]] P3A_HOST P3A_DEVICE inline
 volume_quantity<T> polyhedron<T, MaxVerts>::volume() const
 {
   if (this->nverts <= 0) return zero_value<volume_quantity<T>>();
