@@ -76,8 +76,7 @@ T transform_reduce(
     UnaryOp unary_op)
 {
   reducer<T, serial_execution> r(policy, subgrid.size());
-  r.transform_reduce(subgrid, init, binary_op, unary_op);
-  return init;
+  return r.transform_reduce(subgrid, init, binary_op, unary_op);
 }
 
 #ifdef __CUDACC__
@@ -359,8 +358,7 @@ T transform_reduce(
     UnaryOp unary_op)
 {
   reducer<T, cuda_execution> r(policy, subgrid.size());
-  r.transform_reduce(subgrid, init, binary_op, unary_op);
-  return init;
+  return r.transform_reduce(subgrid, init, binary_op, unary_op);
 }
 
 #endif
