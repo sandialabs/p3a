@@ -64,7 +64,6 @@ configure_file(P3AConfig.cmake.in
 configure_file(P3AConfigVersion.cmake.in
   "${PROJECT_BINARY_DIR}/P3AConfigVersion.cmake" @ONLY)
 
-# Install the P3AConfig.cmake and P3AConfigVersion.cmake
 install(FILES
   "${PROJECT_BINARY_DIR}/P3AConfig.cmake"
   "${PROJECT_BINARY_DIR}/P3AConfigVersion.cmake"
