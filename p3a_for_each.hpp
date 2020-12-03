@@ -2,6 +2,7 @@
 
 #include "p3a_execution.hpp"
 #include "p3a_functions.hpp"
+#include "p3a_grid3.hpp"
 
 namespace p3a {
 
