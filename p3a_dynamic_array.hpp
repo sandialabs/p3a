@@ -101,6 +101,11 @@ class dynamic_array {
     uninitialized_fill(m_execution_policy, m_begin + common_size, m_begin + count, value);
     m_size = count;
   }
+  void push_back(T&& value) {
+    reserve(m_size + 1);
+    ::new (static_cast<void*>(m_begin + m_size)) T(std::move(value));
+    ++m_size;
+  }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T* data() { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T const* data() const { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr iterator begin() { return m_begin; }
