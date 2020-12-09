@@ -11,6 +11,12 @@ class box3 {
   vector3<T> m_upper;
  public:
   P3A_ALWAYS_INLINE box3() = default;
+  template <class U>
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  box3(box3<U> const& other)
+    :m_lower(other.lower())
+    ,m_upper(other.upper())
+  {}
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr explicit
   box3(vector3<T> const& upper_in)
     :m_lower(vector3<T>::zero())
