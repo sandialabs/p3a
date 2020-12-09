@@ -81,6 +81,15 @@ class vector3 {
       ptr[stride * 1 + index],
       ptr[stride * 2 + index]);
   }
+  template <class U>
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  vector3& operator=(vector3<U> const& other)
+  {
+    m_x = other.x();
+    m_y = other.y();
+    m_z = other.z();
+    return *this;
+  }
 };
 
 template <class T>
