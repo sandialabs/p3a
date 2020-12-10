@@ -53,6 +53,7 @@ class grid3 {
 class subgrid3 {
   box3<int> m_box;
  public:
+  P3A_ALWAYS_INLINE subgrid3() = default;
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr subgrid3(
       vector3<int> const& lower_in,
       vector3<int> const& upper_in)
@@ -101,6 +102,11 @@ class subgrid3 {
   int size() const
   {
     return extents().volume();
+  }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  int index(vector3<int> const& p) const
+  {
+    return grid3(extents()).index(p - lower());
   }
 };
 
