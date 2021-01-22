@@ -84,4 +84,10 @@ T ceildiv(T a, T b) {
   return (a / b) + ((a % b) ? 1 : 0);
 }
 
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+T lerp(T a, T b, T t) {
+  return a + t * (b - a);
+}
+
 }

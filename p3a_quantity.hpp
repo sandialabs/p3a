@@ -249,6 +249,8 @@ using volume_quantity = quantity<T, volume_dimension>;
 template <class T>
 using mass_quantity = quantity<T, mass_dimension>;
 template <class T>
+using temperature_quantity = quantity<T, temperature_dimension>;
+template <class T>
 using density_quantity = quantity<T, density_dimension>;
 template <class T>
 using mass_density_quantity = quantity<T, mass_density_dimension>;

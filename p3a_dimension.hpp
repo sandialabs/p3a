@@ -68,6 +68,7 @@ using adimensional = dimension<0, 0, 0>;
 using time_dimension = dimension<1, 0, 0>;
 using length_dimension = dimension<0, 1, 0>;
 using mass_dimension = dimension<0, 0, 1>;
+using temperature_dimension = dimension<0, 0, 0, 0, 1>;
 using area_dimension = dimension<0, 2, 0>;
 using volume_dimension = dimension<0, 3, 0>;
 using density_dimension = dimension<0, -3, 0>;
