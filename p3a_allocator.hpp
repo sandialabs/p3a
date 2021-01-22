@@ -9,6 +9,7 @@ template <class T>
 class allocator {
  public:
   using size_type = std::int64_t;
+  template <class U> struct rebind { using other = p3a::allocator<U>; };
   P3A_NEVER_INLINE static T* allocate(size_type n)
   {
     return static_cast<T*>(std::malloc(std::size_t(n) * sizeof(T)));
@@ -25,6 +26,7 @@ template <class T>
 class cuda_host_allocator {
  public:
   using size_type = std::int64_t;
+  template <class U> struct rebind { using other = p3a::cuda_host_allocator<U>; };
   P3A_NEVER_INLINE static T* allocate(size_type n)
   {
     void* ptr = nullptr;
@@ -41,6 +43,7 @@ template <class T>
 class cuda_device_allocator {
  public:
   using size_type = std::int64_t;
+  template <class U> struct rebind { using other = p3a::cuda_device_allocator<U>; };
   P3A_NEVER_INLINE static T* allocate(size_type n)
   {
     void* ptr = nullptr;

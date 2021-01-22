@@ -106,6 +106,11 @@ class dynamic_array {
     ::new (static_cast<void*>(m_begin + m_size)) T(std::move(value));
     ++m_size;
   }
+  void push_back(T const& value) {
+    reserve(m_size + 1);
+    ::new (static_cast<void*>(m_begin + m_size)) T(value);
+    ++m_size;
+  }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T* data() { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T const* data() const { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr iterator begin() { return m_begin; }
