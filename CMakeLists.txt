@@ -41,6 +41,7 @@ set(P3A_HEADERS
   p3a_memory.hpp
   p3a_allocator.hpp
   p3a_dimension.hpp
+  p3a_unit.hpp
   p3a_cstring.hpp
   )
 
