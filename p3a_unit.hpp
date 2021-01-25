@@ -14,7 +14,7 @@ template <
   class CurrentRatio = unit_ratio,
   class TemperatureRatio = unit_ratio,
   class AmountRatio = unit_ratio,
-  class IntensityRatio = unit_ratio,
+  class IntensityRatio = unit_ratio>
 class units {
  public:
   using time_ratio = TimeRatio;
@@ -54,7 +54,7 @@ using cgs_units = units<
     ratio_inverse<ratio_product<std::deca, speed_of_light_ratio>>,
     unit_ratio,
     unit_ratio,
-    unit_ratio>
+    unit_ratio>;
 
 template <class Ratio, int Power>
 class nonnegative_ratio_power_helper {
@@ -75,28 +75,28 @@ using nonnegative_ratio_power = typename nonnegative_ratio_power_helper<Ratio, P
 template <class Ratio, int Power>
 using ratio_power =
   ratio_quotient<
-    nonnegative_ratio_power<Ratio, std::max(Power, int(0))>
+    nonnegative_ratio_power<Ratio, std::max(Power, int(0))>,
     nonnegative_ratio_power<Ratio, std::max(-Power, int(0))>>;
 
 template <class FromUnits, class ToUnits>
 using conversion_units = units<
-  ratio_quotient<FromUnits::time_ratio, ToUnits::time_ratio>,
-  ratio_quotient<FromUnits::length_ratio, ToUnits::length_ratio>,
-  ratio_quotient<FromUnits::mass_ratio, ToUnits::mass_ratio>,
-  ratio_quotient<FromUnits::current_ratio, ToUnits::current_ratio>,
-  ratio_quotient<FromUnits::temperature_ratio, ToUnits::temperature_ratio>,
-  ratio_quotient<FromUnits::amount_ratio, ToUnits::amount_ratio>,
-  ratio_quotient<FromUnits::intensity_ratio, ToUnits::intensity_ratio>>;
+  ratio_quotient<typename FromUnits::time_ratio, typename ToUnits::time_ratio>,
+  ratio_quotient<typename FromUnits::length_ratio, typename ToUnits::length_ratio>,
+  ratio_quotient<typename FromUnits::mass_ratio, typename ToUnits::mass_ratio>,
+  ratio_quotient<typename FromUnits::current_ratio, typename ToUnits::current_ratio>,
+  ratio_quotient<typename FromUnits::temperature_ratio, typename ToUnits::temperature_ratio>,
+  ratio_quotient<typename FromUnits::amount_ratio, typename ToUnits::amount_ratio>,
+  ratio_quotient<typename FromUnits::intensity_ratio, typename ToUnits::intensity_ratio>>;
 
 template <class Dimension, class ConversionUnits>
 using conversion_ratio_from_conversion_units =
-  ratio_product<ratio_power<ConversionUnits::time_ratio, Dimension::time_power>,
-  ratio_product<ratio_power<ConversionUnits::length_ratio, Dimension::length_power>,
-  ratio_product<ratio_power<ConversionUnits::mass_ratio, Dimension::mass_power>,
-  ratio_product<ratio_power<ConversionUnits::current_ratio, Dimension::current_power>,
-  ratio_product<ratio_power<ConversionUnits::temperature_ratio, Dimension::temperature_power>,
-  ratio_product<ratio_power<ConversionUnits::amount_ratio, Dimension::amount_power>,
-                ratio_power<ConversionUnits::intensity_ratio, Dimension::intensity_power>>>>>>>;
+  ratio_product<ratio_power<typename ConversionUnits::time_ratio, Dimension::time_power>,
+  ratio_product<ratio_power<typename ConversionUnits::length_ratio, Dimension::length_power>,
+  ratio_product<ratio_power<typename ConversionUnits::mass_ratio, Dimension::mass_power>,
+  ratio_product<ratio_power<typename ConversionUnits::current_ratio, Dimension::current_power>,
+  ratio_product<ratio_power<typename ConversionUnits::temperature_ratio, Dimension::temperature_power>,
+  ratio_product<ratio_power<typename ConversionUnits::amount_ratio, Dimension::amount_power>,
+                ratio_power<typename ConversionUnits::intensity_ratio, Dimension::intensity_power>>>>>>>;
 
 template <class Dimension, class FromUnits, class ToUnits>
 using conversion_ratio = conversion_ratio_from_conversion_units<
@@ -105,6 +105,5 @@ using conversion_ratio = conversion_ratio_from_conversion_units<
 template <class ToType, class Ratio> 
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr
 ToType ratio_value() { return ToType(Ratio::num) / ToType(Ratio::den); }
-:q
 
 }
