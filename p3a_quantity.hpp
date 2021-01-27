@@ -296,5 +296,7 @@ template <class T>
 using kinematic_viscosity_quantity = quantity<T, kinematic_viscosity_dimension>;
 template <class T>
 using dynamic_viscosity_quantity = quantity<T, dynamic_viscosity_dimension>;
+template <class T>
+using specific_heat_quantity = quantity<T, specific_heat_dimension>;
 
 }

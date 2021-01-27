@@ -52,6 +52,12 @@ double natural_exponential(double a)
 }
 
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+double natural_logarithm(double a)
+{
+  return std::log(a);
+}
+
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
 double exponentiate(double a, double b)
 {
   return std::pow(a, b);
@@ -84,9 +90,9 @@ T ceildiv(T a, T b) {
   return (a / b) + ((a % b) ? 1 : 0);
 }
 
-template <class T>
+template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-T lerp(T a, T b, T t) {
+A linear_interpolation(A a, A b, B t) {
   return a + t * (b - a);
 }
 

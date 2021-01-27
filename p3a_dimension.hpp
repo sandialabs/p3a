@@ -87,5 +87,6 @@ using gradient_dimension = dimension<0, -1, 0>;
 using rate_dimension = dimension<-1, 0, 0>;
 using kinematic_viscosity_dimension = dimension<-1, 2, 0>;
 using dynamic_viscosity_dimension = dimension<-1, -1, 1>;
+using specific_heat_dimension = dimension<-2, 2, 0, 0, -1>;
 
 }
