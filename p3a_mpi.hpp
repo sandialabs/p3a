@@ -16,7 +16,7 @@ class exception : public std::exception {
     c_error_string[resultlen] = '\0';
     error_string = c_error_string;
   }
-  const char* what() const override {
+  const char* what() const noexcept override {
     return error_string.c_str();
   }
 };
@@ -45,15 +45,15 @@ class status {
 class request {
   MPI_Request implementation;
  public:
-  request()
+  constexpr request()
     :implementation(MPI_REQUEST_NULL)
   {}
-  request(MPI_Request implementation_arg)
+  constexpr request(MPI_Request implementation_arg)
     :implementation(implementation_arg)
   {}
   request(request const&) = delete;
   request& operator=(request const&) = delete;
-  request(request&&)
+  constexpr request(request&& other)
     :implementation(other.implementation)
   {
     other.implementation = MPI_REQUEST_NULL;
@@ -101,7 +101,18 @@ class request {
   {
     wait();
   }
+  MPI_Request& get_implementation() { return implementation; }
 };
+
+void waitall(int count, request* array_of_requests)
+{
+  MPI_Request* array_of_implementations = &(array_of_requests->get_implementation());
+  details::handle_error_code(
+      MPI_Waitall(
+        count,
+        array_of_implementations,
+        MPI_STATUSES_IGNORE));
+}
 
 class op {
   MPI_Op implementation;
@@ -143,19 +154,19 @@ class op {
     }
   }
   MPI_Op get_implementation() const { return implementation; }
-  static constexpr op sum()
+  static op sum()
   {
     return op(MPI_SUM, false);
   }
-  static constexpr op min()
+  static op min()
   {
     return op(MPI_MIN, false);
   }
-  static constexpr op max()
+  static op max()
   {
     return op(MPI_MAX, false);
   }
-  static constexpr op bor()
+  static op bor()
   {
     return op(MPI_BOR, false);
   }
@@ -177,14 +188,14 @@ class datatype {
   {}
   datatype(datatype const&) = delete;
   datatype& operator=(datatype const&) = delete;
-  constexpr datatype(datatype&&)
+  constexpr datatype(datatype&& other)
     :implementation(other.implementation)
     ,owned(other.owned)
   {
     other.implementation = MPI_DATATYPE_NULL;
     other.owned = false;
   }
-  constexpr datatype& operator=(datatype&&)
+  datatype& operator=(datatype&& other)
   {
     if (owned) {
       details::handle_error_code(MPI_Type_free(&implementation));
@@ -195,46 +206,46 @@ class datatype {
     other.owned = false;
     return *this;
   }
-  constexpr ~datatype()
+  ~datatype()
   {
     if (owned) {
       details::handle_error_code(MPI_Type_free(&implementation));
     }
   }
   constexpr MPI_Datatype get_implementation() const { return implementation; }
-  static constexpr datatype predefined_byte()
+  static datatype predefined_byte()
   {
     return datatype(MPI_BYTE, false);
   }
-  static constexpr datatype predefined_char()
+  static datatype predefined_char()
   {
     return datatype(MPI_CHAR, false);
   }
-  static constexpr datatype predefined_unsigned()
+  static datatype predefined_unsigned()
   {
     return datatype(MPI_UNSIGNED, false);
   }
-  static constexpr datatype predefined_unsigned_long()
+  static datatype predefined_unsigned_long()
   {
     return datatype(MPI_UNSIGNED_LONG, false);
   }
-  static constexpr datatype predefined_unsigned_long_long()
+  static datatype predefined_unsigned_long_long()
   {
     return datatype(MPI_UNSIGNED_LONG_LONG, false);
   }
-  static constexpr datatype predefined_int()
+  static datatype predefined_int()
   {
     return datatype(MPI_INT, false);
   }
-  static constexpr datatype predefined_long_long_int()
+  static datatype predefined_long_long_int()
   {
     return datatype(MPI_LONG_LONG_INT, false);
   }
-  static constexpr datatype predefined_float()
+  static datatype predefined_float()
   {
     return datatype(MPI_FLOAT, false);
   }
-  static constexpr datatype predefined_double()
+  static datatype predefined_double()
   {
     return datatype(MPI_DOUBLE, false);
   }
@@ -249,91 +260,91 @@ template <>
 class predefined_datatype_helper<std::byte>
 {
  public:
-  static constexpr datatype value()
+  static datatype value()
   {
     return datatype::predefined_byte();
   }
-}
+};
 
 template <>
 class predefined_datatype_helper<char>
 {
  public:
-  static constexpr datatype value()
+  static datatype value()
   {
     return datatype::predefined_char();
   }
-}
+};
 
 template <>
 class predefined_datatype_helper<unsigned>
 {
  public:
-  static constexpr datatype value()
+  static datatype value()
   {
     return datatype::predefined_unsigned();
   }
-}
+};
 
 template <>
 class predefined_datatype_helper<unsigned long>
 {
  public:
-  static constexpr datatype value()
+  static datatype value()
   {
     return datatype::predefined_unsigned_long();
   }
-}
+};
 
 template <>
 class predefined_datatype_helper<unsigned long long>
 {
  public:
-  static constexpr datatype value()
+  static datatype value()
   {
     return datatype::predefined_unsigned_long_long();
   }
-}
+};
 
 template <>
 class predefined_datatype_helper<int>
 {
  public:
-  static constexpr datatype value()
+  static datatype value()
   {
     return datatype::predefined_int();
   }
-}
+};
 
 template <>
 class predefined_datatype_helper<long long int>
 {
  public:
-  static constexpr datatype value()
+  static datatype value()
   {
     return datatype::predefined_long_long_int();
   }
-}
+};
 
 template <>
 class predefined_datatype_helper<float>
 {
  public:
-  static constexpr datatype value()
+  static datatype value()
   {
     return datatype::predefined_float();
   }
-}
+};
 
 template <>
 class predefined_datatype_helper<double>
 {
  public:
-  static constexpr datatype value()
+  static datatype value()
   {
     return datatype::predefined_double();
   }
-}
+};
 
 }
 
@@ -518,11 +529,11 @@ class comm {
           &request_implementation));
     return request(request_implementation);
   }
-  static constexpr comm world()
+  static comm world()
   {
     return comm(MPI_COMM_WORLD, false);
   }
-  static constexpr comm self()
+  static comm self()
   {
     return comm(MPI_COMM_SELF, false);
   }
