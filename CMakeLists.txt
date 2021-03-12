@@ -43,6 +43,7 @@ set(P3A_HEADERS
   p3a_dimension.hpp
   p3a_unit.hpp
   p3a_cstring.hpp
+  p3a_mpi.hpp
   )
 
 add_library(p3a INTERFACE)
