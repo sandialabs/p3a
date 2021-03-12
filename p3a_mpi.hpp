@@ -393,6 +393,24 @@ class comm {
       details::handle_error_code(MPI_Comm_free(&implementation));
     }
   }
+  int size() const
+  {
+    int result_size;
+    details::handle_error_code(
+        MPI_Comm_size(
+          implementation,
+          &result_size));
+    return result_size;
+  }
+  int rank() const
+  {
+    int result_rank;
+    details::handle_error_code(
+        MPI_Comm_rank(
+          implementation,
+          &result_rank));
+    return result_rank;
+  }
   request iallreduce(
       void const* sendbuf,
       void* recvbuf,
@@ -536,6 +554,65 @@ class comm {
   static comm self()
   {
     return comm(MPI_COMM_SELF, false);
+  }
+  comm cart_create(
+      int ndims,
+      int const* dims,
+      int const* periods,
+      int reorder) const
+  {
+    MPI_Comm cart_implementation;
+    details::handle_error_code(
+        MPI_Cart_create(
+          implementation,
+          ndims,
+          dims,
+          periods,
+          reorder,
+          &cart_implementation));
+    return comm(cart_implementation);
+  }
+  int cartdim_get() const
+  {
+    int ndims;
+    details::handle_error_code(
+        MPI_Cartdim_get(
+          implementation,
+          &ndims));
+    return ndims;
+  }
+  void cart_get(
+      int maxdims,
+      int dims[],
+      int periods[],
+      int coords[]) const
+  {
+    details::handle_error_code(
+        MPI_Cart_get(
+          implementation,
+          maxdims,
+          dims,
+          periods,
+          coords));
+  }
+  int cart_rank(int const coords[]) const
+  {
+    int result_rank;
+    details::handle_error_code(
+        MPI_Cart_rank(
+          implementation,
+          coords,
+          &result_rank));
+    return result_rank;
+  }
+  void cart_coords(int rank, int maxdims, int coords[]) const
+  {
+    details::handle_error_code(
+        MPI_Cart_coords(
+          implementation,
+          rank,
+          maxdims,
+          coords));
   }
 };
 
