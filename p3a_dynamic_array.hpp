@@ -111,6 +111,18 @@ class dynamic_array {
     ::new (static_cast<void*>(m_begin + m_size)) T(value);
     ++m_size;
   }
+  T& back()
+  {
+    return operator[](size() - 1);
+  }
+  T const& back() const
+  {
+    return operator[](size() - 1);
+  }
+  void pop_back()
+  {
+    resize(size() - 1);
+  }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T* data() { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T const* data() const { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr iterator begin() { return m_begin; }
