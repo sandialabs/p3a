@@ -104,7 +104,7 @@ class request {
   MPI_Request& get_implementation() { return implementation; }
 };
 
-void waitall(int count, request* array_of_requests)
+inline void waitall(int count, request* array_of_requests)
 {
   MPI_Request* array_of_implementations = &(array_of_requests->get_implementation());
   details::handle_error_code(
