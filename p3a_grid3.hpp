@@ -108,6 +108,16 @@ class subgrid3 {
   {
     return grid3(extents()).index(p - lower());
   }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  bool contains(vector3<int> const& p) const
+  {
+    return p.x() >= lower().x() &&
+           p.y() >= lower().y() &&
+           p.z() >= lower().z() &&
+           p.x() < upper().x() &&
+           p.y() < upper().y() &&
+           p.z() < upper().z();
+  }
 };
 
 }
