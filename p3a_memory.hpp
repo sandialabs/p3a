@@ -158,11 +158,12 @@ P3A_NEVER_INLINE void copy(
 {
   using value_type = typename std::iterator_traits<ForwardIt2>::value_type;
   if constexpr (std::is_trivially_copyable_v<value_type>) {
-    cudaMemcpy(
+    details::handle_cuda_error(
+      cudaMemcpy(
         &*d_first,
         &*first,
         sizeof(value_type) * std::size_t(last - first), 
-        cudaMemcpyDefault);
+        cudaMemcpyDefault));
   } else {
     for_each(policy, first, last,
     [=] P3A_DEVICE (value_type& ref) P3A_ALWAYS_INLINE {
