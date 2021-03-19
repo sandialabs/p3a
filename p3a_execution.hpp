@@ -2,26 +2,67 @@
 
 #include "p3a_macros.hpp"
 
+#include <exception>
+#include <string>
+
 namespace p3a {
 
 class serial_execution {
+ public:
+  void synchronize() const {}
 };
 
 inline constexpr serial_execution serial = {};
 
 class serial_local_execution {
+ public:
+  P3A_ALWAYS_INLINE constexpr void synchronize() const {}
 };
 
 inline constexpr serial_local_execution serial_local = {};
 
 #ifdef __CUDACC__
 
+class cuda_exception : public std::exception
+{
+  std::string error_string;
+ public:
+  cuda_exception(cudaError_t error)
+    :error_string(cudaGetErrorString(error))
+  {
+  }
+  virtual const char* what() const noexcept override
+  {
+    return error_string.c_str();
+  }
+};
+
+namespace details {
+
+void handle_cuda_error(cudaError_t error)
+{
+  if (error == cudaSuccess) return;
+  throw cuda_exception(error);
+}
+
+}
+
 class cuda_execution {
+ cudaStream_t stream{nullptr};
+ public:
+  void synchronize() const {
+    details::handle_cuda_error(
+        cudaStreamSynchronize(stream));
+  }
 };
 
 inline constexpr cuda_execution cuda = {};
 
 class cuda_local_execution {
+ public:
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr void synchronize() const
+  {
+  }
 };
 
 inline constexpr cuda_local_execution cuda_local = {};
