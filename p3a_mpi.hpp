@@ -2,6 +2,8 @@
 
 #include <mpi.h>
 
+#include <string>
+
 namespace p3a {
 
 namespace mpi {
@@ -361,7 +363,7 @@ class comm {
   constexpr comm(
       MPI_Comm implementation_arg,
       bool owned_arg = true)
-    :implementation(implementation)
+    :implementation(implementation_arg)
     ,owned(owned_arg)
   {}
   constexpr comm()
@@ -614,6 +616,7 @@ class comm {
           maxdims,
           coords));
   }
+  MPI_Comm get_implementation() const { return implementation; }
 };
 
 class library {
