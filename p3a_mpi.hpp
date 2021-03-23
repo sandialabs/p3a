@@ -11,33 +11,20 @@ namespace mpi {
 class exception : public std::exception {
   std::string error_string;
  public:
-  exception(int errorcode) {
-    char c_error_string[MPI_MAX_ERROR_STRING];
-    int resultlen;
-    MPI_Error_string(errorcode, c_error_string, &resultlen);
-    c_error_string[resultlen] = '\0';
-    error_string = c_error_string;
-  }
-  const char* what() const noexcept override {
-    return error_string.c_str();
-  }
+  exception(int errorcode);
+  const char* what() const noexcept override;
 };
 
 namespace details {
 
-inline void handle_error_code(int errorcode) {
-  if (errorcode == MPI_SUCCESS) return;
-  throw exception(errorcode);
-}
+void handle_mpi_error(int errorcode);
 
 }
 
 class status {
   MPI_Status implementation;
  public:
-  status(MPI_Status implementation_arg)
-    :implementation(implementation_arg)
-  {}
+  status(MPI_Status implementation_arg);
   status() = default;
   int source() const { return implementation.MPI_SOURCE; }
   int tag() const { return implementation.MPI_TAG; }
@@ -60,61 +47,16 @@ class request {
   {
     other.implementation = MPI_REQUEST_NULL;
   }
-  request& operator=(request&& other)
-  {
-    wait();
-    implementation = other.implementation;
-    other.implementation = MPI_REQUEST_NULL;
-    return *this;
-  }
-  void wait()
-  {
-    if (implementation != MPI_REQUEST_NULL) {
-      details::handle_error_code(MPI_Wait(&implementation, MPI_STATUS_IGNORE));
-    }
-  }
-  bool test()
-  {
-    int flag = 1;
-    if (implementation != MPI_REQUEST_NULL) {
-      details::handle_error_code(MPI_Test(&implementation, &flag, MPI_STATUS_IGNORE));
-    }
-    return bool(flag);
-  }
-  void wait(status& status_arg)
-  {
-    if (implementation != MPI_REQUEST_NULL) {
-      MPI_Status status_implementation;
-      details::handle_error_code(MPI_Wait(&implementation, &status_implementation));
-      status_arg = status(status_implementation);
-    }
-  }
-  bool test(status& status_arg)
-  {
-    int flag = 1;
-    if (implementation != MPI_REQUEST_NULL) {
-      MPI_Status status_implementation;
-      details::handle_error_code(MPI_Test(&implementation, &flag, &status_implementation));
-      status_arg = status(status_implementation);
-    }
-    return bool(flag);
-  }
-  ~request()
-  {
-    wait();
-  }
+  request& operator=(request&& other);
+  void wait();
+  bool test();
+  void wait(status& status_arg);
+  bool test(status& status_arg);
+  ~request();
   MPI_Request& get_implementation() { return implementation; }
 };
 
-inline void waitall(int count, request* array_of_requests)
-{
-  MPI_Request* array_of_implementations = &(array_of_requests->get_implementation());
-  details::handle_error_code(
-      MPI_Waitall(
-        count,
-        array_of_implementations,
-        MPI_STATUSES_IGNORE));
-}
+void waitall(int count, request* array_of_requests);
 
 class op {
   MPI_Op implementation;
@@ -138,40 +80,13 @@ class op {
     other.implementation = MPI_OP_NULL;
     other.owned = false;
   }
-  op& operator=(op&& other)
-  {
-    if (owned) {
-      details::handle_error_code(MPI_Op_free(&implementation));
-    }
-    implementation = other.implementation;
-    owned = other.owned;
-    other.implementation = MPI_OP_NULL;
-    other.owned = false;
-    return *this;
-  }
-  ~op()
-  {
-    if (owned) {
-      details::handle_error_code(MPI_Op_free(&implementation));
-    }
-  }
-  MPI_Op get_implementation() const { return implementation; }
-  static op sum()
-  {
-    return op(MPI_SUM, false);
-  }
-  static op min()
-  {
-    return op(MPI_MIN, false);
-  }
-  static op max()
-  {
-    return op(MPI_MAX, false);
-  }
-  static op bor()
-  {
-    return op(MPI_BOR, false);
-  }
+  op& operator=(op&& other);
+  ~op();
+  MPI_Op get_implementation() const;
+  static op sum();
+  static op min();
+  static op max();
+  static op bor();
 };
 
 class datatype {
@@ -197,60 +112,18 @@ class datatype {
     other.implementation = MPI_DATATYPE_NULL;
     other.owned = false;
   }
-  datatype& operator=(datatype&& other)
-  {
-    if (owned) {
-      details::handle_error_code(MPI_Type_free(&implementation));
-    }
-    implementation = other.implementation;
-    owned = other.owned;
-    other.implementation = MPI_DATATYPE_NULL;
-    other.owned = false;
-    return *this;
-  }
-  ~datatype()
-  {
-    if (owned) {
-      details::handle_error_code(MPI_Type_free(&implementation));
-    }
-  }
+  datatype& operator=(datatype&& other);
+  ~datatype();
   constexpr MPI_Datatype get_implementation() const { return implementation; }
-  static datatype predefined_byte()
-  {
-    return datatype(MPI_BYTE, false);
-  }
-  static datatype predefined_char()
-  {
-    return datatype(MPI_CHAR, false);
-  }
-  static datatype predefined_unsigned()
-  {
-    return datatype(MPI_UNSIGNED, false);
-  }
-  static datatype predefined_unsigned_long()
-  {
-    return datatype(MPI_UNSIGNED_LONG, false);
-  }
-  static datatype predefined_unsigned_long_long()
-  {
-    return datatype(MPI_UNSIGNED_LONG_LONG, false);
-  }
-  static datatype predefined_int()
-  {
-    return datatype(MPI_INT, false);
-  }
-  static datatype predefined_long_long_int()
-  {
-    return datatype(MPI_LONG_LONG_INT, false);
-  }
-  static datatype predefined_float()
-  {
-    return datatype(MPI_FLOAT, false);
-  }
-  static datatype predefined_double()
-  {
-    return datatype(MPI_DOUBLE, false);
-  }
+  static datatype predefined_byte();
+  static datatype predefined_char();
+  static datatype predefined_unsigned();
+  static datatype predefined_unsigned_long();
+  static datatype predefined_unsigned_long_long();
+  static datatype predefined_int();
+  static datatype predefined_long_long_int();
+  static datatype predefined_float();
+  static datatype predefined_double();
 };
 
 namespace details {
@@ -379,59 +252,16 @@ class comm {
     other.implementation = MPI_COMM_NULL;
     other.owned = false;
   }
-  comm& operator=(comm&& other) {
-    if (owned) {
-      details::handle_error_code(MPI_Comm_free(&implementation));
-    }
-    implementation = other.implementation;
-    owned = other.owned;
-    other.implementation = MPI_COMM_NULL;
-    other.owned = false;
-    return *this;
-  }
-  ~comm()
-  {
-    if (owned) {
-      details::handle_error_code(MPI_Comm_free(&implementation));
-    }
-  }
-  int size() const
-  {
-    int result_size;
-    details::handle_error_code(
-        MPI_Comm_size(
-          implementation,
-          &result_size));
-    return result_size;
-  }
-  int rank() const
-  {
-    int result_rank;
-    details::handle_error_code(
-        MPI_Comm_rank(
-          implementation,
-          &result_rank));
-    return result_rank;
-  }
+  comm& operator=(comm&& other);
+  ~comm();
+  int size() const;
+  int rank() const;
   request iallreduce(
       void const* sendbuf,
       void* recvbuf,
       int count,
       datatype datatype_arg,
-      op op_arg)
-  {
-    MPI_Request request_implementation;
-    details::handle_error_code(
-        MPI_Iallreduce(
-          sendbuf,
-          recvbuf,
-          count,
-          datatype_arg.get_implementation(),
-          op_arg.get_implementation(),
-          implementation,
-          &request_implementation));
-    return request(request_implementation);
-  }
+      op op_arg);
   template <class T>
   request iallreduce(
       T const* sendbuf,
@@ -441,7 +271,7 @@ class comm {
   {
     datatype datatype_arg = predefined_datatype<T>();
     MPI_Request request_implementation;
-    details::handle_error_code(
+    details::handle_mpi_error(
         MPI_Iallreduce(
           sendbuf,
           recvbuf,
@@ -460,7 +290,7 @@ class comm {
   {
     datatype datatype_arg = predefined_datatype<T>();
     MPI_Request request_implementation;
-    details::handle_error_code(
+    details::handle_mpi_error(
         MPI_Iallreduce(
           MPI_IN_PLACE,
           buf,
@@ -476,20 +306,7 @@ class comm {
       int count,
       datatype datatype_arg,
       int dest,
-      int tag)
-  {
-    MPI_Request request_implementation;
-    details::handle_error_code(
-        MPI_Isend(
-          buf,
-          count,
-          datatype_arg.get_implementation(),
-          dest,
-          tag,
-          implementation,
-          &request_implementation));
-    return request(request_implementation);
-  }
+      int tag);
   template <class T>
   request isend(
       T const* buf,
@@ -499,7 +316,7 @@ class comm {
   {
     datatype datatype_arg = predefined_datatype<T>();
     MPI_Request request_implementation;
-    details::handle_error_code(
+    details::handle_mpi_error(
         MPI_Isend(
           buf,
           count,
@@ -515,20 +332,7 @@ class comm {
       int count,
       datatype datatype_arg,
       int dest,
-      int tag)
-  {
-    MPI_Request request_implementation;
-    details::handle_error_code(
-        MPI_Irecv(
-          buf,
-          count,
-          datatype_arg.get_implementation(),
-          dest,
-          tag,
-          implementation,
-          &request_implementation));
-    return request(request_implementation);
-  }
+      int tag);
   template <class T>
   request irecv(
       T* buf,
@@ -538,7 +342,7 @@ class comm {
   {
     datatype datatype_arg = predefined_datatype<T>();
     MPI_Request request_implementation;
-    details::handle_error_code(
+    details::handle_mpi_error(
         MPI_Irecv(
           buf,
           count,
@@ -549,92 +353,31 @@ class comm {
           &request_implementation));
     return request(request_implementation);
   }
-  static comm world()
-  {
-    return comm(MPI_COMM_WORLD, false);
-  }
-  static comm self()
-  {
-    return comm(MPI_COMM_SELF, false);
-  }
+  static comm world();
+  static comm self();
   comm cart_create(
       int ndims,
       int const* dims,
       int const* periods,
-      int reorder) const
-  {
-    MPI_Comm cart_implementation;
-    details::handle_error_code(
-        MPI_Cart_create(
-          implementation,
-          ndims,
-          dims,
-          periods,
-          reorder,
-          &cart_implementation));
-    return comm(cart_implementation);
-  }
-  int cartdim_get() const
-  {
-    int ndims;
-    details::handle_error_code(
-        MPI_Cartdim_get(
-          implementation,
-          &ndims));
-    return ndims;
-  }
+      int reorder) const;
+  int cartdim_get() const;
   void cart_get(
       int maxdims,
       int dims[],
       int periods[],
-      int coords[]) const
-  {
-    details::handle_error_code(
-        MPI_Cart_get(
-          implementation,
-          maxdims,
-          dims,
-          periods,
-          coords));
-  }
-  int cart_rank(int const coords[]) const
-  {
-    int result_rank;
-    details::handle_error_code(
-        MPI_Cart_rank(
-          implementation,
-          coords,
-          &result_rank));
-    return result_rank;
-  }
-  void cart_coords(int rank, int maxdims, int coords[]) const
-  {
-    details::handle_error_code(
-        MPI_Cart_coords(
-          implementation,
-          rank,
-          maxdims,
-          coords));
-  }
-  MPI_Comm get_implementation() const { return implementation; }
+      int coords[]) const;
+  int cart_rank(int const coords[]) const;
+  void cart_coords(int rank, int maxdims, int coords[]) const;
+  constexpr MPI_Comm get_implementation() const { return implementation; }
 };
 
 class library {
  public:
-  library(int* argc, char*** argv) {
-    int flag;
-    details::handle_error_code(MPI_Initialized(&flag));
-    if (!flag) {
-      details::handle_error_code(MPI_Init(argc, argv));
-    }
-  }
-  ~library() {
-    int flag;
-    details::handle_error_code(MPI_Finalized(&flag));
-    if (!flag) {
-      details::handle_error_code(MPI_Finalize());
-    }
-  }
+  library(int* argc, char*** argv);
+  library()
+    :library(nullptr, nullptr)
+  {}
+  ~library();
   library(library const&) = delete;
   library& operator=(library const&) = delete;
   library(library&&) = delete;

@@ -4,19 +4,13 @@ project(P3A VERSION 0.1.0 LANGUAGES CXX)
 
 option(P3A_ENABLE_CUDA "Enable CUDA" OFF)
 
-if(WIN32 AND NOT CYGWIN)
-  set(INSTALL_CMAKE_DIR CMake)
-  set(INSTALL_BIN_DIR ".")
-  set(INSTALL_LIB_DIR ".")
-else()
-  set(INSTALL_CMAKE_DIR lib/cmake/${PROJECT_NAME})
-  set(INSTALL_BIN_DIR "bin")
-  set(INSTALL_LIB_DIR "lib")
-endif()
+set(INSTALL_CMAKE_DIR "${PROJECT_NAME}/share/${PROJECT_NAME}")
 
 if (P3A_ENABLE_CUDA)
   enable_language(CUDA)
 endif()
+
+find_package(MPI REQUIRED)
 
 set(P3A_HEADERS
   p3a.hpp
@@ -46,20 +40,23 @@ set(P3A_HEADERS
   p3a_mpi.hpp
   )
 
-add_library(p3a INTERFACE)
-target_compile_features(p3a INTERFACE cxx_std_17)
+set(P3A_SOURCES p3a_mpi.cpp)
+
+if (P3A_ENABLE_CUDA AND P3A_SOURCES)
+  set_source_files_properties(
+    ${P3A_SOURCES} PROPERTIES LANGUAGE CUDA)
+endif()
+
+add_library(p3a ${P3A_SOURCES})
+target_compile_features(p3a PUBLIC cxx_std_17)
 set_target_properties(p3a PROPERTIES
   PUBLIC_HEADER "${P3A_HEADERS}")
 target_include_directories(p3a
   INTERFACE $<INSTALL_INTERFACE:include>)
 
-install(TARGETS p3a
-  EXPORT P3ATargets
-  LIBRARY DESTINATION "${INSTALL_LIB_DIR}"
-  ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
-  RUNTIME DESTINATION "${INSTALL_LIB_DIR}"
-  PUBLIC_HEADER DESTINATION "include"
-  )
+target_link_libraries(p3a PUBLIC MPI::MPI_CXX)
+
+install(TARGETS p3a EXPORT P3ATargets)
 
 configure_file(P3AConfig.cmake.in
   "${PROJECT_BINARY_DIR}/P3AConfig.cmake" @ONLY)
