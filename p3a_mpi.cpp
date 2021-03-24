@@ -1,4 +1,5 @@
 #include "p3a_mpi.hpp"
+#include "p3a_execution.hpp"
 
 namespace p3a {
 
@@ -384,10 +385,10 @@ library::library(int* argc, char*** argv) {
     details::handle_mpi_error(
         MPI_Comm_rank(node_comm, &node_rank));
     int device_count;
-    details::handle_cuda_error(
+    p3a::details::handle_cuda_error(
         cudaGetDeviceCount(&device_count));
     int const desired_device = node_rank % device_count;
-    details::handle_cuda_error(
+    p3a::details::handle_cuda_error(
         cudaSetDevice(desired_device));
 #endif
   }

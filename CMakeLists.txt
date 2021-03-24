@@ -2,9 +2,13 @@ cmake_minimum_required(VERSION 3.12.0...3.18.0)
 
 project(P3A VERSION 0.1.0 LANGUAGES CXX)
 
-option(P3A_ENABLE_CUDA "Enable CUDA" OFF)
+if(WIN32 AND NOT CYGWIN)
+  set(INSTALL_CMAKE_DIR CMake)
+else()
+  set(INSTALL_CMAKE_DIR lib/cmake/${PROJECT_NAME})
+endif()
 
-set(INSTALL_CMAKE_DIR "${PROJECT_NAME}/share/${PROJECT_NAME}")
+option(P3A_ENABLE_CUDA "Enable CUDA" OFF)
 
 if (P3A_ENABLE_CUDA)
   enable_language(CUDA)
@@ -40,7 +44,10 @@ set(P3A_HEADERS
   p3a_mpi.hpp
   )
 
-set(P3A_SOURCES p3a_mpi.cpp)
+set(P3A_SOURCES
+  p3a_execution.cpp
+  p3a_mpi.cpp
+  )
 
 if (P3A_ENABLE_CUDA AND P3A_SOURCES)
   set_source_files_properties(

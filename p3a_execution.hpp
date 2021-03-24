@@ -27,33 +27,20 @@ class cuda_exception : public std::exception
 {
   std::string error_string;
  public:
-  cuda_exception(cudaError_t error)
-    :error_string(cudaGetErrorString(error))
-  {
-  }
-  virtual const char* what() const noexcept override
-  {
-    return error_string.c_str();
-  }
+  cuda_exception(cudaError_t error);
+  virtual const char* what() const noexcept override;
 };
 
 namespace details {
 
-void handle_cuda_error(cudaError_t error)
-{
-  if (error == cudaSuccess) return;
-  throw cuda_exception(error);
-}
+void handle_cuda_error(cudaError_t error);
 
 }
 
 class cuda_execution {
  cudaStream_t stream{nullptr};
  public:
-  void synchronize() const {
-    details::handle_cuda_error(
-        cudaStreamSynchronize(stream));
-  }
+  void synchronize() const;
 };
 
 inline constexpr cuda_execution cuda = {};
