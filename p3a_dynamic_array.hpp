@@ -75,6 +75,7 @@ class dynamic_array {
     reserve(other.capacity());
     m_size = other.size();
     uninitialized_copy(m_execution_policy, other.begin(), other.end(), m_begin);
+    return *this;
   }
   explicit dynamic_array(size_type size_in)
     :dynamic_array()
