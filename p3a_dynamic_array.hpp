@@ -59,8 +59,23 @@ class dynamic_array {
     other.m_capacity = 0;
     return *this;
   }
-  dynamic_array(dynamic_array const& other) = delete;
-  dynamic_array& operator=(dynamic_array const& other) = delete;
+  dynamic_array(dynamic_array const& other)
+    :m_begin(nullptr)
+    ,m_size(0)
+    ,m_capacity(0)
+    ,m_execution_policy(other.m_execution_policy)
+  {
+    reserve(other.capacity());
+    m_size = other.size();
+    uninitialized_copy(m_execution_policy, other.begin(), other.end(), m_begin);
+  }
+  dynamic_array& operator=(dynamic_array const& other)
+  {
+    resize(0);
+    reserve(other.capacity());
+    m_size = other.size();
+    uninitialized_copy(m_execution_policy, other.begin(), other.end(), m_begin);
+  }
   explicit dynamic_array(size_type size_in)
     :dynamic_array()
   {
