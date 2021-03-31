@@ -35,6 +35,11 @@ class simd_mask<float, simd_abi::avx512> {
   P3A_ALWAYS_INLINE inline simd_mask operator!() const {
     return simd_mask(_knot_mask16(m_value));
   }
+  P3A_ALWAYS_INLINE static inline
+  simd_mask first_n(int n)
+  {
+    return simd_mask(__mmask16(std::int16_t((1 << n) - 1));
+  }
 };
 
 P3A_ALWAYS_INLINE inline bool all_of(simd_mask<float, simd_abi::avx512> const& a) {
@@ -185,6 +190,11 @@ class simd_mask<double, simd_abi::avx512> {
   P3A_ALWAYS_INLINE simd_mask operator!() const {
     static const __mmask8 true_value(simd_mask<double, simd_abi::avx512>(true).get());
     return simd_mask(static_cast<__mmask8>(_mm512_kxor(true_value, m_value)));
+  }
+  P3A_ALWAYS_INLINE static inline
+  simd_mask first_n(int n)
+  {
+    return simd_mask(__mmask8(std::int16_t((1 << n) - 1));
   }
 };
 

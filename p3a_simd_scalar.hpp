@@ -32,6 +32,11 @@ class simd_mask<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask operator!() const {
     return !m_value;
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline
+  simd_mask first_n(int n)
+  {
+    return simd_mask(n != 0);
+  }
 };
 
 template <class T>
