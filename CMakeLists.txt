@@ -42,6 +42,10 @@ set(P3A_HEADERS
   p3a_unit.hpp
   p3a_cstring.hpp
   p3a_mpi.hpp
+  p3a_avx512.hpp
+  p3a_simd.hpp
+  p3a_simd_common.hpp
+  p3a_simd_scalar.hpp
   )
 
 set(P3A_SOURCES
