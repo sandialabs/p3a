@@ -38,7 +38,7 @@ class simd_mask<float, simd_abi::avx512> {
   P3A_ALWAYS_INLINE static inline
   simd_mask first_n(int n)
   {
-    return simd_mask(__mmask16(std::int16_t((1 << n) - 1));
+    return simd_mask(__mmask16(std::int16_t((1 << n) - 1)));
   }
 };
 
@@ -88,7 +88,7 @@ class simd<float, simd_abi::avx512> {
   P3A_ALWAYS_INLINE inline simd operator-(simd const& other) const {
     return simd(_mm512_sub_ps(m_value, other.m_value));
   }
-  P3A_ALWAYS_INLINE SIMD_HOST_DEVICE inline simd operator-() const {
+  P3A_ALWAYS_INLINE inline simd operator-() const {
     return simd(_mm512_sub_ps(_mm512_set1_ps(0.0), m_value));
   }
   P3A_ALWAYS_INLINE static inline simd load(float const* ptr) {
@@ -194,7 +194,7 @@ class simd_mask<double, simd_abi::avx512> {
   P3A_ALWAYS_INLINE static inline
   simd_mask first_n(int n)
   {
-    return simd_mask(__mmask8(std::int16_t((1 << n) - 1));
+    return simd_mask(__mmask8(std::int16_t((1 << n) - 1)));
   }
 };
 
@@ -246,7 +246,7 @@ class simd<double, simd_abi::avx512> {
   P3A_ALWAYS_INLINE inline simd operator-(simd const& other) const {
     return simd(_mm512_sub_pd(m_value, other.m_value));
   }
-  P3A_ALWAYS_INLINE SIMD_HOST_DEVICE inline simd operator-() const {
+  P3A_ALWAYS_INLINE inline simd operator-() const {
     return simd(_mm512_sub_pd(_mm512_set1_pd(0.0), m_value));
   }
   P3A_ALWAYS_INLINE static inline simd load(double const* ptr) {
