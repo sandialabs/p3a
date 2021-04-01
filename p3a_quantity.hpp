@@ -41,10 +41,14 @@ class quantity {
   }
 };
 
+namespace details {
+
 template <class T, class Dimension>
-struct is_scalar_helper<quantity<T, Dimension>> {
+struct is_scalar<quantity<T, Dimension>> {
   inline static constexpr bool value = true;
 };
+
+}
 
 template <class T, class Dimension>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
@@ -144,31 +148,33 @@ operator/=(
   return a;
 }
 
-template <class T, class ADimension, class BDimension>
+template <class A, class B, class ADimension, class BDimension>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(
-    quantity<T, ADimension> const& a,
-    quantity<T, BDimension> const& b)
+    quantity<A, ADimension> const& a,
+    quantity<B, BDimension> const& b)
 {
-  return quantity<T, dimension_product<ADimension, BDimension>>(a.value() * b.value());
+  return quantity<decltype(A() * B()), dimension_product<ADimension, BDimension>>(a.value() * b.value());
 }
 
 template <class A, class T, class Dimension>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-typename std::enable_if<is_scalar<A>, quantity<T, Dimension>>::type operator*(
+std::enable_if_t<is_scalar<A>, quantity<decltype(A() * T()), Dimension>>
+operator*(
     A const& a,
     quantity<T, Dimension> const& b)
 {
-  return quantity<T, Dimension>(a * b.value());
+  return quantity<decltype(A() * T()), Dimension>(a * b.value());
 }
 
 template <class T, class Dimension, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-typename std::enable_if<is_scalar<B>, quantity<T, Dimension>>::type operator*(
+std::enable_if_t<is_scalar<B>, quantity<decltype(T() * B()), Dimension>>
+operator*(
     quantity<T, Dimension> const& a,
     B const& b)
 {
-  return quantity<T, Dimension>(a.value() * b);
+  return quantity<decltype(T() * B()), Dimension>(a.value() * b);
 }
 
 template <class T, class Dimension>

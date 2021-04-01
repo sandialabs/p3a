@@ -2,27 +2,31 @@
 
 namespace p3a {
 
+namespace details {
+
 template <class T>
-struct is_scalar_helper {
+struct is_scalar {
   inline static constexpr bool value = false;
 };
 
 template <>
-struct is_scalar_helper<int> {
+struct is_scalar<int> {
   inline static constexpr bool value = true;
 };
 
 template <>
-struct is_scalar_helper<float> {
+struct is_scalar<float> {
   inline static constexpr bool value = true;
 };
 
 template <>
-struct is_scalar_helper<double> {
+struct is_scalar<double> {
   inline static constexpr bool value = true;
 };
+
+}
 
 template <class T>
-inline constexpr bool is_scalar = is_scalar_helper<T>::value;
+inline constexpr bool is_scalar = details::is_scalar<T>::value;
 
 }
