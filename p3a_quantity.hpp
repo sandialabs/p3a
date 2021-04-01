@@ -50,13 +50,14 @@ struct is_scalar<quantity<T, Dimension>> {
 
 }
 
-template <class T, class Dimension>
+template <class A, class B, class Dimension>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-quantity<T, Dimension> operator+(
-    quantity<T, Dimension> const& a,
-    quantity<T, Dimension> const& b)
+quantity<decltype(A() + B()), Dimension>
+operator+(
+    quantity<A, Dimension> const& a,
+    quantity<B, Dimension> const& b)
 {
-  return quantity<T, Dimension>(a.value() + b.value());
+  return quantity<decltype(A() + B()), Dimension>(a.value() + b.value());
 }
 
 template <class T, class Dimension>
