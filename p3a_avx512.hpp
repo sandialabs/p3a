@@ -105,10 +105,16 @@ class simd<float, simd_abi::avx512> {
   }
   P3A_ALWAYS_INLINE inline constexpr __m512 get() const { return m_value; }
   P3A_ALWAYS_INLINE inline simd_mask<float, simd_abi::avx512> operator<(simd const& other) const {
-    return simd_mask<float, simd_abi::avx512>(_mm512_cmplt_ps_mask(m_value, other.m_value));
+    return simd_mask<float, simd_abi::avx512>(_mm512_cmp_ps_mask(m_value, other.m_value, _CMP_LT_OQ));
+  }
+  P3A_ALWAYS_INLINE inline simd_mask<float, simd_abi::avx512> operator>(simd const& other) const {
+    return simd_mask<float, simd_abi::avx512>(_mm512_cmp_ps_mask(m_value, other.m_value, _CMP_GT_OQ));
   }
   P3A_ALWAYS_INLINE inline simd_mask<float, simd_abi::avx512> operator==(simd const& other) const {
-    return simd_mask<float, simd_abi::avx512>(_mm512_cmpeq_ps_mask(m_value, other.m_value));
+    return simd_mask<float, simd_abi::avx512>(_mm512_cmp_ps_mask(m_value, other.m_value, _CMP_EQ_OQ));
+  }
+  P3A_ALWAYS_INLINE static inline simd zero() {
+    return simd(float(0));
   }
 };
 
@@ -122,7 +128,7 @@ P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512> copysign(simd<float, simd
       );
 }
 
-P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512> abs(simd<float, simd_abi::avx512> const& a) {
+P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512> absolute_value(simd<float, simd_abi::avx512> const& a) {
   __m512 const rhs = a.get();
   return reinterpret_cast<__m512>(_mm512_and_epi32(reinterpret_cast<__m512i>(rhs), _mm512_set1_epi32(0x7fffffff)));
 }
@@ -162,8 +168,12 @@ P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512> min(
   return simd<float, simd_abi::avx512>(_mm512_min_ps(a.get(), b.get()));
 }
 
-P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512> choose(
-    simd_mask<float, simd_abi::avx512> const& a, simd<float, simd_abi::avx512> const& b, simd<float, simd_abi::avx512> const& c) {
+P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512>
+condition(
+    simd_mask<float, simd_abi::avx512> const& a,
+    simd<float, simd_abi::avx512> const& b,
+    simd<float, simd_abi::avx512> const& c)
+{
   return simd<float, simd_abi::avx512>(_mm512_mask_blend_ps(a.get(), c.get(), b.get()));
 }
 
@@ -263,10 +273,16 @@ class simd<double, simd_abi::avx512> {
   }
   P3A_ALWAYS_INLINE inline constexpr __m512d get() const { return m_value; }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator<(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm512_cmplt_pd_mask(m_value, other.m_value));
+    return simd_mask<double, simd_abi::avx512>(_mm512_cmp_pd_mask(m_value, other.m_value, _CMP_LT_OQ));
+  }
+  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator>(simd const& other) const {
+    return simd_mask<double, simd_abi::avx512>(_mm512_cmp_pd_mask(m_value, other.m_value, _CMP_GT_OQ));
   }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator==(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm512_cmpeq_pd_mask(m_value, other.m_value));
+    return simd_mask<double, simd_abi::avx512>(_mm512_cmp_pd_mask(m_value, other.m_value, _CMP_EQ_OQ));
+  }
+  P3A_ALWAYS_INLINE static inline simd zero() {
+    return simd(double(0));
   }
 };
 
@@ -280,7 +296,7 @@ P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512> copysign(simd<double, si
       );
 }
 
-P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512> abs(simd<double, simd_abi::avx512> const& a) {
+P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512> absolute_value(simd<double, simd_abi::avx512> const& a) {
   __m512d const rhs = a.get();
   return reinterpret_cast<__m512d>(_mm512_and_epi64(_mm512_set1_epi64(0x7FFFFFFFFFFFFFFF),
         reinterpret_cast<__m512i>(rhs)));
@@ -321,8 +337,12 @@ P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512> min(
   return simd<double, simd_abi::avx512>(_mm512_min_pd(a.get(), b.get()));
 }
 
-P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512> choose(
-    simd_mask<double, simd_abi::avx512> const& a, simd<double, simd_abi::avx512> const& b, simd<double, simd_abi::avx512> const& c) {
+P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512>
+condition(
+    simd_mask<double, simd_abi::avx512> const& a,
+    simd<double, simd_abi::avx512> const& b,
+    simd<double, simd_abi::avx512> const& c)
+{
   return simd<double, simd_abi::avx512>(_mm512_mask_blend_pd(a.get(), c.get(), b.get()));
 }
 

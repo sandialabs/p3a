@@ -84,6 +84,9 @@ class simd<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator<(simd const& other) const {
     return simd_mask<T, simd_abi::scalar>(m_value < other.m_value);
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator>(simd const& other) const {
+    return simd_mask<T, simd_abi::scalar>(m_value > other.m_value);
+  }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator==(simd const& other) const {
     return simd_mask<T, simd_abi::scalar>(m_value == other.m_value);
   }
@@ -99,10 +102,13 @@ class simd<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void masked_store(T* ptr, mask_type const& mask) const {
     if (mask.get()) *ptr = m_value;
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline simd zero() {
+    return simd(T(0));
+  }
 };
 
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar> abs(simd<T, simd_abi::scalar> const& a) {
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar> absolute_value(simd<T, simd_abi::scalar> const& a) {
   return simd<T, simd_abi::scalar>(std::abs(a.get()));
 }
 
@@ -132,19 +138,23 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar> fma(
 template <class T>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar> max(
     simd<T, simd_abi::scalar> const& a, simd<T, simd_abi::scalar> const& b) {
-  return simd<T, simd_abi::scalar>(choose((a.get() < b.get()), b.get(), a.get()));
+  return simd<T, simd_abi::scalar>(condition((a.get() < b.get()), b.get(), a.get()));
 }
 
 template <class T>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar> min(
     simd<T, simd_abi::scalar> const& a, simd<T, simd_abi::scalar> const& b) {
-  return simd<T, simd_abi::scalar>(choose((b.get() < a.get()), b.get(), a.get()));
+  return simd<T, simd_abi::scalar>(condition((b.get() < a.get()), b.get(), a.get()));
 }
 
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar> choose(
-    simd_mask<T, simd_abi::scalar> const& a, simd<T, simd_abi::scalar> const& b, simd<T, simd_abi::scalar> const& c) {
-  return simd<T, simd_abi::scalar>(choose(a.get(), b.get(), c.get()));
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar>
+condition(
+    simd_mask<T, simd_abi::scalar> const& a,
+    simd<T, simd_abi::scalar> const& b,
+    simd<T, simd_abi::scalar> const& c)
+{
+  return simd<T, simd_abi::scalar>(condition(a.get(), b.get(), c.get()));
 }
 
 template <class T, class Abi>

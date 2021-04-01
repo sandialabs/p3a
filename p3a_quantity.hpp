@@ -380,4 +380,15 @@ void store(
   q.zz().value().masked_store(&(ptr->value()) + stride * 5 + offset, mask);
 }
 
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+quantity<simd<T, Abi>, Dimension>
+condition(
+    simd_mask<T, Abi> const& a,
+    quantity<simd<T, Abi>, Dimension> const& b,
+    quantity<simd<T, Abi>, Dimension> const& c)
+{
+  return condition(a, b.value(), c.value());
+}
+
 }
