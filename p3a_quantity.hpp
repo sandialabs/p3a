@@ -4,6 +4,7 @@
 #include "p3a_vector3.hpp"
 #include "p3a_symmetric3x3.hpp"
 #include "p3a_matrix3x3.hpp"
+#include "p3a_simd.hpp"
 
 namespace p3a {
 
@@ -298,5 +299,80 @@ template <class T>
 using dynamic_viscosity_quantity = quantity<T, dynamic_viscosity_dimension>;
 template <class T>
 using specific_heat_quantity = quantity<T, specific_heat_dimension>;
+
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+quantity<simd<T, Abi>, Dimension> load_scalar(
+    quantity<T, Dimension> const* ptr, int offset, simd_mask<T, Abi> const& mask)
+{
+  return simd<T, Abi>::masked_load(&(ptr->value()) + index, mask);
+}
+
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+vector3<quantity<simd<T, Abi>, Dimension>> load_vector3(
+    quantity<T, Dimension> const* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
+{
+  return vector3<quantity<simd<T, Abi>, Dimension>>(
+      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 0 + index, mask),
+      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 1 + index, mask),
+      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 2 + index, mask));
+}
+
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+symmetric3x3<quantity<simd<T, Abi>, Dimension>> load_symmetric3x3(
+    quantity<T, Dimension> const* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
+{
+  return symmetric3x3<quantity<simd<T, Abi>, Dimension>>(
+      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 0 + index, mask),
+      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 1 + index, mask),
+      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 2 + index, mask),
+      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 3 + index, mask),
+      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 4 + index, mask),
+      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 5 + index, mask));
+}
+
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+void store(
+    quantity<simd<T, Abi>, Dimension> const& q,
+    quantity<T, Dimension> const* ptr,
+    int offset,
+    simd_mask<T, Abi> const& mask)
+{
+  q.value().masked_store(&(ptr->value()) + index, mask);
+}
+
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+void store(
+    vector3<quantity<simd<T, Abi>, Dimension>> const& q,
+    quantity<T, Dimension> const* ptr,
+    int stride,
+    int offset,
+    simd_mask<T, Abi> const& mask)
+{
+  q.x().value().masked_store(&(ptr->value()) + stride * 0 + index, mask);
+  q.y().value().masked_store(&(ptr->value()) + stride * 1 + index, mask);
+  q.z().value().masked_store(&(ptr->value()) + stride * 2 + index, mask);
+}
+
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+void store(
+    symmetric3x3<quantity<simd<T, Abi>, Dimension>> const& q,
+    quantity<T, Dimension> const* ptr,
+    int stride,
+    int offset,
+    simd_mask<T, Abi> const& mask)
+{
+  q.xx().value().masked_store(&(ptr->value()) + stride * 0 + index, mask);
+  q.xy().value().masked_store(&(ptr->value()) + stride * 1 + index, mask);
+  q.xz().value().masked_store(&(ptr->value()) + stride * 2 + index, mask);
+  q.yy().value().masked_store(&(ptr->value()) + stride * 3 + index, mask);
+  q.yz().value().masked_store(&(ptr->value()) + stride * 4 + index, mask);
+  q.zz().value().masked_store(&(ptr->value()) + stride * 5 + index, mask);
+}
 
 }
