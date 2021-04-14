@@ -398,4 +398,24 @@ condition(
   return condition(a, b.value(), c.value());
 }
 
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+quantity<simd<T, Abi>, Dimension>
+maximum(
+    quantity<simd<T, Abi>, Dimension> const& a,
+    quantity<simd<T, Abi>, Dimension> const& b)
+{
+  return maximum(a.value(), b.value());
+}
+
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+quantity<simd<T, Abi>, Dimension>
+minimum(
+    quantity<simd<T, Abi>, Dimension> const& a,
+    quantity<simd<T, Abi>, Dimension> const& b)
+{
+  return minimum(a.value(), b.value());
+}
+
 }
