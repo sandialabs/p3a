@@ -71,14 +71,14 @@ condition(bool a, T const& b, T const& c)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr T const&
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr auto
 minimum(T const& a, T const& b)
 {
   return condition(b < a, b, a);
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr T const&
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr auto
 maximum(T const& a, T const& b)
 {
   return condition(a < b, b, a);
