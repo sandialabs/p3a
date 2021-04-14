@@ -158,13 +158,21 @@ P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512> fma(
   return simd<float, simd_abi::avx512>(_mm512_fmadd_ps(a.get(), b.get(), c.get()));
 }
 
-P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512> max(
-    simd<float, simd_abi::avx512> const& a, simd<float, simd_abi::avx512> const& b) {
+P3A_ALWAYS_INLINE inline
+simd<float, simd_abi::avx512>
+maximum(
+    simd<float, simd_abi::avx512> const& a,
+    simd<float, simd_abi::avx512> const& b)
+{
   return simd<float, simd_abi::avx512>(_mm512_max_ps(a.get(), b.get()));
 }
 
-P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512> min(
-    simd<float, simd_abi::avx512> const& a, simd<float, simd_abi::avx512> const& b) {
+P3A_ALWAYS_INLINE inline
+simd<float, simd_abi::avx512>
+minimum(
+    simd<float, simd_abi::avx512> const& a,
+    simd<float, simd_abi::avx512> const& b)
+{
   return simd<float, simd_abi::avx512>(_mm512_min_ps(a.get(), b.get()));
 }
 
@@ -327,17 +335,26 @@ P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512> fma(
   return simd<double, simd_abi::avx512>(_mm512_fmadd_pd(a.get(), b.get(), c.get()));
 }
 
-P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512> max(
-    simd<double, simd_abi::avx512> const& a, simd<double, simd_abi::avx512> const& b) {
+P3A_ALWAYS_INLINE inline
+simd<double, simd_abi::avx512>
+maximum(
+    simd<double, simd_abi::avx512> const& a,
+    simd<double, simd_abi::avx512> const& b)
+{
   return simd<double, simd_abi::avx512>(_mm512_max_pd(a.get(), b.get()));
 }
 
-P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512> min(
-    simd<double, simd_abi::avx512> const& a, simd<double, simd_abi::avx512> const& b) {
+P3A_ALWAYS_INLINE inline
+simd<double, simd_abi::avx512>
+minimum(
+    simd<double, simd_abi::avx512> const& a,
+    simd<double, simd_abi::avx512> const& b)
+{
   return simd<double, simd_abi::avx512>(_mm512_min_pd(a.get(), b.get()));
 }
 
-P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512>
+P3A_ALWAYS_INLINE inline
+simd<double, simd_abi::avx512>
 condition(
     simd_mask<double, simd_abi::avx512> const& a,
     simd<double, simd_abi::avx512> const& b,
