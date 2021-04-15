@@ -90,6 +90,9 @@ class simd<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator==(simd const& other) const {
     return simd_mask<T, simd_abi::scalar>(m_value == other.m_value);
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator!=(simd const& other) const {
+    return simd_mask<T, simd_abi::scalar>(m_value != other.m_value);
+  }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline simd load(T const* ptr) {
     return simd(*ptr);
   }
@@ -113,7 +116,7 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar> absolute_
 }
 
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar> sqrt(simd<T, simd_abi::scalar> const& a) {
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar> square_root(simd<T, simd_abi::scalar> const& a) {
   return simd<T, simd_abi::scalar>(std::sqrt(a.get()));
 }
 
