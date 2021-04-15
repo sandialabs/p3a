@@ -136,7 +136,7 @@ P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512> absolute_value(simd<float
   return reinterpret_cast<__m512>(_mm512_and_epi32(reinterpret_cast<__m512i>(rhs), _mm512_set1_epi32(0x7fffffff)));
 }
 
-P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512> sqrt(simd<float, simd_abi::avx512> const& a) {
+P3A_ALWAYS_INLINE inline simd<float, simd_abi::avx512> square_root(simd<float, simd_abi::avx512> const& a) {
   return simd<float, simd_abi::avx512>(_mm512_sqrt_ps(a.get()));
 }
 
@@ -316,7 +316,7 @@ P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512> absolute_value(simd<doub
         reinterpret_cast<__m512i>(rhs)));
 }
 
-P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512> sqrt(simd<double, simd_abi::avx512> const& a) {
+P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512> square_root(simd<double, simd_abi::avx512> const& a) {
   return simd<double, simd_abi::avx512>(_mm512_sqrt_pd(a.get()));
 }
 
