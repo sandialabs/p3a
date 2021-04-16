@@ -14,6 +14,8 @@ template <
 class quantity {
   T m_value;
  public:
+  using value_type = T;
+  using dimension = Dimension;
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   quantity(T const& value_in)
     :m_value(value_in)
