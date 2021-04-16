@@ -197,7 +197,7 @@ void simd_grid_for_each(
       limits.z());
   std::size_t const shared_memory_bytes = 0;
   cudaStream_t const cuda_stream = nullptr;
-  details::cuda_simd_grid_for_each<<<
+  details::cuda_simd_grid_for_each<T><<<
     cuda_grid,
     cuda_block,
     shared_memory_bytes,
