@@ -152,7 +152,7 @@ __global__ void cuda_simd_grid_for_each(
   index.x() = first.x() + threadIdx.x + blockIdx.x * blockDim.x;
   index.y() = first.y() + blockIdx.y;
   index.z() = first.z() + blockIdx.z;
-  f(index, device_simd_mask<T>(index.x() >= last.x()));
+  f(index, device_simd_mask<T>(index.x() < last.x()));
 }
 
 template <class F>
