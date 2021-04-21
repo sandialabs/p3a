@@ -17,8 +17,9 @@ class grid3 {
   grid3(vector3<int> const& extents_in)
     :m_extents(extents_in)
   {}
+  template <class T>
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  int index(vector3<int> const& point) const
+  auto index(vector3<T> const& point) const
   {
     // "layout left"
     return (point.z() * m_extents.y() + point.y()) * m_extents.x() + point.x();
@@ -38,12 +39,13 @@ class grid3 {
   {
     return m_extents;
   }
+  template <class T>
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  bool contains(vector3<int> const& p) const
+  auto contains(vector3<T> const& p) const
   {
-    return p.x() >= 0 &&
-           p.y() >= 0 &&
-           p.z() >= 0 &&
+    return p.x() >= T(0) &&
+           p.y() >= T(0) &&
+           p.z() >= T(0) &&
            p.x() < m_extents.x() &&
            p.y() < m_extents.y() &&
            p.z() < m_extents.z();
@@ -103,20 +105,22 @@ class subgrid3 {
   {
     return extents().volume();
   }
+  template <class T>
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  int index(vector3<int> const& p) const
+  auto index(vector3<T> const& p) const
   {
     return grid3(extents()).index(p - lower());
   }
+  template <class T>
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  bool contains(vector3<int> const& p) const
+  auto contains(vector3<T> const& p) const
   {
-    return p.x() >= lower().x() &&
-           p.y() >= lower().y() &&
-           p.z() >= lower().z() &&
-           p.x() < upper().x() &&
-           p.y() < upper().y() &&
-           p.z() < upper().z();
+    return p.x() >= T(lower().x()) &&
+           p.y() >= T(lower().y()) &&
+           p.z() >= T(lower().z()) &&
+           p.x() < T(upper().x()) &&
+           p.y() < T(upper().y()) &&
+           p.z() < T(upper().z());
   }
 };
 

@@ -36,4 +36,9 @@ using host_simd_mask = typename host_simd<T>::mask_type;
 template <class T>
 using device_simd_mask = typename device_simd<T>::mask_type;
 
+template <class T>
+using host_simd_index = typename host_simd<T>::index_type;
+template <class T>
+using device_simd_index = typename device_simd<T>::index_type;
+
 }

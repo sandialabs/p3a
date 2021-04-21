@@ -14,7 +14,8 @@ class simd;
 template <class T, class Abi>
 class simd_mask;
 
-class element_aligned_tag {};
+template <class T, class Abi>
+class simd_index;
 
 template <class T, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, Abi>& operator+=(simd<T, Abi>& a, simd<T, Abi> const& b) {
