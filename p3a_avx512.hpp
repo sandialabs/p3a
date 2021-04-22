@@ -354,7 +354,7 @@ class simd<double, simd_abi::avx512> {
     _mm512_mask_storeu_pd(ptr, mask.get(), m_value);
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline
-  simd masked_gather(double const* ptr, mask_type const& mask, index_type const& index) {
+  simd masked_gather(double const* ptr, index_type const& index, mask_type const& mask) {
     return _mm512_mask_i32gather_pd(
         _mm512_set1_pd(0.0),
         mask.get(),
@@ -363,7 +363,7 @@ class simd<double, simd_abi::avx512> {
         8);
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-  void masked_scatter(double* ptr, mask_type const& mask, index_type const& index) const {
+  void masked_scatter(double* ptr, index_type const& index, mask_type const& mask) const {
     _mm512_mask_i32scatter_pd(
         ptr,
         mask.get(),

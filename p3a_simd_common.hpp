@@ -117,7 +117,7 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 simd<T, Abi> load_scalar(
     T const* ptr, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
 {
-  return simd<T, Abi>::masked_gather(ptr, mask, offset);
+  return simd<T, Abi>::masked_gather(ptr, offset, mask);
 }
 
 }
