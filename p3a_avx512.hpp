@@ -255,7 +255,7 @@ class simd_index<double, simd_abi::avx512> {
     :m_value(value_in)
   {}
   P3A_ALWAYS_INLINE inline simd_index operator*(simd_index const& other) const {
-    return _mm256_maskz_mul_epi32(mask_type(true).get(), m_value, other.m_value);
+    return _mm256_mullo_epi32(m_value, other.m_value);
   }
   P3A_ALWAYS_INLINE inline simd_index operator+(simd_index const& other) const {
     return _mm256_maskz_add_epi32(mask_type(true).get(), m_value, other.m_value);
