@@ -166,11 +166,11 @@ class simd<T, simd_abi::scalar> {
     if (mask.get()) *ptr = m_value;
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline
-  simd masked_gather(T const* ptr, mask_type const& mask, index_type const& index) {
+  simd masked_gather(T const* ptr, index_type const& index, mask_type const& mask) {
     return simd(mask.get() ? ptr[index.get()] : T(0));
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-  void masked_scatter(T* ptr, mask_type const& mask, index_type const& index) const {
+  void masked_scatter(T* ptr, index_type const& index, mask_type const& mask) const {
     if (mask.get()) ptr[index.get()] = m_value;
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline simd zero() {
