@@ -159,7 +159,7 @@ auto operator/(vector3<A> const& a, B const& b) {
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 typename std::enable_if<is_scalar<B>, vector3<decltype(A() * B())>>::type
 operator*(vector3<A> const& a, B const& b) {
   using C = decltype(a.x() * b);
