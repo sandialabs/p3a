@@ -6,42 +6,43 @@
 
 #include "p3a_mpi.hpp"
 #include "p3a_int128.hpp"
+#include "p3a_quantity.hpp"
 
 namespace p3a {
 
+template <class T>
 class minimizer {
  public:
-  template <class T>
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T operator()(T const& a, T const& b) const {
     return minimum(a, b);
   }
 };
-inline constexpr minimizer minimizes = {};
+template <class T> inline constexpr minimizer<T> minimizes = {};
 
+template <class T>
 class maximizer {
  public:
-  template <class T>
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T operator()(T const& a, T const& b) const {
     return maximum(a, b);
   }
 };
-inline constexpr maximizer maximizes = {};
+template <class T> inline constexpr maximizer<T> maximizes = {};
 
+template <class T>
 class adder {
  public:
-  template <class T>
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T operator()(T const& a, T const& b) const {
     return a + b;
   }
 };
-inline constexpr adder adds = {};
+template <class T> inline constexpr adder<T> adds = {};
 
+template <class T>
 class identity {
  public:
-  template <class T>
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr T const&
   operator()(T const& a) const {
     return a;
@@ -60,35 +61,16 @@ class reducer<T, serial_execution> {
   reducer& operator=(reducer&&) = default;
   reducer(reducer const&) = delete;
   reducer& operator=(reducer const&) = delete;
-  template <class U, class BinaryOp, class UnaryOp>
+  template <class BinaryOp, class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
-  U transform_reduce(
+  T transform_reduce(
       subgrid3 grid,
-      U init,
-      BinaryOp binary_op,
-      UnaryOp unary_op)
-  {
-    T t_result(init);
+      T init, BinaryOp binary_op, UnaryOp unary_op) {
     for_each(m_policy, grid,
     [&] (vector3<int> const& item) P3A_ALWAYS_INLINE {
-      t_result = binary_op(t_result, T(unary_op(item)));
+      init = binary_op(std::move(init), unary_op(item));
     });
-    return U(t_result);
-  }
-  template <class Iterator, class U, class BinaryOp, class UnaryOp>
-  [[nodiscard]] P3A_NEVER_INLINE
-  U transform_reduce(
-      Iterator first,
-      Iterator last,
-      U init,
-      BinaryOp binary_op,
-      UnaryOp unary_op)
-  {
-    T t_result(init);
-    for (; first != last; ++first) {
-      t_result = binary_op(t_result, T(unary_op(*first)));
-    }
-    return U(t_result);
+    return init;
   }
 };
 
@@ -143,8 +125,8 @@ struct SharedMemory<double> {
   }
 };
 
-template <class Iterator, class T, class BinaryOp, class UnaryOp>
-__global__ void cuda_reduce(Iterator first, T* g_odata, int n, T init, BinaryOp binop, UnaryOp unop) {
+template <class ForwardIt, class T, class BinaryOp, class UnaryOp>
+__global__ void cuda_reduce(ForwardIt first, T* g_odata, int n, T init, BinaryOp binop, UnaryOp unop) {
   constexpr int blockSize = reducer_threads_per_block;
   // Handle to thread block group
   cooperative_groups::thread_block cta = cooperative_groups::this_thread_block();
@@ -159,9 +141,9 @@ __global__ void cuda_reduce(Iterator first, T* g_odata, int n, T init, BinaryOp 
   // number of active thread blocks (via gridDim).  More blocks will result
   // in a larger gridSize and therefore fewer elements per thread
   while (i < n) {
-    myResult = binop(myResult, T(unop(first[i])));
+    myResult = binop(myResult, unop(first[i]));
     // ensure we don't read out of bounds
-    if (i + blockSize < n) myResult = binop(myResult, T(unop(first[i + blockSize])));
+    if (i + blockSize < n) myResult = binop(myResult, unop(first[i + blockSize]));
     i += gridSize;
   }
   // each thread puts its local sum into shared memory
@@ -212,7 +194,7 @@ __global__ void cuda_grid_reduce(
   vector3<int> const xyz(x_i, y_i, z_i);
   T myResult = init;
   if (x_i < user_extents.x()) {
-    myResult = binop(myResult, T(unop(xyz + first)));
+    myResult = binop(myResult, unop(xyz + first));
   }
   // each thread puts its local sum into shared memory
   sdata[tid] = myResult;
@@ -255,8 +237,8 @@ class reducer<T, cuda_execution> {
   static int get_num_blocks(int size) {
     return minimum(64, (size + threads_per_block - 1) / threads_per_block);
   }
-  template <class Iterator, class BinaryOp, class UnaryOp>
-  void reduction_pass(int size, int blocks, Iterator first, T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
+  template <class ForwardIt, class BinaryOp, class UnaryOp>
+  void reduction_pass(int size, int blocks, ForwardIt first, T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
     dim3 const dimBlock(threads_per_block, 1, 1);
     dim3 const dimGrid(blocks, 1, 1);
     int const smemSize = threads_per_block * sizeof(T);
@@ -281,9 +263,9 @@ class reducer<T, cuda_execution> {
       smemSize,
       cuda_stream>>>(first, last, d_odata, init, binop, unop);
   }
-  template <class Iterator, class BinaryOp, class UnaryOp>
+  template <class ForwardIt, class BinaryOp, class UnaryOp>
   T* reduce_on_device(
-      int n, Iterator first, T init, BinaryOp binop, UnaryOp unop) {
+      int n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
     int blocks = get_num_blocks(n);
     this->reduction_pass(n, blocks, first, m_scratch2, init, binop, unop);
     int s = blocks;
@@ -292,7 +274,7 @@ class reducer<T, cuda_execution> {
     while (s > 1) {
       std::swap(tmp_d_idata, tmp_d_odata);
       blocks = get_num_blocks(s);
-      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity());
+      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity<T>());
       s = (s + (threads_per_block * 2 - 1)) / (threads_per_block * 2);
     }
     return tmp_d_odata;
@@ -308,13 +290,13 @@ class reducer<T, cuda_execution> {
     while (s > 1) {
       std::swap(tmp_d_idata, tmp_d_odata);
       blocks = get_num_blocks(s);
-      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity());
+      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity<T>());
       s = (s + (threads_per_block * 2 - 1)) / (threads_per_block * 2);
     }
     return tmp_d_odata;
   }
-  template <class Iterator, class BinaryOp, class UnaryOp>
-  T reduce_to_host(int n, Iterator first, T init, BinaryOp binop, UnaryOp unop) {
+  template <class ForwardIt, class BinaryOp, class UnaryOp>
+  T reduce_to_host(int n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
     m_storage.resize(2 * n);
     m_scratch1 = m_storage.data();
     m_scratch2 = m_storage.data() + n;
@@ -348,26 +330,19 @@ class reducer<T, cuda_execution> {
   reducer(reducer&& other) = default;
   reducer(reducer const&) = delete;
   reducer& operator=(reducer const&) = delete;
-  template <class U, class BinaryOp, class UnaryOp>
+  template <class BinaryOp, class UnaryOp>
   [[nodiscard]]
-  U transform_reduce(
+  T transform_reduce(
       subgrid3 grid,
-      U init,
-      BinaryOp binop,
-      UnaryOp unop)
-  {
-    return U(this->grid_reduce_to_host(grid.lower(), grid.upper(), T(init), binop, unop));
+      T init, BinaryOp binop, UnaryOp unop) {
+    return this->grid_reduce_to_host(grid.lower(), grid.upper(), init, binop, unop);
   }
-  template <class Iterator, class U, class BinaryOp, class UnaryOp>
+  template <class ForwardIt, class BinaryOp, class UnaryOp>
   [[nodiscard]]
-  U transform_reduce(
-      Iterator first,
-      Iterator last,
-      T init,
-      BinaryOp binop,
-      UnaryOp unop)
-  {
-    return U(this->reduce_to_host(last - first, first, T(init), binop, unop));
+  T transform_reduce(
+      ForwardIt first, ForwardIt last,
+      T init, BinaryOp binop, UnaryOp unop) {
+    return this->reduce_to_host(last - first, first, init, binop, unop);
   }
 };
 
@@ -401,9 +376,9 @@ class reproducible_floating_point_adder {
   {}
   template <class T, class Dimension, class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
-  T transform_reduce(
+  quantity<T, Dimension> transform_reduce(
       subgrid3 grid,
-      T init,
+      quantity<T, Dimension> init,
       UnaryOp unary_op)
   {
     m_values.resize(grid.size());
@@ -412,13 +387,13 @@ class reproducible_floating_point_adder {
     for_each(policy, grid,
     [=] P3A_DEVICE (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
       int const index = grid.index(grid_point);
-      values[index] = double(unary_op(grid_point));
+      values[index] = unary_op(grid_point).value();
     });
     int const local_max_exponent =
       m_exponent_reducer.transform_reduce(
           m_values.cbegin(), m_values.cend(),
           std::numeric_limits<int>::lowest(),
-          maximizes,
+          maximizes<int>,
     [=] P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
       int exponent;
       std::frexp(value, &exponent);
@@ -433,8 +408,8 @@ class reproducible_floating_point_adder {
     int128 const local_sum =
       m_int128_reducer.transform_reduce(
           m_values.cbegin(), m_values.end(),
-          int128::from_double(double(init), unit),
-          adds,
+          int128::from_double(init.value(), unit),
+          adds<int128>,
     [=] P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
       return int128::from_double(value, unit);
     });
@@ -447,7 +422,8 @@ class reproducible_floating_point_adder {
         sizeof(int128),
         MPI_PACKED,
         int128_mpi_sum_op);
-    return T(global_sum.to_double(unit));
+    return quantity<T, Dimension>(
+        global_sum.to_double(unit));
   }
 };
 
