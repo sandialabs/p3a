@@ -43,9 +43,6 @@ class reducer<T, serial_execution> {
   serial_execution m_policy;
  public:
   reducer() = default;
-  reducer(serial_execution policy, std::ptrdiff_t)
-    :m_policy(policy)
-  {}
   reducer(reducer&&) = default;
   reducer& operator=(reducer&&) = default;
   reducer(reducer const&) = delete;
@@ -75,7 +72,7 @@ T transform_reduce(
     BinaryOp binary_op,
     UnaryOp unary_op)
 {
-  reducer<T, serial_execution> r(policy, subgrid.size());
+  reducer<T, serial_execution> r;
   return r.transform_reduce(subgrid, init, binary_op, unary_op);
 }
 
@@ -206,9 +203,10 @@ __global__ void cuda_grid_reduce(
 
 template <class T>
 class reducer<T, cuda_execution> {
-  cuda_execution m_policy;
-  cuda_device_allocator<T> m_allocator;
-  int m_scratch_size;
+  dynamic_array<
+    T,
+    cuda_device_allocator<T>,
+    cuda_execution> m_storage;
   T* m_scratch1;
   T* m_scratch2;
   static constexpr int threads_per_block = details::reducer_threads_per_block;
@@ -285,50 +283,39 @@ class reducer<T, cuda_execution> {
   }
   template <class ForwardIt, class BinaryOp, class UnaryOp>
   T reduce_to_host(int n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
+    m_storage.resize(2 * n);
+    m_scratch1 = m_storage.data();
+    m_scratch2 = m_storage.data() + n;
     T host_result = init;
     T const* device_result_ptr = this->reduce_on_device(n, first, init, binop, unop);
-    memcpy(m_policy, &host_result, device_result_ptr, sizeof(T));
+    cudaMemcpy(&host_result, device_result_ptr, sizeof(T), cudaMemcpyDefault);
+    m_storage.resize(0);
+    m_scratch1 = nullptr;
+    m_scratch2 = nullptr;
     return host_result;
   }
   template <class BinaryOp, class UnaryOp>
   T grid_reduce_to_host(vector3<int> first, vector3<int> last, T init, BinaryOp binop, UnaryOp unop) {
+    auto const n = (last - first).volume();
+    m_storage.resize(2 * n);
+    m_scratch1 = m_storage.data();
+    m_scratch2 = m_storage.data() + n;
     T host_result = init;
     T const* device_result_ptr = this->grid_reduce_on_device(first, last, init, binop, unop);
     cudaMemcpy(&host_result, device_result_ptr, sizeof(T), cudaMemcpyDefault);
+    m_storage.resize(0);
+    m_scratch1 = nullptr;
+    m_scratch2 = nullptr;
     return host_result;
   }
  public:
   reducer()
-    :m_scratch_size(0)
-    ,m_scratch1(nullptr)
+    :m_scratch1(nullptr)
     ,m_scratch2(nullptr)
   {}
-  reducer(cuda_execution policy_in, std::ptrdiff_t max_size)
-    :m_policy(policy_in)
-  {
-    m_scratch_size = int(max_size);
-    m_scratch1 = m_allocator.allocate(m_scratch_size);
-    m_scratch2 = m_allocator.allocate(m_scratch_size);
-  }
-  reducer(reducer&& other)
-    :m_policy(other.m_policy)
-    ,m_allocator(other.m_allocator)
-    ,m_scratch_size(other.m_scratch_size)
-    ,m_scratch1(other.m_scratch1)
-    ,m_scratch2(other.m_scratch2)
-  {
-    other.m_scratch_size = 0;
-    other.m_scratch1 = nullptr;
-    other.m_scratch2 = nullptr;
-  }
+  reducer(reducer&& other) = default;
   reducer(reducer const&) = delete;
   reducer& operator=(reducer const&) = delete;
-  ~reducer() {
-    m_allocator.deallocate(m_scratch1, m_scratch_size);
-    m_allocator.deallocate(m_scratch2, m_scratch_size);
-    m_scratch1 = nullptr;
-    m_scratch2 = nullptr;
-  }
   template <class BinaryOp, class UnaryOp>
   [[nodiscard]]
   T transform_reduce(
@@ -357,7 +344,7 @@ T transform_reduce(
     BinaryOp binary_op,
     UnaryOp unary_op)
 {
-  reducer<T, cuda_execution> r(policy, subgrid.size());
+  reducer<T, cuda_execution> r;
   return r.transform_reduce(subgrid, init, binary_op, unary_op);
 }
 
