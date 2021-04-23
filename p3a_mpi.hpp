@@ -4,6 +4,12 @@
 
 #include <string>
 
+extern "C" void p3a_mpi_int128_sum(
+    void* a,
+    void* b,
+    int*,
+    MPI_Datatype*);
+
 namespace p3a {
 
 namespace mpi {
@@ -87,6 +93,9 @@ class op {
   static op min();
   static op max();
   static op bor();
+  static op create(
+      MPI_User_function* user_f,
+      int commute = 1);
 };
 
 class datatype {
@@ -261,13 +270,13 @@ class comm {
       void* recvbuf,
       int count,
       datatype datatype_arg,
-      op op_arg);
+      op const& op_arg);
   template <class T>
   request iallreduce(
       T const* sendbuf,
       T* recvbuf,
       int count,
-      op op_arg)
+      op const& op_arg)
   {
     datatype datatype_arg = predefined_datatype<T>();
     MPI_Request request_implementation;
@@ -286,7 +295,7 @@ class comm {
   request iallreduce(
       T* buf,
       int count,
-      op op_arg)
+      op const& op_arg)
   {
     datatype datatype_arg = predefined_datatype<T>();
     MPI_Request request_implementation;

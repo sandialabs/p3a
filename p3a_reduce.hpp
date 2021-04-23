@@ -4,6 +4,10 @@
 #include <cooperative_groups.h>
 #endif
 
+#include "p3a_mpi.hpp"
+#include "p3a_int128.hpp"
+#include "p3a_quantity.hpp"
+
 namespace p3a {
 
 template <class T>
@@ -15,6 +19,16 @@ class minimizer {
   }
 };
 template <class T> inline constexpr minimizer<T> minimizes = {};
+
+template <class T>
+class maximizer {
+ public:
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  T operator()(T const& a, T const& b) const {
+    return maximum(a, b);
+  }
+};
+template <class T> inline constexpr maximizer<T> maximizes = {};
 
 template <class T>
 class adder {
@@ -349,5 +363,68 @@ T transform_reduce(
 }
 
 #endif
+
+class reproducible_floating_point_adder {
+  mpi::comm m_comm;
+  device_array<double> m_values;
+  reducer<int, device_execution> m_exponent_reducer;
+  reducer<int128, device_execution> m_int128_reducer;
+ public:
+  reproducible_floating_point_adder(
+      mpi::comm&& comm_arg)
+    :m_comm(std::move(comm_arg))
+  {}
+  template <class T, class Dimension, class UnaryOp>
+  [[nodiscard]] P3A_NEVER_INLINE
+  quantity<T, Dimension> transform_reduce(
+      subgrid3 grid,
+      quantity<T, Dimension> init,
+      UnaryOp unary_op)
+  {
+    m_values.resize(grid.size());
+    auto const policy = m_values.get_execution_policy();
+    auto const values = m_values.begin();
+    for_each(policy, grid,
+    [=] P3A_DEVICE (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
+      int const index = grid.index(grid_point);
+      values[index] = unary_op(grid_point).value();
+    });
+    int const local_max_exponent =
+      m_exponent_reducer.transform_reduce(
+          m_values.cbegin(), m_values.cend(),
+          std::numeric_limits<int>::lowest(),
+          maximizes<int>,
+    [=] P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
+      int exponent;
+      std::frexp(value, &exponent);
+      return exponent;
+    });
+    int global_max_exponent = local_max_exponent;
+    m_comm.iallreduce(
+        &global_max_exponent, 1, mpi::op::max());
+    constexpr int mantissa_bits = 52;
+    double const unit = std::exp2(
+        double(global_max_exponent - mantissa_bits));
+    int128 const local_sum =
+      m_int128_reducer.transform_reduce(
+          m_values.cbegin(), m_values.end(),
+          int128::from_double(init.value(), unit),
+          adds<int128>,
+    [=] P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
+      return int128::from_double(value, unit);
+    });
+    int128 global_sum = local_sum;
+    auto const int128_mpi_sum_op = 
+      mpi::op::create(p3a_mpi_int128_sum);
+    m_comm.iallreduce(
+        MPI_IN_PLACE,
+        &global_sum,
+        sizeof(int128),
+        MPI_PACKED,
+        int128_mpi_sum_op);
+    return quantity<T, Dimension>(
+        global_sum.to_double(unit));
+  }
+};
 
 }

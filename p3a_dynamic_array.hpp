@@ -152,6 +152,14 @@ class dynamic_array {
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr bool empty() const { return m_size == 0; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T& operator[](size_type pos) { return m_begin[pos]; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T const& operator[](size_type pos) const { return m_begin[pos]; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
+  allocator_type get_allocator() const {
+    return m_allocator;
+  }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr
+  execution_policy get_execution_policy() const {
+    return m_execution_policy;
+  }
 };
 
 #ifdef __CUDACC__

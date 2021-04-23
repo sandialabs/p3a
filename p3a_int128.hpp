@@ -30,18 +30,7 @@ class int128 {
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
   std::uint64_t low() const { return m_low; }
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
-  double to_double(double unit) const {
-    int128 tmp = *this;
-    if (tmp < int128(0)) tmp = -tmp;
-    while (tmp.high()) {
-      tmp = tmp >> 1;
-      unit *= 2;
-    }
-    double x = tmp.low;
-    if (*this < int128(0)) x = -x;
-    x *= unit;
-    return x;
-  }
+  double to_double(double unit) const;
 };
 
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
@@ -87,6 +76,20 @@ bool operator<(int128 const& lhs, int128 const& rhs) {
     return lhs.high() < rhs.high();
   }
   return lhs.low() < rhs.low();
+}
+
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+double int128::to_double(double unit) const {
+  int128 tmp = *this;
+  if (tmp < int128(0)) tmp = -tmp;
+  while (tmp.high()) {
+    tmp = tmp >> 1;
+    unit *= 2;
+  }
+  double x = tmp.low();
+  if (*this < int128(0)) x = -x;
+  x *= unit;
+  return x;
 }
 
 }

@@ -46,6 +46,7 @@ set(P3A_HEADERS
   p3a_simd.hpp
   p3a_simd_common.hpp
   p3a_simd_scalar.hpp
+  p3a_int128.hpp
   )
 
 set(P3A_SOURCES

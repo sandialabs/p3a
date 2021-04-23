@@ -1,5 +1,17 @@
 #include "p3a_mpi.hpp"
 #include "p3a_execution.hpp"
+#include "p3a_int128.hpp"
+
+extern "C" void p3a_mpi_int128_sum(
+    void* a,
+    void* b,
+    int*,
+    MPI_Datatype*)
+{
+  p3a::int128* a2 = static_cast<p3a::int128*>(a);
+  p3a::int128* b2 = static_cast<p3a::int128*>(b);
+  *b2 = *b2 + *a2;
+}
 
 namespace p3a {
 
@@ -131,6 +143,15 @@ op op::bor()
   return op(MPI_BOR, false);
 }
 
+op op::create(
+    MPI_User_function* user_f,
+    int commute) {
+  MPI_Op implementation;
+  details::handle_mpi_error(
+      MPI_Op_create(user_f, commute, &implementation));
+  return op(implementation);
+}
+
 datatype& datatype::operator=(datatype&& other)
 {
   if (owned) {
@@ -238,7 +259,7 @@ request comm::iallreduce(
     void* recvbuf,
     int count,
     datatype datatype_arg,
-    op op_arg)
+    op const& op_arg)
 {
   MPI_Request request_implementation;
   details::handle_mpi_error(
