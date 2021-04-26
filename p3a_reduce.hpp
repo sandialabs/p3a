@@ -370,10 +370,15 @@ class reproducible_floating_point_adder {
   reducer<int, device_execution> m_exponent_reducer;
   reducer<int128, device_execution> m_int128_reducer;
  public:
+  reproducible_floating_point_adder() = default;
   reproducible_floating_point_adder(
       mpi::comm&& comm_arg)
     :m_comm(std::move(comm_arg))
   {}
+  reproducible_floating_point_adder(reproducible_floating_point_adder&&) = default;
+  reproducible_floating_point_adder& operator=(reproducible_floating_point_adder&&) = default;
+  reproducible_floating_point_adder(reproducible_floating_point_adder const&) = delete;
+  reproducible_floating_point_adder& operator=(reproducible_floating_point_adder const&) = delete;
   template <class T, class Dimension, class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
   quantity<T, Dimension> transform_reduce(
