@@ -418,7 +418,7 @@ class reproducible_floating_point_adder {
   reducer<int128, device_execution> m_int128_reducer;
  public:
   reproducible_floating_point_adder() = default;
-  reproducible_floating_point_adder(
+  explicit reproducible_floating_point_adder(
       mpi::comm&& comm_arg)
     :m_comm(std::move(comm_arg))
   {}

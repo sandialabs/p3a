@@ -329,6 +329,16 @@ comm comm::self()
   return comm(MPI_COMM_SELF, false);
 }
 
+comm comm::dup() const
+{
+  MPI_Comm new_implementation;
+  details::handle_mpi_error(
+      MPI_Comm_dup(
+        implementation,
+        &new_implementation));
+  return comm(new_implementation, true);
+}
+
 comm comm::cart_create(
     int ndims,
     int const* dims,
@@ -344,7 +354,7 @@ comm comm::cart_create(
         periods,
         reorder,
         &cart_implementation));
-  return comm(cart_implementation);
+  return comm(cart_implementation, true);
 }
 
 int comm::cartdim_get() const

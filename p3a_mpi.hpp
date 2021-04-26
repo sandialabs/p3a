@@ -245,7 +245,7 @@ class comm {
  public:
   constexpr comm(
       MPI_Comm implementation_arg,
-      bool owned_arg = true)
+      bool owned_arg)
     :implementation(implementation_arg)
     ,owned(owned_arg)
   {}
@@ -365,6 +365,7 @@ class comm {
   }
   static comm world();
   static comm self();
+  comm dup() const;
   comm cart_create(
       int ndims,
       int const* dims,
