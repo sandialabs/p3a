@@ -65,11 +65,28 @@ class reducer<T, serial_execution> {
   [[nodiscard]] P3A_NEVER_INLINE
   T transform_reduce(
       subgrid3 grid,
-      T init, BinaryOp binary_op, UnaryOp unary_op) {
+      T init,
+      BinaryOp binary_op,
+      UnaryOp unary_op)
+  {
     for_each(m_policy, grid,
     [&] (vector3<int> const& item) P3A_ALWAYS_INLINE {
-      init = binary_op(std::move(init), unary_op(item));
+      init = binary_op(init, unary_op(item));
     });
+    return init;
+  }
+  template <class Iterator, class BinaryOp, class UnaryOp>
+  [[nodiscard]] P3A_NEVER_INLINE
+  T transform_reduce(
+      Iterator first,
+      Iterator last,
+      T init,
+      BinaryOp binary_op,
+      UnaryOp unary_op)
+  {
+    for (; first != last; ++first) {
+      init = binary_op(init, unary_op(*first));
+    }
     return init;
   }
 };
@@ -364,21 +381,55 @@ T transform_reduce(
 
 #endif
 
+/* A reproducible sum of floating-point values.
+   this operation is one of the key places where
+   a program's output begins to depend on parallel
+   partitioning and traversal order, because
+   floating-point values do not produce the same
+   sum when added in a different order.
+
+   IEEE 754 64-bit floating point format is assumed,
+   which has 52 bits in the fraction.
+
+   The idea here is to add the numbers as fixed-point values.
+   max_exponent() finds the largest exponent (e) such that
+   all values are (<= 2^(e)).
+   We then use the value (2^(e - 52)) as the unit, and sum all
+   values as integers in that unit.
+   This is guaranteed to be at least as accurate as the
+   worst-case ordering of the values, i.e. being added
+   in order of decreasing magnitude.
+
+   If we used a 64-bit integer type, we would only be
+   able to reliably add up to (2^12 = 4096) values
+   (64 - 52 = 12).
+   Thus we use a 128-bit integer type.
+   This allows us to reliably add up to (2^76 > 10^22) values.
+   By comparison, supercomputers today
+   support a maximum of one million MPI ranks (10^6)
+   and each rank typically can't hold more than
+   one billion values (10^9), for a total of (10^15) values.
+*/
+
 class reproducible_floating_point_adder {
   mpi::comm m_comm;
   device_array<double> m_values;
   reducer<int, device_execution> m_exponent_reducer;
   reducer<int128, device_execution> m_int128_reducer;
  public:
+  reproducible_floating_point_adder() = default;
   reproducible_floating_point_adder(
       mpi::comm&& comm_arg)
     :m_comm(std::move(comm_arg))
   {}
-  template <class T, class Dimension, class UnaryOp>
+  reproducible_floating_point_adder(reproducible_floating_point_adder&&) = default;
+  reproducible_floating_point_adder& operator=(reproducible_floating_point_adder&&) = default;
+  reproducible_floating_point_adder(reproducible_floating_point_adder const&) = delete;
+  reproducible_floating_point_adder& operator=(reproducible_floating_point_adder const&) = delete;
+  template <class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
-  quantity<T, Dimension> transform_reduce(
+  double transform_reduce(
       subgrid3 grid,
-      quantity<T, Dimension> init,
       UnaryOp unary_op)
   {
     m_values.resize(grid.size());
@@ -387,7 +438,7 @@ class reproducible_floating_point_adder {
     for_each(policy, grid,
     [=] P3A_DEVICE (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
       int const index = grid.index(grid_point);
-      values[index] = unary_op(grid_point).value();
+      values[index] = unary_op(grid_point);
     });
     int const local_max_exponent =
       m_exponent_reducer.transform_reduce(
@@ -407,8 +458,8 @@ class reproducible_floating_point_adder {
         double(global_max_exponent - mantissa_bits));
     int128 const local_sum =
       m_int128_reducer.transform_reduce(
-          m_values.cbegin(), m_values.end(),
-          int128::from_double(init.value(), unit),
+          m_values.cbegin(), m_values.cend(),
+          int128(0),
           adds<int128>,
     [=] P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
       return int128::from_double(value, unit);
@@ -420,10 +471,9 @@ class reproducible_floating_point_adder {
         MPI_IN_PLACE,
         &global_sum,
         sizeof(int128),
-        MPI_PACKED,
+        mpi::datatype::predefined_packed(),
         int128_mpi_sum_op);
-    return quantity<T, Dimension>(
-        global_sum.to_double(unit));
+    return global_sum.to_double(unit);
   }
 };
 
