@@ -10,6 +10,7 @@ class int128 {
   std::int64_t m_high;
   std::uint64_t m_low;
  public:
+  P3A_ALWAYS_INLINE inline int128() = default;
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
   int128(std::int64_t high_arg, std::uint64_t low_arg)
     :m_high(high_arg)

@@ -344,7 +344,8 @@ class reducer<T, cuda_execution> {
     :m_scratch1(nullptr)
     ,m_scratch2(nullptr)
   {}
-  reducer(reducer&& other) = default;
+  reducer(reducer&&) = default;
+  reducer& operator=(reducer&&) = default;
   reducer(reducer const&) = delete;
   reducer& operator=(reducer const&) = delete;
   template <class BinaryOp, class UnaryOp>
