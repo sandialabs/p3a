@@ -104,7 +104,7 @@ class datatype {
  public:
   constexpr datatype(
       MPI_Datatype implementation_in,
-      bool owned_in = true)
+      bool owned_in)
     :implementation(implementation_in)
     ,owned(owned_in)
   {}
@@ -133,6 +133,7 @@ class datatype {
   static datatype predefined_long_long_int();
   static datatype predefined_float();
   static datatype predefined_double();
+  static datatype predefined_packed();
 };
 
 namespace details {
@@ -269,7 +270,7 @@ class comm {
       void const* sendbuf,
       void* recvbuf,
       int count,
-      datatype datatype_arg,
+      datatype const& datatype_arg,
       op const& op_arg);
   template <class T>
   request iallreduce(

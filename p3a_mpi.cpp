@@ -216,6 +216,11 @@ datatype datatype::predefined_double()
   return datatype(MPI_DOUBLE, false);
 }
 
+datatype datatype::predefined_packed()
+{
+  return datatype(MPI_PACKED, false);
+}
+
 comm& comm::operator=(comm&& other) {
   if (owned) {
     details::handle_mpi_error(MPI_Comm_free(&implementation));
@@ -258,7 +263,7 @@ request comm::iallreduce(
     void const* sendbuf,
     void* recvbuf,
     int count,
-    datatype datatype_arg,
+    datatype const& datatype_arg,
     op const& op_arg)
 {
   MPI_Request request_implementation;
