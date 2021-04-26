@@ -5,7 +5,7 @@ This is a C++17 library that is meant to support High Performance Computing phys
 P3A is meant primarily to help structured grid applications perform well on Intel CPUs and NVIDIA GPUs, but can be used for other applications and can be extended for other hardware.
 P3A provides several "layers" of helpful tools:
 
-1. A C++ interface to MPI, found in the `p3a::mpi` namespace, with types such as `p3a::mpi::comm` that use unique ownership semantics to implement RAII over MPI resources.
+1. A C++ interface to MPI, found in the `p3a::mpi` namespace, with types such as `p3a::mpi::comm` that use unique ownership semantics to implement RAII over MPI resources and also convert MPI errors into C++ exceptions.
 2. A `p3a::dynamic_array` class that is very similar to `std::vector`, except for an `ExecutionPolicy` template argument that helps it work on GPUs.
 3. A couple of algorithms modeled after C++17's parallel algorithms library such as `p3a::for_each`, `p3a::transform_reduce`, and `p3a::copy`. These include non-standard overloads for iterating over 3D grids.
 4. A set of tensor algebra types such as `p3a::symmetric3x3`, `p3a::vector3`, and `p3a::matrix3x3`, with relevant mathematical operator overloads and load/store helpers.
