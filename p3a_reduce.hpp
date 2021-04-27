@@ -417,18 +417,23 @@ T transform_reduce(
 */
 
 class reproducible_floating_point_adder {
+  mpi::comm m_comm;
   device_array<double> m_values;
   reducer<int, device_execution> m_exponent_reducer;
   reducer<int128, device_execution> m_int128_reducer;
  public:
   reproducible_floating_point_adder() = default;
+  explicit reproducible_floating_point_adder(
+      mpi::comm&& comm_arg)
+    :m_comm(std::move(comm_arg))
+  {}
   reproducible_floating_point_adder(reproducible_floating_point_adder&&) = default;
   reproducible_floating_point_adder& operator=(reproducible_floating_point_adder&&) = default;
   reproducible_floating_point_adder(reproducible_floating_point_adder const&) = delete;
   reproducible_floating_point_adder& operator=(reproducible_floating_point_adder const&) = delete;
  private:
   [[nodiscard]] P3A_NEVER_INLINE
-  double reduce_stored_values(mpi::comm& comm)
+  double reduce_stored_values()
   {
     int const local_max_exponent =
       m_exponent_reducer.transform_reduce(
@@ -441,7 +446,7 @@ class reproducible_floating_point_adder {
       return exponent;
     });
     int global_max_exponent = local_max_exponent;
-    comm.iallreduce(
+    m_comm.iallreduce(
         &global_max_exponent, 1, mpi::op::max());
     constexpr int mantissa_bits = 52;
     double const unit = std::exp2(
@@ -457,7 +462,7 @@ class reproducible_floating_point_adder {
     int128 global_sum = local_sum;
     auto const int128_mpi_sum_op = 
       mpi::op::create(p3a_mpi_int128_sum);
-    comm.iallreduce(
+    m_comm.iallreduce(
         MPI_IN_PLACE,
         &global_sum,
         sizeof(int128),
@@ -469,7 +474,6 @@ class reproducible_floating_point_adder {
   template <class Iterator, class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
   double transform_reduce(
-      mpi::comm& comm,
       Iterator first,
       Iterator last,
       UnaryOp unary_op)
@@ -485,12 +489,11 @@ class reproducible_floating_point_adder {
     [=] P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
       values[i] = unary_op(first[i]);
     });
-    return reduce_stored_values(comm);
+    return reduce_stored_values();
   }
   template <class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
   double transform_reduce(
-      mpi::comm& comm,
       subgrid3 grid,
       UnaryOp unary_op)
   {
@@ -502,7 +505,7 @@ class reproducible_floating_point_adder {
       int const index = grid.index(grid_point);
       values[index] = unary_op(grid_point);
     });
-    return reduce_stored_values(comm);
+    return reduce_stored_values();
   }
 };
 

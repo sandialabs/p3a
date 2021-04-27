@@ -5,7 +5,6 @@
 namespace p3a {
 
 double dot_product(
-    mpi::comm& comm,
     reproducible_floating_point_adder& adder,
     device_array<double> const& a,
     device_array<double> const& b)
@@ -14,7 +13,6 @@ double dot_product(
   auto const a_ptr = a.cbegin();
   auto const b_ptr = b.cbegin();
   return adder.transform_reduce(
-      comm,
       counting_iterator<size_type>(0),
       counting_iterator<size_type>(a.size()),
   [=] P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
@@ -54,22 +52,22 @@ int conjugate_gradient_solver::solve(
   device_array<double>& Ax = this->m_r;
   device_array<double>& b = this->m_Ap;
   b_functor(b);
-  double const b_dot_b = dot_product(comm, adder, b, b);
+  double const b_dot_b = dot_product(adder, b, b);
   double const b_magnitude = square_root(b_dot_b);
   double const absolute_tolerance = b_magnitude * relative_tolerance;
   A_action(x, Ax);
   axpy(-1.0, Ax, b, r); // r = A * x - b
   copy(device, r.cbegin(), r.cend(), p.begin()); // p = r
-  double r_dot_r_old = dot_product(comm, adder, r, r);
+  double r_dot_r_old = dot_product(adder, r, r);
   double residual_magnitude = square_root(r_dot_r_old);
   if (residual_magnitude <= absolute_tolerance) return 0;
   for (int k = 1; true; ++k) {
     A_action(p, Ap);
-    double const pAp = dot_product(comm, adder, p, Ap);
+    double const pAp = dot_product(adder, p, Ap);
     double const alpha = r_dot_r_old / pAp; // alpha = (r^T * r) / (p^T * A * p)
     axpy(alpha, p, x, x); // x = x + alpha * p
     axpy(-alpha, Ap, r, r); // r = r - alpha * (A * p)
-    double const r_dot_r_new = dot_product(comm, adder, r, r);
+    double const r_dot_r_new = dot_product(adder, r, r);
     residual_magnitude = square_root(r_dot_r_old);
     if (residual_magnitude <= absolute_tolerance) {
       return k;
