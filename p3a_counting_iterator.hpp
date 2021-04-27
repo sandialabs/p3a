@@ -16,7 +16,6 @@ class counting_iterator {
   using pointer = void*;
   using reference = value_type;
   P3A_ALWAYS_INLINE inline counting_iterator() = default;
-  P3A_ALWAYS_INLINE inline constexpr ~counting_iterator() = default;
   P3A_ALWAYS_INLINE inline constexpr counting_iterator(counting_iterator&&) = default;
   P3A_ALWAYS_INLINE inline constexpr counting_iterator& operator=(counting_iterator&&) = default;
   P3A_ALWAYS_INLINE inline constexpr counting_iterator(counting_iterator const&) = default;

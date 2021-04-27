@@ -47,11 +47,13 @@ set(P3A_HEADERS
   p3a_simd_common.hpp
   p3a_simd_scalar.hpp
   p3a_int128.hpp
+  p3a_counting_iterator.hpp
   )
 
 set(P3A_SOURCES
   p3a_execution.cpp
   p3a_mpi.cpp
+  p3a_cg.cpp
   )
 
 if (P3A_ENABLE_CUDA AND P3A_SOURCES)

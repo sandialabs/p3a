@@ -7,6 +7,10 @@
 #include "p3a_mpi.hpp"
 #include "p3a_int128.hpp"
 #include "p3a_quantity.hpp"
+#include "p3a_execution.hpp"
+#include "p3a_grid3.hpp"
+#include "p3a_dynamic_array.hpp"
+#include "p3a_counting_iterator.hpp"
 
 namespace p3a {
 
@@ -422,21 +426,10 @@ class reproducible_floating_point_adder {
   reproducible_floating_point_adder& operator=(reproducible_floating_point_adder&&) = default;
   reproducible_floating_point_adder(reproducible_floating_point_adder const&) = delete;
   reproducible_floating_point_adder& operator=(reproducible_floating_point_adder const&) = delete;
-  template <class UnaryOp>
+ private:
   [[nodiscard]] P3A_NEVER_INLINE
-  double transform_reduce(
-      mpi::comm& comm,
-      subgrid3 grid,
-      UnaryOp unary_op)
+  double reduce_stored_values(mpi::comm& comm)
   {
-    m_values.resize(grid.size());
-    auto const policy = m_values.get_execution_policy();
-    auto const values = m_values.begin();
-    for_each(policy, grid,
-    [=] P3A_DEVICE (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
-      int const index = grid.index(grid_point);
-      values[index] = unary_op(grid_point);
-    });
     int const local_max_exponent =
       m_exponent_reducer.transform_reduce(
           m_values.cbegin(), m_values.cend(),
@@ -471,6 +464,45 @@ class reproducible_floating_point_adder {
         mpi::datatype::predefined_packed(),
         int128_mpi_sum_op);
     return global_sum.to_double(unit);
+  }
+ public:
+  template <class Iterator, class UnaryOp>
+  [[nodiscard]] P3A_NEVER_INLINE
+  double transform_reduce(
+      mpi::comm& comm,
+      Iterator first,
+      Iterator last,
+      UnaryOp unary_op)
+  {
+    auto const policy = m_values.get_execution_policy();
+    auto const values = m_values.begin();
+    auto const n = (last - first);
+    m_values.resize(n);
+    using size_type = std::remove_const_t<decltype(n)>;
+    for_each(policy,
+        counting_iterator<size_type>(0),
+        counting_iterator<size_type>(n),
+    [=] P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
+      values[i] = unary_op(first[i]);
+    });
+    return reduce_stored_values(comm);
+  }
+  template <class UnaryOp>
+  [[nodiscard]] P3A_NEVER_INLINE
+  double transform_reduce(
+      mpi::comm& comm,
+      subgrid3 grid,
+      UnaryOp unary_op)
+  {
+    m_values.resize(grid.size());
+    auto const policy = m_values.get_execution_policy();
+    auto const values = m_values.begin();
+    for_each(policy, grid,
+    [=] P3A_DEVICE (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
+      int const index = grid.index(grid_point);
+      values[index] = unary_op(grid_point);
+    });
+    return reduce_stored_values(comm);
   }
 };
 
