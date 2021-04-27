@@ -413,16 +413,11 @@ T transform_reduce(
 */
 
 class reproducible_floating_point_adder {
-  mpi::comm m_comm;
   device_array<double> m_values;
   reducer<int, device_execution> m_exponent_reducer;
   reducer<int128, device_execution> m_int128_reducer;
  public:
   reproducible_floating_point_adder() = default;
-  explicit reproducible_floating_point_adder(
-      mpi::comm&& comm_arg)
-    :m_comm(std::move(comm_arg))
-  {}
   reproducible_floating_point_adder(reproducible_floating_point_adder&&) = default;
   reproducible_floating_point_adder& operator=(reproducible_floating_point_adder&&) = default;
   reproducible_floating_point_adder(reproducible_floating_point_adder const&) = delete;
@@ -430,6 +425,7 @@ class reproducible_floating_point_adder {
   template <class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
   double transform_reduce(
+      mpi::comm& comm,
       subgrid3 grid,
       UnaryOp unary_op)
   {
@@ -452,7 +448,7 @@ class reproducible_floating_point_adder {
       return exponent;
     });
     int global_max_exponent = local_max_exponent;
-    m_comm.iallreduce(
+    comm.iallreduce(
         &global_max_exponent, 1, mpi::op::max());
     constexpr int mantissa_bits = 52;
     double const unit = std::exp2(
@@ -468,7 +464,7 @@ class reproducible_floating_point_adder {
     int128 global_sum = local_sum;
     auto const int128_mpi_sum_op = 
       mpi::op::create(p3a_mpi_int128_sum);
-    m_comm.iallreduce(
+    comm.iallreduce(
         MPI_IN_PLACE,
         &global_sum,
         sizeof(int128),
