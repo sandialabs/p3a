@@ -4,7 +4,7 @@
 
 namespace p3a {
 
-double dot_product(
+P3A_NEVER_INLINE double dot_product(
     reproducible_floating_point_adder& adder,
     device_array<double> const& a,
     device_array<double> const& b)
@@ -20,7 +20,7 @@ double dot_product(
   });
 }
 
-void axpy(
+P3A_NEVER_INLINE void axpy(
     double a,
     device_array<double> const& x,
     device_array<double> const& y,
@@ -39,8 +39,6 @@ void axpy(
 }
 
 int conjugate_gradient_solver::solve(
-      mpi::comm& comm,
-      reproducible_floating_point_adder& adder,
       Ax_functor_type const& A_action,
       b_functor_type const& b_functor,
       device_array<double>& x,
@@ -52,22 +50,22 @@ int conjugate_gradient_solver::solve(
   device_array<double>& Ax = this->m_r;
   device_array<double>& b = this->m_Ap;
   b_functor(b);
-  double const b_dot_b = dot_product(adder, b, b);
+  double const b_dot_b = dot_product(m_adder, b, b);
   double const b_magnitude = square_root(b_dot_b);
   double const absolute_tolerance = b_magnitude * relative_tolerance;
   A_action(x, Ax);
   axpy(-1.0, Ax, b, r); // r = A * x - b
   copy(device, r.cbegin(), r.cend(), p.begin()); // p = r
-  double r_dot_r_old = dot_product(adder, r, r);
+  double r_dot_r_old = dot_product(m_adder, r, r);
   double residual_magnitude = square_root(r_dot_r_old);
   if (residual_magnitude <= absolute_tolerance) return 0;
   for (int k = 1; true; ++k) {
     A_action(p, Ap);
-    double const pAp = dot_product(adder, p, Ap);
+    double const pAp = dot_product(m_adder, p, Ap);
     double const alpha = r_dot_r_old / pAp; // alpha = (r^T * r) / (p^T * A * p)
     axpy(alpha, p, x, x); // x = x + alpha * p
     axpy(-alpha, Ap, r, r); // r = r - alpha * (A * p)
-    double const r_dot_r_new = dot_product(adder, r, r);
+    double const r_dot_r_new = dot_product(m_adder, r, r);
     residual_magnitude = square_root(r_dot_r_old);
     if (residual_magnitude <= absolute_tolerance) {
       return k;
