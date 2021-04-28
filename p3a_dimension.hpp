@@ -88,5 +88,12 @@ using rate_dimension = dimension<-1, 0, 0>;
 using kinematic_viscosity_dimension = dimension<-1, 2, 0>;
 using dynamic_viscosity_dimension = dimension<-1, -1, 1>;
 using specific_heat_dimension = dimension<-2, 2, 0, 0, -1>;
+using electric_current_dimension = dimension<0, 0, 0, 1>;
+using electric_charge_dimension = dimension<1, 0, 0, 1>;
+using electric_potential_dimension = dimension<-3, 2, 1, -1>;
+using electrical_resistance_dimension = dimension<-3, 2, 1, -2>;
+using electrical_conductance_dimension = dimension<3, -2, -1, 2>;
+using electrical_resistivity_dimension = dimension<-3, 3, 1, -2>;
+using electrical_conductivity_dimension = dimension<3, -3, -1, 2>;
 
 }

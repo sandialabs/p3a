@@ -313,6 +313,20 @@ template <class T>
 using dynamic_viscosity_quantity = quantity<T, dynamic_viscosity_dimension>;
 template <class T>
 using specific_heat_quantity = quantity<T, specific_heat_dimension>;
+template <class T>
+using electric_current_quantity = quantity<T, electric_current_dimension>;
+template <class T>
+using electric_charge_quantity = quantity<T, electric_charge_dimension>;
+template <class T>
+using electric_potential_quantity = quantity<T, electric_potential_dimension>;
+template <class T>
+using electrical_resistance_quantity = quantity<T, electrical_resistance_dimension>;
+template <class T>
+using electrical_conductance_quantity = quantity<T, electrical_conductance_dimension>;
+template <class T>
+using electrical_resistivity_quantity = quantity<T, electrical_resistivity_dimension>;
+template <class T>
+using electrical_conductivity_quantity = quantity<T, electrical_conductivity_dimension>;
 
 template <class T, class Dimension, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
