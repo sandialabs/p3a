@@ -4,106 +4,105 @@
 
 namespace p3a {
 
-using unit_ratio = std::ratio<1, 1>;
-using speed_of_light_ratio = std::ratio<299792458, 1>;
-
-template <
-  class TimeRatio,
-  class LengthRatio,
-  class MassRatio,
-  class CurrentRatio = unit_ratio,
-  class TemperatureRatio = unit_ratio,
-  class AmountRatio = unit_ratio,
-  class IntensityRatio = unit_ratio>
+template <class T>
 class units {
+  // the measurement system's base units
+  // expressed in terms of SI units
+  T m_time_unit;
+  T m_length_unit;
+  T m_mass_unit;
+  T m_current_unit;
+  T m_temperature_unit;
+  T m_amount_unit;
+  T m_intensity_unit;
  public:
-  using time_ratio = TimeRatio;
-  using length_ratio = LengthRatio;
-  using mass_ratio = MassRatio;
-  using current_ratio = CurrentRatio;
-  using temperature_ratio = TemperatureRatio;
-  using amount_ratio = AmountRatio;
-  using intensity_ratio = IntensityRatio;
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  explicit units(
+      T const& time_unit_arg = T(1),
+      T const& length_unit_arg = T(1),
+      T const& mass_unit_arg = T(1),
+      T const& current_unit_arg = T(1),
+      T const& temperature_unit_arg = T(1),
+      T const& amount_unit_arg = T(1),
+      T const& intensity_unit_arg = T(1))
+    :m_time_unit(time_unit_arg)
+    ,m_length_unit(length_unit_arg)
+    ,m_mass_unit(mass_unit_arg)
+    ,m_current_unit(current_unit_arg)
+    ,m_temperature_unit(temperature_unit_arg)
+    ,m_amount_unit(amount_unit_arg)
+    ,m_intensity_unit(intensity_unit_arg)
+  {}
+  template <class Dimension>
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  T unit() const
+  {
+    T result(1);
+    for (int i = 0; i < Dimension::time_power; ++i) {
+      result *= m_time_unit;
+    }
+    for (int i = 0; i < -Dimension::time_power; ++i) {
+      result /= m_time_unit;
+    }
+    for (int i = 0; i < Dimension::length_power; ++i) {
+      result *= m_length_unit;
+    }
+    for (int i = 0; i < -Dimension::length_power; ++i) {
+      result /= m_length_unit;
+    }
+    for (int i = 0; i < Dimension::mass_power; ++i) {
+      result *= m_mass_unit;
+    }
+    for (int i = 0; i < -Dimension::mass_power; ++i) {
+      result /= m_mass_unit;
+    }
+    for (int i = 0; i < Dimension::current_power; ++i) {
+      result *= m_current_unit;
+    }
+    for (int i = 0; i < -Dimension::current_power; ++i) {
+      result /= m_current_unit;
+    }
+    for (int i = 0; i < Dimension::temperature_power; ++i) {
+      result *= m_temperature_unit;
+    }
+    for (int i = 0; i < -Dimension::temperature_power; ++i) {
+      result /= m_temperature_unit;
+    }
+    for (int i = 0; i < Dimension::amount_power; ++i) {
+      result *= m_amount_unit;
+    }
+    for (int i = 0; i < -Dimension::amount_power; ++i) {
+      result /= m_amount_unit;
+    }
+    for (int i = 0; i < Dimension::intensity_power; ++i) {
+      result *= m_intensity_unit;
+    }
+    for (int i = 0; i < -Dimension::intensity_power; ++i) {
+      result /= m_intensity_unit;
+    }
+    return result;
+  }
 };
 
-using si_units = units<
-    unit_ratio,
-    unit_ratio,
-    unit_ratio>;
+template <class T>
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+units<T> si_units()
+{
+  return units<T>();
+}
 
-template <class A, class B>
-using ratio_product = typename std::ratio<
-    A::num * B::num,
-    A::den * B::den>::type;
-
-template <class A, class B>
-using ratio_quotient = typename std::ratio<
-    A::num * B::den,
-    A::den * B::num>::type;
-
-template <class A>
-using ratio_inverse = std::ratio<A::den, A::num>;
-
-using cgs_units = units<
-    std::centi,
-    std::milli,
-    unit_ratio,
+template <class T>
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+units<T> cgs_units()
+{
+  return units<T>(
+      T(1) / T(10),
+      T(1) / T(1000),
+      T(1),
 // one (statcoulomb or Franklin) is 10/c Amperes,
 // where c is the speed of light in CGS units,
 // so 1/(10 * c) when c is expressed in SI units
-    ratio_inverse<ratio_product<std::deca, speed_of_light_ratio>>,
-    unit_ratio,
-    unit_ratio,
-    unit_ratio>;
-
-template <class Ratio, int Power>
-class nonnegative_ratio_power_helper {
-  using one_less = typename nonnegative_ratio_power_helper<Ratio, Power - 1>::type;
- public:
-  using type = ratio_product<Ratio, one_less>;
-};
-
-template <class Ratio>
-class nonnegative_ratio_power_helper<Ratio, 0> {
- public:
-  using type = unit_ratio;
-};
-
-template <class Ratio, int Power>
-using nonnegative_ratio_power = typename nonnegative_ratio_power_helper<Ratio, Power>::type;
-
-template <class Ratio, int Power>
-using ratio_power =
-  ratio_quotient<
-    nonnegative_ratio_power<Ratio, std::max(Power, int(0))>,
-    nonnegative_ratio_power<Ratio, std::max(-Power, int(0))>>;
-
-template <class FromUnits, class ToUnits>
-using conversion_units = units<
-  ratio_quotient<typename FromUnits::time_ratio, typename ToUnits::time_ratio>,
-  ratio_quotient<typename FromUnits::length_ratio, typename ToUnits::length_ratio>,
-  ratio_quotient<typename FromUnits::mass_ratio, typename ToUnits::mass_ratio>,
-  ratio_quotient<typename FromUnits::current_ratio, typename ToUnits::current_ratio>,
-  ratio_quotient<typename FromUnits::temperature_ratio, typename ToUnits::temperature_ratio>,
-  ratio_quotient<typename FromUnits::amount_ratio, typename ToUnits::amount_ratio>,
-  ratio_quotient<typename FromUnits::intensity_ratio, typename ToUnits::intensity_ratio>>;
-
-template <class Dimension, class ConversionUnits>
-using conversion_ratio_from_conversion_units =
-  ratio_product<ratio_power<typename ConversionUnits::time_ratio, Dimension::time_power>,
-  ratio_product<ratio_power<typename ConversionUnits::length_ratio, Dimension::length_power>,
-  ratio_product<ratio_power<typename ConversionUnits::mass_ratio, Dimension::mass_power>,
-  ratio_product<ratio_power<typename ConversionUnits::current_ratio, Dimension::current_power>,
-  ratio_product<ratio_power<typename ConversionUnits::temperature_ratio, Dimension::temperature_power>,
-  ratio_product<ratio_power<typename ConversionUnits::amount_ratio, Dimension::amount_power>,
-                ratio_power<typename ConversionUnits::intensity_ratio, Dimension::intensity_power>>>>>>>;
-
-template <class Dimension, class FromUnits, class ToUnits>
-using conversion_ratio = conversion_ratio_from_conversion_units<
-  Dimension, conversion_units<FromUnits, ToUnits>>;
-
-template <class ToType, class Ratio> 
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr
-ToType ratio_value() { return ToType(Ratio::num) / ToType(Ratio::den); }
+      T(1) / (T(10) * speed_of_light_value<T>()));
+}
 
 }

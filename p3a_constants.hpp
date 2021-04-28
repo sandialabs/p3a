@@ -65,5 +65,8 @@ T zero_value() { return zero_value_helper<T>::value(); }
 template <class T>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T one_value() { return T(1); }
+template <class T>
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+T speed_of_light_value() { return T(299792458); }
 
 }
