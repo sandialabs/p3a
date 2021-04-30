@@ -53,7 +53,7 @@ set(P3A_HEADERS
 set(P3A_SOURCES
   p3a_execution.cpp
   p3a_mpi.cpp
-  p3a_cg.cpp
+  p3a_linear_algebra.cpp
   )
 
 if (P3A_ENABLE_CUDA AND P3A_SOURCES)
