@@ -327,6 +327,10 @@ template <class T>
 using electrical_resistivity_quantity = quantity<T, electrical_resistivity_dimension>;
 template <class T>
 using electrical_conductivity_quantity = quantity<T, electrical_conductivity_dimension>;
+template <class T>
+using inductance_quantity = quantity<T, inductance_dimension>;
+template <class T>
+using capacitance_quantity = quantity<T, capacitance_dimension>;
 
 template <class T, class Dimension, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE

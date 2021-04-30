@@ -95,5 +95,7 @@ using electrical_resistance_dimension = dimension<-3, 2, 1, -2>;
 using electrical_conductance_dimension = dimension<3, -2, -1, 2>;
 using electrical_resistivity_dimension = dimension<-3, 3, 1, -2>;
 using electrical_conductivity_dimension = dimension<3, -3, -1, 2>;
+using inductance_dimension = dimension<-2, 2, 1, -2>;
+using capacitance_dimension = dimension<4, -2, -1, 2>;
 
 }
