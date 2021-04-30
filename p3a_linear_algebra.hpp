@@ -23,6 +23,8 @@ class dense_matrix {
     ,m_storage(row_count_arg * column_count_arg)
   {
   }
+  void zero();
+  void resize(int new_row_count, int new_column_count);
   [[nodiscard]] P3A_ALWAYS_INLINE inline constexpr
   int row_count() const { return m_row_count; }
   [[nodiscard]] P3A_ALWAYS_INLINE inline constexpr
@@ -33,6 +35,7 @@ class dense_matrix {
   double const& operator()(int i, int j) const { return m_storage[i * m_column_count + j]; }
 };
 
+void axpy(double a, dense_matrix const& x, dense_matrix const& y, dense_matrix& result);
 void multiply(dense_matrix const& a, dense_matrix const& b, dense_matrix& result);
 void solve(dense_matrix const& a, dense_matrix const& b, dense_matrix& x);
 

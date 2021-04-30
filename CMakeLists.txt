@@ -48,6 +48,7 @@ set(P3A_HEADERS
   p3a_simd_scalar.hpp
   p3a_int128.hpp
   p3a_counting_iterator.hpp
+  p3a_linear_algebra.hpp
   )
 
 set(P3A_SOURCES

@@ -4,6 +4,38 @@
 
 namespace p3a {
 
+void dense_matrix::zero()
+{
+  for (int i = 0; i < m_row_count; ++i) {
+    for (int j = 0; j < m_column_count; ++j) {
+      operator()(i, j) = 0.0;
+    }
+  }
+}
+
+void dense_matrix::resize(int new_row_count, int new_column_count)
+{
+  if (new_row_count != m_row_count || new_column_count != m_column_count) {
+    m_storage.resize(0);
+    m_storage.resize(new_row_count * new_column_count);
+  }
+}
+
+void axpy(double a, dense_matrix const& x, dense_matrix const& y, dense_matrix& result)
+{
+  int n = x.row_count();
+  int m = x.column_count();
+  if (n != y.row_count() || m != y.column_count()) {
+    throw std::invalid_argument("dense axpy: y wrong size");
+  }
+  result.resize(n, m);
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      result(i, j) = a * x(i, j) + y(i, j);
+    }
+  }
+}
+
 void multiply(dense_matrix const& a, dense_matrix const& b, dense_matrix& result)
 {
   int const n = a.row_count();
