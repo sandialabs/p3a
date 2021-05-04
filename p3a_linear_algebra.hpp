@@ -37,7 +37,7 @@ class dense_matrix {
 
 void axpy(double a, dense_matrix const& x, dense_matrix const& y, dense_matrix& result);
 void multiply(dense_matrix const& a, dense_matrix const& b, dense_matrix& result);
-void solve(dense_matrix const& a, dense_matrix const& b, dense_matrix& x);
+void solve(dense_matrix& a, dense_matrix& b, dense_matrix& x);
 
 class conjugate_gradient_solver {
   device_array<double> m_r;
