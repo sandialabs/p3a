@@ -18,6 +18,8 @@ void dense_matrix::resize(int new_row_count, int new_column_count)
   if (new_row_count != m_row_count || new_column_count != m_column_count) {
     m_storage.resize(0);
     m_storage.resize(new_row_count * new_column_count);
+    m_row_count = new_row_count;
+    m_column_count = new_column_count;
   }
 }
 
