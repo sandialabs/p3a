@@ -17,7 +17,6 @@ endif()
 find_package(MPI REQUIRED)
 
 set(P3A_HEADERS
-  p3a.hpp
   p3a_macros.hpp
   p3a_static_array.hpp
   p3a_constants.hpp

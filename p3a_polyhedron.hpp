@@ -1,5 +1,7 @@
 #pragma once
 
+#include "p3a_quantity.hpp"
+
 namespace p3a {
 
 /**
