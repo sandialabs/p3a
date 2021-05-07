@@ -114,10 +114,36 @@ struct is_scalar<simd<T, Abi>> {
 
 template <class T, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-simd<T, Abi> load_scalar(
+simd<T, Abi> load(
+    T const* ptr, int offset, simd_mask<T, Abi> const& mask)
+{
+  return simd<T, Abi>::masked_load(ptr + offset, mask);
+}
+
+template <class T, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<T, Abi> load(
     T const* ptr, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
 {
   return simd<T, Abi>::masked_gather(ptr, offset, mask);
+}
+
+template <class T, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
+    simd<T, Abi> const& value,
+    T* ptr, int offset, simd_mask<T, Abi> const& mask)
+{
+  return value.masked_store(ptr + offset, mask);
+}
+
+template <class T, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
+    simd<T, Abi> const& value,
+    T* ptr, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
+{
+  return value.masked_scatter(ptr, offset, mask);
 }
 
 }
