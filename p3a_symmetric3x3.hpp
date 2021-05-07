@@ -75,27 +75,6 @@ class symmetric3x3 {
         T(0), T(0), T(0),
         T(0), T(0), T(0));
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
-  symmetric3x3<T> load(T const* ptr, int stride, int index)
-  {
-    return symmetric3x3<T>(
-        ptr[stride * 0 + index],
-        ptr[stride * 1 + index],
-        ptr[stride * 2 + index],
-        ptr[stride * 3 + index],
-        ptr[stride * 4 + index],
-        ptr[stride * 5 + index]);
-  }
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  void store(T* ptr, int stride, int index) const
-  {
-    ptr[stride * 0 + index] = m_xx;
-    ptr[stride * 1 + index] = m_xy;
-    ptr[stride * 2 + index] = m_xz;
-    ptr[stride * 3 + index] = m_yy;
-    ptr[stride * 4 + index] = m_yz;
-    ptr[stride * 5 + index] = m_zz;
-  }
 };
 
 template <class T>

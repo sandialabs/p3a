@@ -9,24 +9,22 @@
 namespace p3a {
 
 template <class T>
-class vector3 {
+class vector2 {
   T m_x;
   T m_y;
-  T m_z;
  public:
   using reference = T&;
   using const_reference = T const&;
-  P3A_ALWAYS_INLINE vector3() = default;
+  P3A_ALWAYS_INLINE vector2() = default;
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  vector3(T const& a, T const& b, T const& c)
+  vector2(T const& a, T const& b)
     :m_x(a)
     ,m_y(b)
-    ,m_z(c)
   {}
   template <class U>
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE explicit constexpr
-  vector3(vector3<U> const& other)
-    :vector3(T(other.x()), T(other.y()), T(other.z()))
+  vector2(vector2<U> const& other)
+    :vector2(T(other.x()), T(other.y()))
   {
   }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
@@ -34,234 +32,206 @@ class vector3 {
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   reference y() { return m_y; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  reference z() { return m_z; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   const_reference x() const { return m_x; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   const_reference y() const { return m_y; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  const_reference z() const { return m_z; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  auto volume() const { return m_x * m_y * m_z; }
+  auto area() const { return m_x * m_y; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& operator[](int pos) const
   {
     if (pos == 0) return m_x;
-    if (pos == 1) return m_y;
-    return m_z;
+    return m_y;
   }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T& operator[](int pos)
   {
     if (pos == 0) return m_x;
-    if (pos == 1) return m_y;
-    return m_z;
+    return m_y;
   }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
-  vector3 zero()
+  vector2 zero()
   {
-    return vector3(T(0), T(0), T(0));
+    return vector2(T(0), T(0));
   }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
-  vector3 ones()
+  vector2 ones()
   {
-    return vector3(T(1), T(1), T(1));
+    return vector2(T(1), T(1));
   }
   template <class U>
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-  vector3& operator=(vector3<U> const& other)
+  vector2& operator=(vector2<U> const& other)
   {
     m_x = other.x();
     m_y = other.y();
-    m_z = other.z();
     return *this;
   }
 };
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-bool operator==(vector3<T> const& a, vector3<T> const& b)
+bool operator==(vector2<T> const& a, vector2<T> const& b)
 {
   return a.x() == b.x() &&
-         a.y() == b.y() &&
-         a.z() == b.z();
+         a.y() == b.y();
 }
 
 template <class A, class B>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-void operator+=(vector3<A>& a, vector3<B> const& b)
+void operator+=(vector2<A>& a, vector2<B> const& b)
 {
   a.x() += b.x();
   a.y() += b.y();
-  a.z() += b.z();
 }
 
 template <class A, class B>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-void operator-=(vector3<A>& a, vector3<B> const& b)
+void operator-=(vector2<A>& a, vector2<B> const& b)
 {
   a.x() -= b.x();
   a.y() -= b.y();
-  a.z() -= b.z();
 }
 
 template <class A, class B>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-void operator*=(vector3<A>& a, B const& b)
+void operator*=(vector2<A>& a, B const& b)
 {
   a.x() *= b;
   a.y() *= b;
-  a.z() *= b;
 }
 
 template <class A, class B>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-void operator/=(vector3<A>& a, B const& b)
+void operator/=(vector2<A>& a, B const& b)
 {
   a.x() /= b;
   a.y() /= b;
-  a.z() /= b;
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto operator+(vector3<A> const& a, vector3<B> const& b) {
+auto operator+(vector2<A> const& a, vector2<B> const& b) {
   using C = decltype(a.x() + b.x());
-  return vector3<C>(a.x() + b.x(), a.y() + b.y(), a.z() + b.z());
+  return vector2<C>(a.x() + b.x(), a.y() + b.y());
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto operator-(vector3<A> const& a, vector3<B> const& b) {
+auto operator-(vector2<A> const& a, vector2<B> const& b) {
   using C = decltype(a.x() - b.x());
-  return vector3<C>(a.x() - b.x(), a.y() - b.y(), a.z() - b.z());
+  return vector2<C>(a.x() - b.x(), a.y() - b.y());
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto operator/(vector3<A> const& a, B const& b) {
+auto operator/(vector2<A> const& a, B const& b) {
   using C = decltype(a.x() / b);
-  return vector3<C>(a.x() / b, a.y() / b, a.z() / b);
+  return vector2<C>(a.x() / b, a.y() / b);
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-typename std::enable_if<is_scalar<B>, vector3<decltype(A() * B())>>::type
-operator*(vector3<A> const& a, B const& b) {
+typename std::enable_if<is_scalar<B>, vector2<decltype(A() * B())>>::type
+operator*(vector2<A> const& a, B const& b) {
   using C = decltype(a.x() * b);
-  return vector3<C>(a.x() * b, a.y() * b, a.z() * b);
+  return vector2<C>(a.x() * b, a.y() * b);
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-typename std::enable_if<is_scalar<A>, vector3<decltype(A() * B())>>::type
-operator*(A const& a, vector3<B> const& b) {
+typename std::enable_if<is_scalar<A>, vector2<decltype(A() * B())>>::type
+operator*(A const& a, vector2<B> const& b) {
   return b * a;
 }
 
 template <class A>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-vector3<A> operator-(vector3<A> const& a) {
-  return vector3<A>(-a.x(), -a.y(), -a.z());
+vector2<A> operator-(vector2<A> const& a) {
+  return vector2<A>(-a.x(), -a.y());
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto hadamard_product(vector3<A> const& a, vector3<B> const& b) {
+auto hadamard_product(vector2<A> const& a, vector2<B> const& b) {
   using C = decltype(a.x() * b.x());
-  return vector3<C>(a.x() * b.x(), a.y() * b.y(), a.z() * b.z());
+  return vector2<C>(a.x() * b.x(), a.y() * b.y());
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto hadamard_division(vector3<A> const& a, vector3<B> const& b) {
+auto hadamard_division(vector2<A> const& a, vector2<B> const& b) {
   using C = decltype(a.x() / b.x());
-  return vector3<C>(a.x() / b.x(), a.y() / b.y(), a.z() / b.z());
+  return vector2<C>(a.x() / b.x(), a.y() / b.y());
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto hadamard_equality(vector3<A> const& a, vector3<B> const& b) {
+auto hadamard_equality(vector2<A> const& a, vector2<B> const& b) {
   using C = decltype(a.x() == b.x());
-  return vector3<C>(a.x() == b.x(), a.y() == b.y(), a.z() == b.z());
+  return vector2<C>(a.x() == b.x(), a.y() == b.y());
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-vector3<B> hadamard_condition(
-    vector3<A> const& a,
-    vector3<B> const& b,
-    vector3<B> const& c) {
-  return vector3<B>(
+vector2<B> hadamard_condition(
+    vector2<A> const& a,
+    vector2<B> const& b,
+    vector2<B> const& c) {
+  return vector2<B>(
       condition(a.x(), b.x(), c.x()),
-      condition(a.y(), b.y(), c.y()),
-      condition(a.z(), b.z(), c.z()));
+      condition(a.y(), b.y(), c.y()));
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto hadamard_disjunction(vector3<A> const& a, vector3<B> const& b) {
+auto hadamard_disjunction(vector2<A> const& a, vector2<B> const& b) {
   using C = decltype(a.x() || b.x());
-  return vector3<C>(a.x() || b.x(), a.y() || b.y(), a.z() || b.z());
+  return vector2<C>(a.x() || b.x(), a.y() || b.y());
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto cross_product(vector3<A> const& a, vector3<B> const& b) {
-  using C = decltype(a.x() * b.y());
-  return vector3<C>(
-      a.y() * b.z() - a.z() * b.y(),
-      a.z() * b.x() - a.x() * b.z(),
-      a.x() * b.y() - a.y() * b.x());
+auto cross_product(vector2<A> const& a, vector2<B> const& b) {
+  return a.x() * b.y() - a.y() * b.x();
 }
 
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto dot_product(vector3<A> const& a, vector3<B> const& b) {
-  return a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
-}
-
-template <class A, class B, class C>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto scalar_triple_product(
-    vector3<A> const& a,
-    vector3<B> const& b,
-    vector3<C> const& c) {
-  return dot_product(a, cross_product(b, c));
+auto dot_product(vector2<A> const& a, vector2<B> const& b) {
+  return a.x() * b.x() + a.y() * b.y();
 }
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-T length(vector3<T> const& a) {
+T length(vector2<T> const& a) {
   return square_root(dot_product(a, a));
 }
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto normalize(vector3<T> const& a) {
+auto normalize(vector2<T> const& a) {
   return a / length(a);
 }
 
 template <class T>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
-vector3<T> load_vector3(
+vector2<T> load_vector2(
     T const* ptr, int stride, int offset)
 {
-  return vector3<T>(
+  return vector2<T>(
       load(ptr, 0 * stride + offset),
-      load(ptr, 1 * stride + offset),
-      load(ptr, 2 * stride + offset));
+      load(ptr, 1 * stride + offset));
 }
 
 template <class T>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
 void store(
-    vector3<T> const& value,
+    vector2<T> const& value,
     T* ptr, int stride, int offset)
 {
   store(value.x(), ptr, 0 * stride + offset);
   store(value.y(), ptr, 1 * stride + offset);
-  store(value.z(), ptr, 2 * stride + offset);
 }
 
 }

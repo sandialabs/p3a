@@ -96,4 +96,18 @@ A linear_interpolation(A a, A b, B t) {
   return a + t * (b - a);
 }
 
+template <class T>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+T load(T const* ptr, int offset)
+{
+  return ptr[offset];
+}
+
+template <class T>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+void store(T const& value, T* ptr, int offset)
+{
+  ptr[offset] = value;
+}
+
 }

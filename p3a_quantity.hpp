@@ -332,6 +332,14 @@ using inductance_quantity = quantity<T, inductance_dimension>;
 template <class T>
 using capacitance_quantity = quantity<T, capacitance_dimension>;
 
+template <class T, class Dimension>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+quantity<T, Dimension> load_scalar(
+    quantity<T, Dimension> const* ptr, int offset)
+{
+  return load(ptr, offset);
+}
+
 template <class T, class Dimension, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
 quantity<simd<T, Abi>, Dimension> load_scalar(

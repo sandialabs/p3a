@@ -21,6 +21,7 @@ set(P3A_HEADERS
   p3a_static_array.hpp
   p3a_constants.hpp
   p3a_functions.hpp
+  p3a_vector2.hpp
   p3a_vector3.hpp
   p3a_box3.hpp
   p3a_grid3.hpp
