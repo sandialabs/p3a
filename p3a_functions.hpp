@@ -110,4 +110,9 @@ void store(T const& value, T* ptr, int offset)
   ptr[offset] = value;
 }
 
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr double sign(double x)
+{
+  return (x < 0.0) ? -1.0 : 1.0;
+}
+
 }
