@@ -139,6 +139,21 @@ symmetric3x3<T> operator+(
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+symmetric3x3<T> operator-(
+    scaled_identity3x3<T> const& a,
+    symmetric3x3<T> const& b)
+{
+  return symmetric3x3<T>(
+      a.scale() - b.xx(),
+      -b.xy(),
+      -b.xz(),
+      a.scale() - b.yy(),
+      -b.yz(),
+      a.scale() - b.zz());
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 symmetric3x3<T> operator+(
     scaled_identity3x3<T> const& a,
     symmetric3x3<T> const& b)
@@ -226,6 +241,17 @@ auto frobenius_inner_product(
        a.yy() * b.yy() +
        2 * a.yz() * b.yz() +
        a.zz() * b.zz();
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto outer_product(vector3<T> const& a)
+{
+  using result_type = decltype(a.x() * a.x());
+  return symmetric3x3<result_type>(
+      a.x() * a.x(), a.x() * a.y(), a.x() * a.z(),
+      a.y() * a.y(), a.y() * a.z(),
+      a.z() * a.z());
 }
 
 inline int constexpr symmetric3x3_component_count = 6;

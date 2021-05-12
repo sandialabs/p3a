@@ -19,19 +19,19 @@ class scaled_identity3x3 {
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T xx() const { return m_scale; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T xy() const { return zero_value<T>; }
+  T xy() const { return zero_value<T>(); }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T xz() const { return zero_value<T>; }
+  T xz() const { return zero_value<T>(); }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T yx() const { return zero_value<T>; }
+  T yx() const { return zero_value<T>(); }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T yy() const { return m_scale; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T yz() const { return zero_value<T>; }
+  T yz() const { return zero_value<T>(); }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T zx() const { return zero_value<T>; }
+  T zx() const { return zero_value<T>(); }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T zy() const { return zero_value<T>; }
+  T zy() const { return zero_value<T>(); }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T zz() const { return m_scale; }
 };
