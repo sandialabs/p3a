@@ -69,7 +69,7 @@ class symmetric3x3 {
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T& zz() { return m_zz; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
-  symmetric3x3<T> zero()
+  symmetric3x3 zero()
   {
     return symmetric3x3<T>(
         T(0), T(0), T(0),

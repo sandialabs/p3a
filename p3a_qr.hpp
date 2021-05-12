@@ -1,5 +1,9 @@
 #pragma once
 
+#include "p3a_macros.hpp"
+#include "p3a_static_array.hpp"
+#include "p3a_functions.hpp"
+
 namespace p3a {
 
 namespace qr {
@@ -69,6 +73,19 @@ struct factorization {
 };
 
 template <class T, int max_m, int max_n>
+P3A_HOST P3A_DEVICE void reduced_r_from_full(
+    int n,
+    static_array<static_array<T, max_m>, max_n> const& fr,
+    static_array<static_array<T, max_n>, max_n>& rr)
+{
+  for (int j = 0; j < n; ++j) {
+    for (int i = 0; i < n; ++i) {
+      rr[j][i] = fr[j][i];
+    }
+  }
+}
+
+template <class T, int max_m, int max_n>
 P3A_HOST P3A_DEVICE errc factorize_qr_householder(
     int m,
     int n,
@@ -105,41 +122,10 @@ P3A_HOST P3A_DEVICE void implicit_q_trans_b(
   }
 }
 
-/* Trefethen, Lloyd N., and David Bau III.
-   Numerical linear algebra. Vol. 50. SIAM, 1997.
-   Algorithm 10.2. Implicit Calculation of a Product $Qx$
-
-   for k=n downto 1
-     x_{k:m} = x_{k:m} - 2 v_k (v_k^* b_{k:m}) */
-
-template <int max_m, int max_n>
-P3A_HOST P3A_DEVICE void implicit_q_x(
-    int m, int n, static_array<double, max_m>& x, Few<static_array<double, max_m>, max_n> v) {
-  for (int k2 = 0; k2 < n; ++k2) {
-    int k = n - k2 - 1;
-    double dot = 0;
-    for (int i = k; i < m; ++i) dot += v[k][i] * x[i];
-    for (int i = k; i < m; ++i) x[i] -= 2 * dot * v[k][i];
-  }
-}
-
-template <class T, int max_m, int max_n>
-P3A_HOST P3A_DEVICE void reduced_r_from_full(
-    int n,
-    static_array<static_array<T, max_m>, max_n> const& fr,
-    static_array<static_array<T, max_n>, max_n>& rr)
-{
-  for (int j = 0; j < n; ++j) {
-    for (int i = 0; i < n; ++i) {
-      rr[j][i] = fr[j][i];
-    }
-  }
-}
-
 template <class T, int max_m, int max_n>
 P3A_HOST P3A_DEVICE void solve_upper_triangular(
     int m,
-    static_array<static_array<T, max_m>, max_n> const& a,
+    static_array<static_array<T, max_n>, max_n> const& a,
     static_array<T, max_m> const& b,
     static_array<T, max_n>& x)
 {
@@ -160,7 +146,7 @@ P3A_HOST P3A_DEVICE void solve_upper_triangular(
    3. Solve the upper-triangular system \hat{R} x = \hat{Q}^* b for x  */
 
 template <class T, int max_m, int max_n>
-P3A_HOST P3A_DEVICE void solve(
+P3A_HOST P3A_DEVICE errc solve(
     int m,
     int n,
     static_array<static_array<T, max_m>, max_n>& a,
@@ -171,17 +157,17 @@ P3A_HOST P3A_DEVICE void solve(
   errc error = factorize_qr_householder(m, n, a, qr);
   if (error != errc::success) return error;
   implicit_q_trans_b(m, n, qr.v, b);
-  solve_upper_triangular(n, qr.r, q, x);
+  solve_upper_triangular<T, max_m, max_n>(n, qr.r, b, x);
   return errc::success;
 }
 
 template <class T, int max_m, int max_n>
-P3A_HOST P3A_DEVICE void solve(
+P3A_HOST P3A_DEVICE errc solve(
     static_array<static_array<T, max_m>, max_n>& a,
     static_array<T, max_m>& b,
     static_array<T, max_n>& x)
 {
-  return solve(max_m, max_n, a, b);
+  return solve(max_m, max_n, a, b, x);
 }
 
 }
