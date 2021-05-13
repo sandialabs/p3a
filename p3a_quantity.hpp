@@ -41,6 +41,16 @@ class quantity {
   {
     return quantity(zero_value<T>());
   }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  quantity maximum()
+  {
+    return quantity(maximum_value<T>());
+  }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  quantity minimum()
+  {
+    return quantity(minimum_value<T>());
+  }
 };
 
 namespace details {

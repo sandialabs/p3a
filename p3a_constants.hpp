@@ -9,7 +9,11 @@ namespace p3a {
 namespace constants {
 
 template <class T>
-struct maximum;
+struct maximum {
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  double value() { return T::maximum(); }
+};
+
 template <>
 struct maximum<double> {
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline static constexpr
@@ -17,7 +21,11 @@ struct maximum<double> {
 };
 
 template <class T>
-struct minimum;
+struct minimum {
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  double value() { return T::minimum(); }
+};
+
 template <>
 struct minimum<double> {
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline static constexpr

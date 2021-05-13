@@ -67,6 +67,29 @@ class box3 {
     return m_lower == other.m_lower &&
            m_upper == other.m_upper;
   }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  box3 empty()
+  {
+    return box3(
+        vector3<T>(
+          maximum_value<T>(),
+          maximum_value<T>(),
+          maximum_value<T>()),
+        vector3<T>(
+          minimum_value<T>(),
+          minimum_value<T>(),
+          minimum_value<T>()));
+  }
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+  void include_point(vector3<T> const& point)
+  {
+    m_lower.x() = minimum(m_lower.x(), point.x());
+    m_lower.y() = minimum(m_lower.y(), point.y());
+    m_lower.z() = minimum(m_lower.z(), point.z());
+    m_upper.x() = maximum(m_upper.x(), point.x());
+    m_upper.y() = maximum(m_upper.y(), point.y());
+    m_upper.z() = maximum(m_upper.z(), point.z());
+  }
 };
 
 template <class T>
