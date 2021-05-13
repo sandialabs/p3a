@@ -52,6 +52,7 @@ set(P3A_HEADERS
   p3a_qr.hpp
   p3a_skew3x3.hpp
   p3a_eigen.hpp
+  p3a_plane.hpp
   )
 
 set(P3A_SOURCES

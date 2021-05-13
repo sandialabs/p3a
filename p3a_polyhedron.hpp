@@ -2,6 +2,7 @@
 
 #include "p3a_quantity.hpp"
 #include "p3a_box3.hpp"
+#include "p3a_plane.hpp"
 
 namespace p3a {
 
@@ -29,9 +30,7 @@ struct polyhedron {
   [[nodiscard]] P3A_HOST P3A_DEVICE inline
   volume_quantity<T> volume() const;
   P3A_HOST P3A_DEVICE inline
-  void clip(
-      vector3<adimensional_quantity<T>> const& normal,
-      length_quantity<T> const& distance);
+  void clip(plane<T> const& plane_arg);
   P3A_HOST P3A_DEVICE inline
   polyhedron(box3<T> const&);
   polyhedron() = default;
@@ -50,9 +49,7 @@ struct polyhedron {
  */
 template <class T, int MaxVerts>
 P3A_HOST P3A_DEVICE inline
-void polyhedron<T, MaxVerts>::clip(
-      vector3<adimensional_quantity<T>> const& normal,
-      length_quantity<T> const& distance)
+void polyhedron<T, MaxVerts>::clip(plane<T> const& clip_plane)
 {
   if (this->nverts <= 0) return;
   // variable declarations
@@ -67,7 +64,7 @@ void polyhedron<T, MaxVerts>::clip(
   // for marking clipped vertices
   int clipped[MaxVerts] = {};  // all initialized to zero
   for (v = 0; v < onv; ++v) {
-    sdists[v] = distance + dot_product(this->verts[v].pos, normal);
+    sdists[v] = clip_plane.distance(this->verts[v].pos);
     if (sdists[v] < smin) smin = sdists[v];
     if (sdists[v] > smax) smax = sdists[v];
     if (sdists[v] < zero_value<length_quantity<T>>()) clipped[v] = 1;
