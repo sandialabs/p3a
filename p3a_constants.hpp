@@ -11,7 +11,7 @@ namespace constants {
 template <class T>
 struct maximum {
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline static constexpr
-  double value() { return T::maximum(); }
+  T value() { return T::maximum(); }
 };
 
 template <>
@@ -23,7 +23,7 @@ struct maximum<double> {
 template <class T>
 struct minimum {
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline static constexpr
-  double value() { return T::minimum(); }
+  T value() { return T::minimum(); }
 };
 
 template <>

@@ -32,8 +32,11 @@ struct polyhedron {
   P3A_HOST P3A_DEVICE inline
   void clip(plane<T> const& plane_arg);
   P3A_HOST P3A_DEVICE inline
-  polyhedron(box3<T> const&);
-  polyhedron() = default;
+  polyhedron(box3<length_quantity<T>> const&);
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+  polyhedron()
+   :nverts(0)
+  {}
 };
 
 /**
@@ -174,7 +177,7 @@ volume_quantity<T> polyhedron<T, MaxVerts>::volume() const
 
 template <class T, int MaxVerts>
 P3A_HOST P3A_DEVICE inline
-polyhedron<T, MaxVerts>::polyhedron(box3<T> const& box)
+polyhedron<T, MaxVerts>::polyhedron(box3<length_quantity<T>> const& box)
 {
   nverts = 8;
   verts[0].pnbrs[0] = 1;
@@ -201,14 +204,14 @@ polyhedron<T, MaxVerts>::polyhedron(box3<T> const& box)
   verts[7].pnbrs[0] = 5;
   verts[7].pnbrs[1] = 3;
   verts[7].pnbrs[2] = 6;
-  verts[0].pos = vector3<T>(box.lower().x(), box.lower().y(), box.lower().z());
-  verts[1].pos = vector3<T>(box.upper().x(), box.lower().y(), box.lower().z());
-  verts[2].pos = vector3<T>(box.lower().x(), box.upper().y(), box.lower().z());
-  verts[3].pos = vector3<T>(box.upper().x(), box.upper().y(), box.lower().z());
-  verts[4].pos = vector3<T>(box.lower().x(), box.lower().y(), box.upper().z());
-  verts[5].pos = vector3<T>(box.upper().x(), box.lower().y(), box.upper().z());
-  verts[6].pos = vector3<T>(box.lower().x(), box.upper().y(), box.upper().z());
-  verts[7].pos = vector3<T>(box.upper().x(), box.upper().y(), box.upper().z());
+  verts[0].pos = position_quantity<T>(box.lower().x(), box.lower().y(), box.lower().z());
+  verts[1].pos = position_quantity<T>(box.upper().x(), box.lower().y(), box.lower().z());
+  verts[2].pos = position_quantity<T>(box.lower().x(), box.upper().y(), box.lower().z());
+  verts[3].pos = position_quantity<T>(box.upper().x(), box.upper().y(), box.lower().z());
+  verts[4].pos = position_quantity<T>(box.lower().x(), box.lower().y(), box.upper().z());
+  verts[5].pos = position_quantity<T>(box.upper().x(), box.lower().y(), box.upper().z());
+  verts[6].pos = position_quantity<T>(box.lower().x(), box.upper().y(), box.upper().z());
+  verts[7].pos = position_quantity<T>(box.upper().x(), box.upper().y(), box.upper().z());
 }
 
 }

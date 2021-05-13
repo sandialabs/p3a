@@ -12,7 +12,7 @@ class box3 {
  public:
   P3A_ALWAYS_INLINE box3() = default;
   template <class U>
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr explicit
   box3(box3<U> const& other)
     :m_lower(other.lower())
     ,m_upper(other.upper())

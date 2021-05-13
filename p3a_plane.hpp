@@ -42,6 +42,11 @@ class plane {
   {
     return m_offset;
   }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  plane inverse() const
+  {
+    return plane(-m_normal, -m_offset);
+  }
 };
 
 }
