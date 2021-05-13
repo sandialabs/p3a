@@ -1,6 +1,7 @@
 #pragma once
 
 #include "p3a_quantity.hpp"
+#include "p3a_box3.hpp"
 
 namespace p3a {
 
@@ -13,7 +14,10 @@ namespace p3a {
  *   needs to be the maximum number of representable vertices
  *   plus the maximum number of representable edges intersected by a plane
  */
-template <class T, int MaxVerts = 128>
+
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static constexpr int default_polyhedron_vertex_count() { return 128; }
+
+template <class T, int MaxVerts = default_polyhedron_vertex_count()>
 struct polyhedron {
   static constexpr int max_verts = MaxVerts;
   struct vertex {
@@ -28,6 +32,9 @@ struct polyhedron {
   void clip(
       vector3<adimensional_quantity<T>> const& normal,
       length_quantity<T> const& distance);
+  P3A_HOST P3A_DEVICE inline
+  polyhedron(box3<T> const&);
+  polyhedron() = default;
 };
 
 /**
@@ -166,6 +173,45 @@ volume_quantity<T> polyhedron<T, MaxVerts>::volume() const
     }
   }
   return sixv / 6;
+}
+
+template <class T, int MaxVerts>
+P3A_HOST P3A_DEVICE inline
+polyhedron<T, MaxVerts>::polyhedron(box3<T> const& box)
+{
+  nverts = 8;
+  verts[0].pnbrs[0] = 1;
+  verts[0].pnbrs[1] = 4;
+  verts[0].pnbrs[2] = 2;
+  verts[1].pnbrs[0] = 3;
+  verts[1].pnbrs[1] = 5;
+  verts[1].pnbrs[2] = 0;
+  verts[2].pnbrs[0] = 0;
+  verts[2].pnbrs[1] = 6;
+  verts[2].pnbrs[2] = 3;
+  verts[3].pnbrs[0] = 2;
+  verts[3].pnbrs[1] = 7;
+  verts[3].pnbrs[2] = 1;
+  verts[4].pnbrs[0] = 6;
+  verts[4].pnbrs[1] = 0;
+  verts[4].pnbrs[2] = 5;
+  verts[5].pnbrs[0] = 4;
+  verts[5].pnbrs[1] = 1;
+  verts[5].pnbrs[2] = 7;
+  verts[6].pnbrs[0] = 7;
+  verts[6].pnbrs[1] = 2;
+  verts[6].pnbrs[2] = 4;
+  verts[7].pnbrs[0] = 5;
+  verts[7].pnbrs[1] = 3;
+  verts[7].pnbrs[2] = 6;
+  verts[0].pos = vector3<T>(box.lower().x(), box.lower().y(), box.lower().z());
+  verts[1].pos = vector3<T>(box.upper().x(), box.lower().y(), box.lower().z());
+  verts[2].pos = vector3<T>(box.lower().x(), box.upper().y(), box.lower().z());
+  verts[3].pos = vector3<T>(box.upper().x(), box.upper().y(), box.lower().z());
+  verts[4].pos = vector3<T>(box.lower().x(), box.lower().y(), box.upper().z());
+  verts[5].pos = vector3<T>(box.upper().x(), box.lower().y(), box.upper().z());
+  verts[6].pos = vector3<T>(box.lower().x(), box.upper().y(), box.upper().z());
+  verts[7].pos = vector3<T>(box.upper().x(), box.upper().y(), box.upper().z());
 }
 
 }
