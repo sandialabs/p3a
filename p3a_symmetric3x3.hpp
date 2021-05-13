@@ -117,6 +117,19 @@ symmetric3x3<T> operator-(symmetric3x3<T> const& a, symmetric3x3<T> const& b)
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+symmetric3x3<T> operator-(symmetric3x3<T> const& a)
+{
+  return symmetric3x3<T>(
+    -a.xx(),
+    -a.xy(),
+    -a.xz(),
+    -a.yy(),
+    -a.yz(),
+    -a.zz());
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 T trace(symmetric3x3<T> const& a)
 {
   return a.xx() + a.yy() + a.zz();
