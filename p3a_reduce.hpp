@@ -431,7 +431,11 @@ class reproducible_floating_point_adder {
   reproducible_floating_point_adder& operator=(reproducible_floating_point_adder&&) = default;
   reproducible_floating_point_adder(reproducible_floating_point_adder const&) = delete;
   reproducible_floating_point_adder& operator=(reproducible_floating_point_adder const&) = delete;
+#ifdef __CUDACC__
+ public:
+#else
  private:
+#endif
   [[nodiscard]] P3A_NEVER_INLINE
   double reduce_stored_values()
   {

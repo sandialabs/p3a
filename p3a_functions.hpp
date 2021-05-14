@@ -97,14 +97,14 @@ A linear_interpolation(A a, A b, B t) {
 }
 
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 T load(T const* ptr, int offset)
 {
   return ptr[offset];
 }
 
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(T const& value, T* ptr, int offset)
 {
   ptr[offset] = value;

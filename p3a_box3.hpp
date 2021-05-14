@@ -2,6 +2,7 @@
 
 #include "p3a_vector3.hpp"
 #include "p3a_functions.hpp"
+#include "p3a_constants.hpp"
 
 namespace p3a {
 

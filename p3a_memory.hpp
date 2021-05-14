@@ -73,7 +73,7 @@ P3A_NEVER_INLINE void uninitialized_copy(
 #endif
 
 template <class T>
-P3A_ALWAYS_INLINE void destroy_at(
+P3A_ALWAYS_INLINE inline void destroy_at(
     serial_execution,
     T* p)
 {
@@ -97,9 +97,8 @@ P3A_NEVER_INLINE void destroy(
 #ifdef __CUDACC__
 
 template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE void destroy_at(
-    cuda_execution,
-    T* p)
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+void destroy_at(cuda_execution, T* p)
 {
   p->~T();
 }

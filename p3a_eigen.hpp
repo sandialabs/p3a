@@ -5,6 +5,7 @@
 namespace p3a {
 
 template <class T, int N>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 T norm(
     static_array<static_array<T, N>, N> const& a)
 {
@@ -18,6 +19,7 @@ T norm(
 }
 
 template <class T, int N>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 T off_diagonal_norm(
     static_array<static_array<T, N>, N> const& a)
 {
@@ -33,6 +35,7 @@ T off_diagonal_norm(
 }
 
 template <class T, int N>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void maximum_off_diagonal_indices(
     static_array<static_array<T, N>, N> const& a,
     int& p,
@@ -60,6 +63,7 @@ void maximum_off_diagonal_indices(
 // \param \f$ A = [f, g; g, h] \in S(2) \f$
 // \return \f$ c, s \rightarrow [c, -s; s, c]\f diagonalizes A$
 template <class T>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void symmetric_schur(
     T const& f,
     T const& g,
@@ -83,6 +87,7 @@ void symmetric_schur(
 
 /* Apply Givens-Jacobi rotation on the left */
 template <class T, int N>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void rotate_givens_left(
     T const& c,
     T const& s,
@@ -100,6 +105,7 @@ void rotate_givens_left(
 
 /* Apply Givens-Jacobi rotation on the right */
 template <class T, int N>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void rotate_givens_right(
     T const& c,
     T const& s,
@@ -113,10 +119,10 @@ void rotate_givens_right(
     a[j][i] = c * t1 - s * t2;
     a[j][k] = s * t1 + c * t2;
   }
-  return a;
 }
 
 template <class T, int N>
+P3A_HOST P3A_DEVICE inline
 void eigendecompose(
     static_array<static_array<T, N>, N>& a,
     static_array<static_array<T, N>, N>& q,
@@ -145,6 +151,7 @@ void eigendecompose(
 }
 
 template <class T, int N>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 T eigen_tolerance(
     static_array<static_array<T, N>, N> const& a)
 {
@@ -154,6 +161,7 @@ T eigen_tolerance(
 }
 
 template <class T, int N>
+P3A_HOST P3A_DEVICE inline
 void eigendecompose(
     static_array<static_array<T, N>, N>& a,
     static_array<static_array<T, N>, N>& q)

@@ -253,7 +253,7 @@ auto square_root(quantity<T, Dimension> const& a)
 }
 
 template <class T, class Dimension>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
 quantity<T, Dimension> absolute_value(quantity<T, Dimension> const& a)
 {
   return quantity<T, Dimension>(absolute_value(a.value()));
@@ -343,7 +343,7 @@ template <class T>
 using capacitance_quantity = quantity<T, capacitance_dimension>;
 
 template <class T, class Dimension>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 quantity<T, Dimension> load_scalar(
     quantity<T, Dimension> const* ptr, int offset)
 {
@@ -351,7 +351,7 @@ quantity<T, Dimension> load_scalar(
 }
 
 template <class T, class Dimension, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 quantity<simd<T, Abi>, Dimension> load_scalar(
     quantity<T, Dimension> const* ptr, int offset, simd_mask<T, Abi> const& mask)
 {
@@ -359,7 +359,7 @@ quantity<simd<T, Abi>, Dimension> load_scalar(
 }
 
 template <class T, class Dimension, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 quantity<simd<T, Abi>, Dimension> load_scalar(
     quantity<T, Dimension> const* ptr, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
 {
@@ -367,7 +367,7 @@ quantity<simd<T, Abi>, Dimension> load_scalar(
 }
 
 template <class T, class Dimension, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 vector3<quantity<simd<T, Abi>, Dimension>> load_vector3(
     quantity<T, Dimension> const* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
 {
@@ -378,7 +378,7 @@ vector3<quantity<simd<T, Abi>, Dimension>> load_vector3(
 }
 
 template <class T, class Dimension, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 symmetric3x3<quantity<simd<T, Abi>, Dimension>> load_symmetric3x3(
     quantity<T, Dimension> const* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
 {
@@ -392,7 +392,7 @@ symmetric3x3<quantity<simd<T, Abi>, Dimension>> load_symmetric3x3(
 }
 
 template <class T, class Dimension, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
     quantity<simd<T, Abi>, Dimension> const& q,
     quantity<T, Dimension>* ptr,
@@ -403,7 +403,7 @@ void store(
 }
 
 template <class T, class Dimension, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
     vector3<quantity<simd<T, Abi>, Dimension>> const& q,
     quantity<T, Dimension>* ptr,
@@ -417,7 +417,7 @@ void store(
 }
 
 template <class T, class Dimension, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
     symmetric3x3<quantity<simd<T, Abi>, Dimension>> const& q,
     quantity<T, Dimension>* ptr,
