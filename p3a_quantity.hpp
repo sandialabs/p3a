@@ -53,6 +53,89 @@ class quantity {
   }
 };
 
+template <class T>
+using adimensional_quantity = quantity<T, adimensional>;
+template <class T>
+using time_quantity = quantity<T, time_dimension>;
+template <class T>
+using length_quantity = quantity<T, length_dimension>;
+template <class T>
+using position_quantity = vector3<length_quantity<T>>;
+template <class T>
+using area_quantity = quantity<T, area_dimension>;
+template <class T>
+using volume_quantity = quantity<T, volume_dimension>;
+template <class T>
+using mass_quantity = quantity<T, mass_dimension>;
+template <class T>
+using temperature_quantity = quantity<T, temperature_dimension>;
+template <class T>
+using density_quantity = quantity<T, density_dimension>;
+template <class T>
+using mass_density_quantity = quantity<T, mass_density_dimension>;
+template <class T>
+using pressure_quantity = quantity<T, pressure_dimension>;
+template <class T>
+using energy_quantity = quantity<T, energy_dimension>;
+template <class T>
+using specific_energy_quantity = quantity<T, specific_energy_dimension>;
+template <class T>
+using specific_energy_rate_quantity = quantity<T, specific_energy_rate_dimension>;
+template <class T>
+using energy_density_quantity = quantity<T, energy_density_dimension>;
+template <class T>
+using speed_quantity = quantity<T, velocity_dimension>;
+template <class T>
+using velocity_quantity = vector3<quantity<T, velocity_dimension>>;
+template <class T>
+using axial_momentum_quantity = quantity<T, momentum_dimension>;
+template <class T>
+using axial_momentum_density_quantity = quantity<T, momentum_density_dimension>;
+template <class T>
+using momentum_quantity = vector3<quantity<T, momentum_dimension>>;
+template <class T>
+using axial_acceleration_quantity = quantity<T, acceleration_dimension>;
+template <class T>
+using acceleration_quantity = vector3<axial_acceleration_quantity<T>>;
+template <class T>
+using axial_force_quantity = quantity<T, force_dimension>;
+template <class T>
+using force_quantity = vector3<axial_force_quantity<T>>;
+template <class T>
+using axial_gradient_quantity = quantity<T, gradient_dimension>;
+template <class T>
+using gradient_quantity = vector3<axial_gradient_quantity<T>>;
+template <class T>
+using rate_quantity = quantity<T, rate_dimension>;
+template <class T>
+using velocity_gradient_quantity = matrix3x3<rate_quantity<T>>;
+template <class T>
+using strain_rate_quantity = symmetric3x3<rate_quantity<T>>;
+template <class T>
+using kinematic_viscosity_quantity = quantity<T, kinematic_viscosity_dimension>;
+template <class T>
+using dynamic_viscosity_quantity = quantity<T, dynamic_viscosity_dimension>;
+template <class T>
+using specific_heat_quantity = quantity<T, specific_heat_dimension>;
+template <class T>
+using electric_current_quantity = quantity<T, electric_current_dimension>;
+template <class T>
+using electric_charge_quantity = quantity<T, electric_charge_dimension>;
+template <class T>
+using electric_potential_quantity = quantity<T, electric_potential_dimension>;
+template <class T>
+using electrical_resistance_quantity = quantity<T, electrical_resistance_dimension>;
+template <class T>
+using electrical_conductance_quantity = quantity<T, electrical_conductance_dimension>;
+template <class T>
+using electrical_resistivity_quantity = quantity<T, electrical_resistivity_dimension>;
+template <class T>
+using electrical_conductivity_quantity = quantity<T, electrical_conductivity_dimension>;
+template <class T>
+using inductance_quantity = quantity<T, inductance_dimension>;
+template <class T>
+using capacitance_quantity = quantity<T, capacitance_dimension>;
+
 namespace details {
 
 template <class T, class Dimension>
@@ -190,6 +273,14 @@ operator*(
   return quantity<decltype(T() * B()), Dimension>(a.value() * b);
 }
 
+template <class T, class B>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+std::enable_if_t<std::is_arithmetic_v<B>, adimensional_quantity<T>>
+operator-(adimensional_quantity<T> const& a, B const& b)
+{
+  return a - adimensional_quantity<T>(T(b));
+}
+
 template <class T, class Dimension>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator==(
@@ -258,89 +349,6 @@ quantity<T, Dimension> absolute_value(quantity<T, Dimension> const& a)
 {
   return quantity<T, Dimension>(absolute_value(a.value()));
 }
-
-template <class T>
-using adimensional_quantity = quantity<T, adimensional>;
-template <class T>
-using time_quantity = quantity<T, time_dimension>;
-template <class T>
-using length_quantity = quantity<T, length_dimension>;
-template <class T>
-using position_quantity = vector3<length_quantity<T>>;
-template <class T>
-using area_quantity = quantity<T, area_dimension>;
-template <class T>
-using volume_quantity = quantity<T, volume_dimension>;
-template <class T>
-using mass_quantity = quantity<T, mass_dimension>;
-template <class T>
-using temperature_quantity = quantity<T, temperature_dimension>;
-template <class T>
-using density_quantity = quantity<T, density_dimension>;
-template <class T>
-using mass_density_quantity = quantity<T, mass_density_dimension>;
-template <class T>
-using pressure_quantity = quantity<T, pressure_dimension>;
-template <class T>
-using energy_quantity = quantity<T, energy_dimension>;
-template <class T>
-using specific_energy_quantity = quantity<T, specific_energy_dimension>;
-template <class T>
-using specific_energy_rate_quantity = quantity<T, specific_energy_rate_dimension>;
-template <class T>
-using energy_density_quantity = quantity<T, energy_density_dimension>;
-template <class T>
-using speed_quantity = quantity<T, velocity_dimension>;
-template <class T>
-using velocity_quantity = vector3<quantity<T, velocity_dimension>>;
-template <class T>
-using axial_momentum_quantity = quantity<T, momentum_dimension>;
-template <class T>
-using axial_momentum_density_quantity = quantity<T, momentum_density_dimension>;
-template <class T>
-using momentum_quantity = vector3<quantity<T, momentum_dimension>>;
-template <class T>
-using axial_acceleration_quantity = quantity<T, acceleration_dimension>;
-template <class T>
-using acceleration_quantity = vector3<axial_acceleration_quantity<T>>;
-template <class T>
-using axial_force_quantity = quantity<T, force_dimension>;
-template <class T>
-using force_quantity = vector3<axial_force_quantity<T>>;
-template <class T>
-using axial_gradient_quantity = quantity<T, gradient_dimension>;
-template <class T>
-using gradient_quantity = vector3<axial_gradient_quantity<T>>;
-template <class T>
-using rate_quantity = quantity<T, rate_dimension>;
-template <class T>
-using velocity_gradient_quantity = matrix3x3<rate_quantity<T>>;
-template <class T>
-using strain_rate_quantity = symmetric3x3<rate_quantity<T>>;
-template <class T>
-using kinematic_viscosity_quantity = quantity<T, kinematic_viscosity_dimension>;
-template <class T>
-using dynamic_viscosity_quantity = quantity<T, dynamic_viscosity_dimension>;
-template <class T>
-using specific_heat_quantity = quantity<T, specific_heat_dimension>;
-template <class T>
-using electric_current_quantity = quantity<T, electric_current_dimension>;
-template <class T>
-using electric_charge_quantity = quantity<T, electric_charge_dimension>;
-template <class T>
-using electric_potential_quantity = quantity<T, electric_potential_dimension>;
-template <class T>
-using electrical_resistance_quantity = quantity<T, electrical_resistance_dimension>;
-template <class T>
-using electrical_conductance_quantity = quantity<T, electrical_conductance_dimension>;
-template <class T>
-using electrical_resistivity_quantity = quantity<T, electrical_resistivity_dimension>;
-template <class T>
-using electrical_conductivity_quantity = quantity<T, electrical_conductivity_dimension>;
-template <class T>
-using inductance_quantity = quantity<T, inductance_dimension>;
-template <class T>
-using capacitance_quantity = quantity<T, capacitance_dimension>;
 
 template <class T, class Dimension>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
