@@ -32,6 +32,7 @@ class dynamic_array {
   P3A_NEVER_INLINE ~dynamic_array()
   {
     if (m_begin != nullptr) {
+      destroy(m_execution_policy, m_begin, m_begin + m_size);
       m_allocator.deallocate(m_begin, m_capacity);
       m_begin = nullptr;
       m_size = 0;
