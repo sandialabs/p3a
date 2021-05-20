@@ -32,7 +32,8 @@ class units {
     ,m_temperature_unit(temperature_unit_arg)
     ,m_amount_unit(amount_unit_arg)
     ,m_intensity_unit(intensity_unit_arg)
-  {}
+  {
+  }
   template <class Dimension>
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
   T unit() const
@@ -96,9 +97,9 @@ P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 units<T> cgs_units()
 {
   return units<T>(
-      T(1) / T(10),
-      T(1) / T(1000),
       T(1),
+      T(1) / T(100),
+      T(1) / T(1000),
 // one (statcoulomb or Franklin) is 10/c Amperes,
 // where c is the speed of light in CGS units,
 // so 1/(10 * c) when c is expressed in SI units
