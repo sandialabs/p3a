@@ -472,4 +472,20 @@ minimum(
   return minimum(a.value(), b.value());
 }
 
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+speed_quantity<T> speed_of_light_quantity() { return speed_of_light_value<T>(); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+temperature_quantity<T> standard_temperature_quantity() { return T(273.15); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+pressure_quantity<T> standard_pressure_quantity() { return T(100 * 1000); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+temperature_quantity<T> normal_temperature_quantity() { return T(293.15); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+pressure_quantity<T> normal_pressure_quantity() { return T(101325); }
+
 }
