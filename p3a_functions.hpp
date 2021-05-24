@@ -115,4 +115,10 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr double sign(double x)
   return (x < 0.0) ? -1.0 : 1.0;
 }
 
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+double arcsin(double a)
+{
+  return std::asin(a);
+}
+
 }

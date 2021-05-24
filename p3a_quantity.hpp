@@ -488,4 +488,11 @@ template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 pressure_quantity<T> normal_pressure_quantity() { return T(101325); }
 
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+adimensional_quantity<T> arcsin(adimensional_quantity<T> const& a)
+{
+  return adimensional_quantity<T>(arcsin(a.value()));
+}
+
 }
