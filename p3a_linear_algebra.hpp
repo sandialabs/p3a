@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include "p3a_reduce.hpp"
 
 namespace p3a {
