@@ -40,7 +40,7 @@ class status {
 class request {
   MPI_Request implementation;
  public:
-  constexpr request()
+  request()
     :implementation(MPI_REQUEST_NULL)
   {}
   constexpr request(MPI_Request implementation_arg)
@@ -73,7 +73,7 @@ class op {
     :implementation(implementation_in)
     ,owned(owned_in)
   {}
-  constexpr op()
+  op()
     :implementation(MPI_OP_NULL)
     ,owned(false)
   {}
@@ -108,7 +108,7 @@ class datatype {
     :implementation(implementation_in)
     ,owned(owned_in)
   {}
-  constexpr datatype()
+  datatype()
     :implementation(MPI_DATATYPE_NULL)
     ,owned(false)
   {}
@@ -249,7 +249,7 @@ class comm {
     :implementation(implementation_arg)
     ,owned(owned_arg)
   {}
-  constexpr comm()
+  comm()
     :implementation(MPI_COMM_NULL)
     ,owned(false)
   {}
