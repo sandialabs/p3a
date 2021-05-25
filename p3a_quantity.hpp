@@ -487,6 +487,13 @@ temperature_quantity<T> normal_temperature_quantity() { return T(293.15); }
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 pressure_quantity<T> normal_pressure_quantity() { return T(101325); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+energy_quantity<T> electron_volt_quantity() { return electron_volt_value<T>(); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+quantity<T, dimension_quotient<energy_dimension, temperature_dimension>>
+boltzmann_quantity() { return boltzmann_value<T>(); }
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline

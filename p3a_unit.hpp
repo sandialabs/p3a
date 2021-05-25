@@ -87,14 +87,17 @@ class units {
 
 template <class T>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-units<T> si_units()
+units<T> centimetre_gram_second_units()
 {
-  return units<T>();
+  return units<T>(
+      T(1),
+      T(1) / T(100),
+      T(1) / T(1000));
 }
 
 template <class T>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-units<T> cgs_units()
+units<T> electrostatic_units()
 {
   return units<T>(
       T(1),

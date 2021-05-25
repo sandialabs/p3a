@@ -59,22 +59,28 @@ struct zero_value_helper<double> {
 };
 
 template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 double pi_value() { return T(3.14159265358979323846264338327950288419716939937510l); }
 template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T maximum_value() { return constants::maximum<T>::value(); }
 template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T minimum_value() { return constants::minimum<T>::value(); }
 template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T zero_value() { return zero_value_helper<T>::value(); }
 template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T one_value() { return T(1); }
 template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T speed_of_light_value() { return T(299792458); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+T electron_volt_value() { return T(1.602176634e-19); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+T boltzmann_value() { return T(1.380649e-23); }
 
 }
