@@ -78,6 +78,8 @@ using pressure_quantity = quantity<T, pressure_dimension>;
 template <class T>
 using energy_quantity = quantity<T, energy_dimension>;
 template <class T>
+using power_quantity = quantity<T, power_dimension>;
+template <class T>
 using specific_energy_quantity = quantity<T, specific_energy_dimension>;
 template <class T>
 using specific_energy_rate_quantity = quantity<T, specific_energy_rate_dimension>;

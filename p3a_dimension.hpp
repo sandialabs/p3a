@@ -75,6 +75,7 @@ using density_dimension = dimension<0, -3, 0>;
 using mass_density_dimension = dimension<0, -3, 1>;
 using pressure_dimension = dimension<-2, -1, 1>;
 using energy_dimension = dimension<-2, 2, 1>;
+using power_dimension = dimension<-3, 2, 1>;
 using specific_energy_dimension = dimension<-2, 2, 0>;
 using specific_energy_rate_dimension = dimension<-3, 2, 0>;
 using energy_density_dimension = dimension<-2, -1, 1>;
