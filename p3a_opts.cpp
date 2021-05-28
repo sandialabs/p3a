@@ -150,8 +150,9 @@ void opts::parse(int& argc, char** argv)
       char* c_argument = arguments.front();
       arguments.pop();
       std::string const argument(c_argument);
-      if (option_receiving_arguments->argument_count() ==
-          option_receiving_arguments->expected_argument_count()) {
+      if (option_receiving_arguments &&
+          (option_receiving_arguments->argument_count() ==
+           option_receiving_arguments->expected_argument_count())) {
         option_receiving_arguments = nullptr;
       }
       if (option_receiving_arguments) {
@@ -198,7 +199,8 @@ void opts::parse(int& argc, char** argv)
       }
     }
     for (opt const& o : m_options) {
-      if (o.expected_argument_count() != -1 &&
+      if (o.is_set() &&
+          o.expected_argument_count() != -1 &&
           o.expected_argument_count() != o.argument_count()) {
         throw opt_error(
             "option " +
@@ -210,7 +212,8 @@ void opts::parse(int& argc, char** argv)
       }
     }
     for (opt const& o : m_positional_options) {
-      if (o.expected_argument_count() != -1 &&
+      if (o.is_set() &&
+          o.expected_argument_count() != -1 &&
           o.expected_argument_count() != o.argument_count()) {
         throw opt_error(
             "option " +
@@ -257,6 +260,23 @@ opt const& opts::get_option(std::string const& name) const
       "option " +
       name +
       " requested but was never defined");
+}
+
+std::string opts::help_text() const
+{
+  std::string result;
+  result += "  [options]";
+  for (opt const& o : m_positional_options) {
+    result += " ";
+    result += o.name();
+  }
+  result += "\n";
+  for (opt const& o : m_options) {
+    result += "  --";
+    result += o.name();
+    result += "\n";
+  }
+  return result;
 }
 
 }
