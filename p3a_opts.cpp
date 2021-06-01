@@ -135,6 +135,7 @@ opt& opts::add_positional(std::string const& name)
     }
   }
   m_positional_options.push_back(opt(name));
+  m_positional_options.back().expect_arguments(1);
   return m_positional_options.back();
 }
 
@@ -183,6 +184,9 @@ void opts::parse(int& argc, char** argv)
         if (!was_new_option) {
           bool was_given_to_positional = false;
           for (opt& o : m_positional_options) {
+            if (o.expected_argument_count() == 0) {
+              throw opt_error("positional option " + o.name() + " expects no arguments");
+            }
             if (o.argument_count() != o.expected_argument_count()) {
               o.set();
               option_receiving_arguments = &o;
@@ -241,7 +245,12 @@ int opts::argument_count(std::string const& name) const
 
 std::string const& opts::argument(std::string const& name, int i) const
 {
-  return get_option(name).argument(i);
+  try {
+    return get_option(name).argument(i);
+  } catch (opt_error const& e) {
+    throw opt_error(
+        std::string(e.what()) + "\n" + help_text());
+  }
 }
 
 opt const& opts::get_option(std::string const& name) const
@@ -265,17 +274,35 @@ opt const& opts::get_option(std::string const& name) const
 std::string opts::help_text() const
 {
   std::string result;
-  result += "  [options]";
+  result += "  command line options are:\n ";
   for (opt const& o : m_positional_options) {
-    result += " ";
+    result += " [";
+    if (o.expected_argument_count() == -1) {
+      result += o.name();
+      result += "...";
+    } else {
+      for (int i = 0; i < o.expected_argument_count(); ++i) {
+        if (i > 0) result += " ";
+        result += o.name();
+        result += std::to_string(i);
+      }
+    }
+    result += "]";
+  }
+  for (opt const& o : m_options) {
+    result += " [--";
     result += o.name();
+    if (o.expected_argument_count() == -1) {
+      result += " [args...]";
+    } else {
+      for (int i = 0; i < o.expected_argument_count(); ++i) {
+        result += " arg";
+        result += std::to_string(i);
+      }
+    }
+    result += "]";
   }
   result += "\n";
-  for (opt const& o : m_options) {
-    result += "  --";
-    result += o.name();
-    result += "\n";
-  }
   return result;
 }
 
