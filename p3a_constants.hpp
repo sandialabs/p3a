@@ -82,5 +82,8 @@ T electron_volt_value() { return T(1.602176634e-19); }
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T boltzmann_value() { return T(1.380649e-23); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+T inch_value() { return T(25.4e-3); }
 
 }
