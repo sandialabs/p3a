@@ -50,7 +50,7 @@ set(P3A_HEADERS
   p3a_simd_scalar.hpp
   p3a_int128.hpp
   p3a_counting_iterator.hpp
-  p3a_linear_algebra.hpp
+  p3a_dynamic_matrix.hpp
   p3a_skew3x3.hpp
   p3a_static_matrix.hpp
   p3a_eigen.hpp
@@ -62,7 +62,6 @@ set(P3A_HEADERS
 set(P3A_SOURCES
   p3a_execution.cpp
   p3a_mpi.cpp
-  p3a_linear_algebra.cpp
   p3a_opts.cpp
   )
 
