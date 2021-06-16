@@ -30,7 +30,7 @@ class static_matrix {
   {
     return m_storage[i][j];
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   void assign_zero()
   {
     for (int i = 0; i < M; ++i) {
@@ -39,7 +39,7 @@ class static_matrix {
       }
     }
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   void assign_identity()
   {
     for (int i = 0; i < M; ++i) {
@@ -47,6 +47,20 @@ class static_matrix {
         m_storage[i][j] = T(i == j);
       }
     }
+  }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  static_matrix zero()
+  {
+    static_matrix result;
+    result.assign_zero();
+    return result;
+  }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  static_matrix identity()
+  {
+    static_matrix result;
+    result.assign_identity();
+    return result;
   }
 };
 
@@ -63,6 +77,18 @@ operator/(static_matrix<A, M, N> const& a, B const& b)
     }
   }
   return result;
+}
+
+template <class A, int M, int N, class B>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+typename std::enable_if<is_scalar<B>, void>::type
+operator*=(static_matrix<A, M, N>& a, B const& b)
+{
+  for (int i = 0; i < M; ++i) {
+    for (int j = 0; j < N; ++j) {
+      a(i, j) *= b;
+    }
+  }
 }
 
 }

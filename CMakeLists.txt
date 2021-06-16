@@ -28,6 +28,7 @@ set(P3A_HEADERS
   p3a_grid3.hpp
   p3a_scaled_identity3x3.hpp
   p3a_symmetric3x3.hpp
+  p3a_matrix2x2.hpp
   p3a_matrix3x3.hpp
   p3a_execution.hpp
   p3a_dynamic_array.hpp
@@ -53,6 +54,7 @@ set(P3A_HEADERS
   p3a_skew3x3.hpp
   p3a_static_matrix.hpp
   p3a_eigen.hpp
+  p3a_svd.hpp
   p3a_plane.hpp
   p3a_opts.hpp
   )
