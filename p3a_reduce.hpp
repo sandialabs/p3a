@@ -439,12 +439,15 @@ class reproducible_floating_point_adder {
   [[nodiscard]] P3A_NEVER_INLINE
   double reduce_stored_values()
   {
+    int constexpr minimum_exponent =
+      std::numeric_limits<int>::lowest();
     int const local_max_exponent =
       m_exponent_reducer.transform_reduce(
           m_values.cbegin(), m_values.cend(),
-          std::numeric_limits<int>::lowest(),
+          minimum_exponent,
           maximizes<int>,
     [=] P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
+      if (value == 0.0) return minimum_exponent;
       int exponent;
       std::frexp(value, &exponent);
       return exponent;
