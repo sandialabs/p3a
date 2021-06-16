@@ -50,7 +50,6 @@ set(P3A_HEADERS
   p3a_int128.hpp
   p3a_counting_iterator.hpp
   p3a_linear_algebra.hpp
-  p3a_qr.hpp
   p3a_skew3x3.hpp
   p3a_eigen.hpp
   p3a_plane.hpp
