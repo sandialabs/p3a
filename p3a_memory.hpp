@@ -166,6 +166,23 @@ P3A_NEVER_INLINE void uninitialized_fill(
   }
 }
 
+#ifdef __CUDACC__
+
+template <class ForwardIt, class T>
+P3A_NEVER_INLINE void uninitialized_fill(
+    cuda_execution policy,
+    ForwardIt first,
+    ForwardIt last,
+    T value)
+{
+  for_each(policy, first, last,
+  [=] P3A_DEVICE (T& ref) P3A_ALWAYS_INLINE {
+    ::new (static_cast<void*>(&ref)) T(value);
+  });
+}
+
+#endif
+
 template <class ForwardIt1, class ForwardIt2>
 P3A_NEVER_INLINE void copy(
     serial_execution,
