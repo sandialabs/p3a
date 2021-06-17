@@ -94,7 +94,7 @@ request::~request()
 
 void waitall(int count, request* array_of_requests)
 {
-  MPI_Request* array_of_implementations = &(array_of_requests->get_implementation());
+  MPI_Request* array_of_implementations = &(array_of_requests->get());
   details::handle_mpi_error(
       MPI_Waitall(
         count,
@@ -121,7 +121,7 @@ op::~op()
   }
 }
 
-MPI_Op op::get_implementation() const { return implementation; }
+MPI_Op op::get() const { return implementation; }
 
 op op::sum()
 {
@@ -272,8 +272,8 @@ request comm::iallreduce(
         sendbuf,
         recvbuf,
         count,
-        datatype_arg.get_implementation(),
-        op_arg.get_implementation(),
+        datatype_arg.get(),
+        op_arg.get(),
         implementation,
         &request_implementation));
   return request(request_implementation);
@@ -291,7 +291,7 @@ request comm::isend(
       MPI_Isend(
         buf,
         count,
-        datatype_arg.get_implementation(),
+        datatype_arg.get(),
         dest,
         tag,
         implementation,
@@ -311,7 +311,7 @@ request comm::irecv(
       MPI_Irecv(
         buf,
         count,
-        datatype_arg.get_implementation(),
+        datatype_arg.get(),
         dest,
         tag,
         implementation,

@@ -59,7 +59,7 @@ class request {
   void wait(status& status_arg);
   bool test(status& status_arg);
   ~request();
-  MPI_Request& get_implementation() { return implementation; }
+  MPI_Request& get() { return implementation; }
 };
 
 void waitall(int count, request* array_of_requests);
@@ -88,7 +88,7 @@ class op {
   }
   op& operator=(op&& other);
   ~op();
-  MPI_Op get_implementation() const;
+  MPI_Op get() const;
   static op sum();
   static op min();
   static op max();
@@ -123,7 +123,7 @@ class datatype {
   }
   datatype& operator=(datatype&& other);
   ~datatype();
-  constexpr MPI_Datatype get_implementation() const { return implementation; }
+  constexpr MPI_Datatype get() const { return implementation; }
   static datatype predefined_byte();
   static datatype predefined_char();
   static datatype predefined_unsigned();
@@ -286,8 +286,8 @@ class comm {
           sendbuf,
           recvbuf,
           count,
-          datatype_arg.get_implementation(),
-          op_arg.get_implementation(),
+          datatype_arg.get(),
+          op_arg.get(),
           implementation,
           &request_implementation));
     return request(request_implementation);
@@ -305,8 +305,8 @@ class comm {
           MPI_IN_PLACE,
           buf,
           count,
-          datatype_arg.get_implementation(),
-          op_arg.get_implementation(),
+          datatype_arg.get(),
+          op_arg.get(),
           implementation,
           &request_implementation));
     return request(request_implementation);
@@ -330,7 +330,7 @@ class comm {
         MPI_Isend(
           buf,
           count,
-          datatype_arg.get_implementation(),
+          datatype_arg.get(),
           dest,
           tag,
           implementation,
@@ -356,7 +356,7 @@ class comm {
         MPI_Irecv(
           buf,
           count,
-          datatype_arg.get_implementation(),
+          datatype_arg.get(),
           dest,
           tag,
           implementation,
@@ -379,7 +379,7 @@ class comm {
       int coords[]) const;
   int cart_rank(int const coords[]) const;
   void cart_coords(int rank, int maxdims, int coords[]) const;
-  constexpr MPI_Comm get_implementation() const { return implementation; }
+  constexpr MPI_Comm get() const { return implementation; }
 };
 
 class library {
