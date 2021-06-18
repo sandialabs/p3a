@@ -57,6 +57,7 @@ set(P3A_HEADERS
   p3a_svd.hpp
   p3a_plane.hpp
   p3a_opts.hpp
+  p3a_cg.hpp
   )
 
 set(P3A_SOURCES
