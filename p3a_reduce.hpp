@@ -386,6 +386,12 @@ T transform_reduce(
 
 #endif
 
+template <
+  class T,
+  class Allocator = allocator<double>,
+  class ExecutionPolicy = serial_execution>
+class reproducible_adder;
+
 /* A reproducible sum of floating-point values.
    this operation is one of the key places where
    a program's output begins to depend on parallel
@@ -416,21 +422,24 @@ T transform_reduce(
    one billion values (10^9), for a total of (10^15) values.
 */
 
-class reproducible_floating_point_adder {
+template <
+  class Allocator,
+  class ExecutionPolicy>
+class reproducible_adder<double, Allocator, ExecutionPolicy> {
   mpi::comm m_comm;
-  device_array<double> m_values;
-  reducer<int, device_execution> m_exponent_reducer;
-  reducer<int128, device_execution> m_int128_reducer;
+  dynamic_array<double, Allocator, ExecutionPolicy> m_values;
+  reducer<int, ExecutionPolicy> m_exponent_reducer;
+  reducer<int128, ExecutionPolicy> m_int128_reducer;
  public:
-  reproducible_floating_point_adder() = default;
-  explicit reproducible_floating_point_adder(
+  reproducible_adder() = default;
+  explicit reproducible_adder(
       mpi::comm&& comm_arg)
     :m_comm(std::move(comm_arg))
   {}
-  reproducible_floating_point_adder(reproducible_floating_point_adder&&) = default;
-  reproducible_floating_point_adder& operator=(reproducible_floating_point_adder&&) = default;
-  reproducible_floating_point_adder(reproducible_floating_point_adder const&) = delete;
-  reproducible_floating_point_adder& operator=(reproducible_floating_point_adder const&) = delete;
+  reproducible_adder(reproducible_adder&&) = default;
+  reproducible_adder& operator=(reproducible_adder&&) = default;
+  reproducible_adder(reproducible_adder const&) = delete;
+  reproducible_adder& operator=(reproducible_adder const&) = delete;
 #ifdef __CUDACC__
  public:
 #else
@@ -446,7 +455,7 @@ class reproducible_floating_point_adder {
           m_values.cbegin(), m_values.cend(),
           minimum_exponent,
           maximizes<int>,
-    [=] P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
+    [=] P3A_HOST P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
       if (value == 0.0) return minimum_exponent;
       int exponent;
       std::frexp(value, &exponent);
@@ -463,7 +472,7 @@ class reproducible_floating_point_adder {
           m_values.cbegin(), m_values.cend(),
           int128(0),
           adds<int128>,
-    [=] P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
+    [=] P3A_HOST P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
       return int128::from_double(value, unit);
     });
     int128 global_sum = local_sum;
@@ -493,7 +502,7 @@ class reproducible_floating_point_adder {
     for_each(policy,
         counting_iterator<size_type>(0),
         counting_iterator<size_type>(n),
-    [=] P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
+    [=] P3A_HOST P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
       values[i] = unary_op(first[i]);
     });
     return reduce_stored_values();
@@ -508,12 +517,20 @@ class reproducible_floating_point_adder {
     auto const policy = m_values.get_execution_policy();
     auto const values = m_values.begin();
     for_each(policy, grid,
-    [=] P3A_DEVICE (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
+    [=] P3A_HOST P3A_DEVICE (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
       int const index = grid.index(grid_point);
       values[index] = unary_op(grid_point);
     });
     return reduce_stored_values();
   }
 };
+
+template <class T>
+using device_reproducible_adder = 
+  reproducible_adder<T, device_allocator<T>, device_execution>;
+template <class T>
+using host_reproducible_adder = 
+  reproducible_adder<
+    T, allocator<T>, serial_execution>;
 
 }

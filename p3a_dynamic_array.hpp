@@ -163,20 +163,11 @@ class dynamic_array {
   }
 };
 
-#ifdef __CUDACC__
 template <class T>
-using device_array = dynamic_array<T, cuda_device_allocator<T>, cuda_execution>;
+using device_array = dynamic_array<T, device_allocator<T>, device_execution>;
 template <class T>
-using mirror_array = dynamic_array<T, cuda_host_allocator<T>, serial_execution>;
-template <class T>
-using host_array = dynamic_array<T, allocator<T>, serial_execution>;
-#else
-template <class T>
-using device_array = dynamic_array<T, allocator<T>, serial_execution>;
-template <class T>
-using mirror_array = dynamic_array<T, allocator<T>, serial_execution>;
+using mirror_array = dynamic_array<T, mirror_allocator<T>, serial_execution>;
 template <class T>
 using host_array = dynamic_array<T, allocator<T>, serial_execution>;
-#endif
 
 }
