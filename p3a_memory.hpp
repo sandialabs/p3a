@@ -195,6 +195,18 @@ P3A_NEVER_INLINE void copy(
   }
 }
 
+template <class ForwardIt1, class ForwardIt2>
+P3A_ALWAYS_INLINE void copy(
+    serial_local_execution,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  while (first != last) {
+    *d_first++ = *first++;
+  }
+}
+
 #ifdef __CUDACC__
 
 template <class ForwardIt1, class ForwardIt2>
@@ -221,11 +233,35 @@ P3A_NEVER_INLINE void copy(
   }
 }
 
+template <class ForwardIt1, class ForwardIt2>
+P3A_DEVICE P3A_ALWAYS_INLINE void copy(
+    cuda_local_execution,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  while (first != last) {
+    *d_first++ = *first++;
+  }
+}
+
 #endif
 
 template <class ForwardIt, class T>
 P3A_NEVER_INLINE void fill(
     serial_execution,
+    ForwardIt first,
+    ForwardIt last,
+    const T& value)
+{
+  for (; first != last; ++first) {
+    *first = value;
+  }
+}
+
+template <class ForwardIt, class T>
+P3A_ALWAYS_INLINE void fill(
+    serial_local_execution,
     ForwardIt first,
     ForwardIt last,
     const T& value)
@@ -249,6 +285,18 @@ P3A_NEVER_INLINE void fill(
   [=] P3A_DEVICE (value_type& range_value) P3A_ALWAYS_INLINE {
     range_value = value;
   });
+}
+
+template <class ForwardIt, class T>
+P3A_DEVICE P3A_ALWAYS_INLINE void fill(
+    cuda_local_execution,
+    ForwardIt first,
+    ForwardIt last,
+    const T& value)
+{
+  for (; first != last; ++first) {
+    *first = value;
+  }
 }
 
 #endif
