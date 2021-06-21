@@ -87,6 +87,15 @@ bool operator==(vector3<T> const& a, vector3<T> const& b)
          a.z() == b.z();
 }
 
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+bool operator!=(vector3<T> const& a, vector3<T> const& b)
+{
+  return a.x() != b.x() ||
+         a.y() != b.y() ||
+         a.z() != b.z();
+}
+
 template <class A, class B>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator+=(vector3<A>& a, vector3<B> const& b)
