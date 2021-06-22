@@ -85,6 +85,9 @@ int conjugate_gradient_solver<T, Allocator, ExecutionPolicy>::solve(
       array_type& x,
       T const& relative_tolerance)
 {
+  this->m_r.resize(x.size());
+  this->m_p.resize(x.size());
+  this->m_Ap.resize(x.size());
   array_type& r = this->m_r;
   array_type& p = this->m_p;
   array_type& Ap = this->m_Ap;
