@@ -54,7 +54,7 @@ void maximum_off_diagonal_indices(
       }
     }
   }
-  if (q < p) std::swap(p, q);
+  if (q < p) p3a::swap(p, q);
 }
 
 // Symmetric Schur algorithm for R^2.
@@ -149,7 +149,7 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 T eigen_tolerance(
     static_matrix<T, N, N> const& a)
 {
-  T constexpr epsilon = std::numeric_limits<T>::epsilon();
+  T constexpr epsilon = epsilon_value<T>();
   T const tolerance = epsilon * norm(a);
   return tolerance;
 }

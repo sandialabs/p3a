@@ -121,4 +121,12 @@ double arcsin(double a)
   return std::asin(a);
 }
 
+template <typename T>
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+void swap(T& t1, T& t2) {
+    T temp(std::move(t1));
+    t1 = std::move(t2);
+    t2 = std::move(temp);
+}
+
 }

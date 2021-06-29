@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <stdexcept>
 
 #include "p3a_dynamic_array.hpp"
 

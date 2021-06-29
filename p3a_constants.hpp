@@ -32,6 +32,24 @@ struct minimum<double> {
   double value() { return -DBL_MAX; }
 };
 
+template <class T>
+struct epsilon {
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  T value() { return T(0); }
+};
+
+template <>
+struct epsilon<float> {
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  float value() { return FLT_EPSILON; }
+};
+
+template <>
+struct epsilon<double> {
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  double value() { return DBL_EPSILON; }
+};
+
 }
 
 template <class T>
@@ -67,6 +85,9 @@ T maximum_value() { return constants::maximum<T>::value(); }
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T minimum_value() { return constants::minimum<T>::value(); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+T epsilon_value() { return constants::epsilon<T>::value(); }
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T zero_value() { return zero_value_helper<T>::value(); }
