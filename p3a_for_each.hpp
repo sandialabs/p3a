@@ -21,6 +21,19 @@ void for_each(
 }
 
 template <class ForwardIt, class UnaryFunction>
+P3A_ALWAYS_INLINE inline constexpr
+void for_each(
+    serial_local_execution,
+    ForwardIt first,
+    ForwardIt const& last,
+    UnaryFunction const& f)
+{
+  for (; first != last; ++first) {
+    f(*first);
+  }
+}
+
+template <class ForwardIt, class UnaryFunction>
 P3A_NEVER_INLINE
 void for_each(
     serial_execution,
