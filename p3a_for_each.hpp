@@ -8,19 +8,6 @@
 namespace p3a {
 
 template <class ForwardIt, class UnaryFunction>
-P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-void for_each(
-    device_local_execution,
-    ForwardIt first,
-    ForwardIt last,
-    UnaryFunction f)
-{
-  for (; first != last; ++first) {
-    f(*first);
-  }
-}
-
-template <class ForwardIt, class UnaryFunction>
 P3A_ALWAYS_INLINE inline constexpr
 void for_each(
     serial_local_execution,
@@ -83,11 +70,24 @@ void for_each(
     cuda_stream>>>(f, first, last);
 }
 
+template <class ForwardIt, class UnaryFunction>
+P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+void for_each(
+    cuda_local_execution,
+    ForwardIt first,
+    ForwardIt const& last,
+    UnaryFunction const& f)
+{
+  for (; first != last; ++first) {
+    f(*first);
+  }
+}
+
 #endif
 
 template <class Functor>
-P3A_DEVICE P3A_ALWAYS_INLINE constexpr void for_each(
-    device_local_execution,
+P3A_ALWAYS_INLINE constexpr void for_each(
+    serial_local_execution,
     grid3 const& grid,
     Functor const& functor)
 {
@@ -239,6 +239,21 @@ void simd_for_each(
   details::simd_grid_for_each<T>(policy, vector3<int>::zero(), grid.extents(), f);
 }
 
+template <class Functor>
+__device__ P3A_ALWAYS_INLINE constexpr void for_each(
+    cuda_local_execution,
+    grid3 const& grid,
+    Functor const& functor)
+{
+  for (int k = 0; k < grid.extents().z(); ++k) {
+    for (int j = 0; j < grid.extents().y(); ++j) {
+      for (int i = 0; i < grid.extents().x(); ++i) {
+        functor(vector3<int>(i, j, k));
+      }
+    }
+  }
+}
+
 #endif
 
 template <class Functor>
@@ -285,8 +300,8 @@ P3A_NEVER_INLINE void simd_for_each(
 }
 
 template <class Functor>
-P3A_DEVICE P3A_ALWAYS_INLINE constexpr void for_each(
-    device_local_execution,
+P3A_ALWAYS_INLINE constexpr void for_each(
+    serial_local_execution,
     subgrid3 const& subgrid,
     Functor const& functor)
 {
@@ -319,6 +334,21 @@ void simd_for_each(
     F f)
 {
   details::simd_grid_for_each<T>(policy, grid.lower(), grid.upper(), f);
+}
+
+template <class Functor>
+__device__ P3A_ALWAYS_INLINE constexpr void for_each(
+    cuda_local_execution,
+    subgrid3 const& subgrid,
+    Functor const& functor)
+{
+  for (int k = subgrid.lower().z(); k < subgrid.upper().z(); ++k) {
+    for (int j = subgrid.lower().y(); j < subgrid.upper().y(); ++j) {
+      for (int i = subgrid.lower().x(); i < subgrid.upper().x(); ++i) {
+        functor(vector3<int>(i, j, k));
+      }
+    }
+  }
 }
 
 #endif
