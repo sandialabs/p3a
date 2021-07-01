@@ -1,5 +1,7 @@
 #pragma once
 
+#include "p3a_identity3x3.hpp"
+
 namespace p3a {
 
 template <class T>
@@ -75,6 +77,14 @@ class matrix3x3 {
         T(0), T(0), T(0),
         T(0), T(0), T(0));
   }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  matrix3x3<T> identity()
+  {
+    return matrix3x3<T>(
+        T(1), T(0), T(0),
+        T(0), T(1), T(0),
+        T(0), T(0), T(1));
+  }
 };
 
 template <class T>
@@ -91,18 +101,49 @@ symmetric3x3<T> symmetric(matrix3x3<T> const& a)
 }
 
 template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+matrix3x3<T> operator+(matrix3x3<T> const& a, matrix3x3<T> const& b)
+{
+  return matrix3x3<T>(
+      a.xx() + b.xx(),
+      a.xy() + b.xy(),
+      a.xz() + b.xz(),
+      a.yx() + b.yx(),
+      a.yy() + b.yy(),
+      a.yz() + b.yz(),
+      a.zx() + b.zx(),
+      a.zy() + b.zy(),
+      a.zz() + b.zz());
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+matrix3x3<T> operator+(identity3x3_type const&, matrix3x3<T> const& b)
+{
+  return matrix3x3<T>(
+      T(1) + b.xx(),
+      b.xy(),
+      b.xz(),
+      b.yx(),
+      T(1) + b.yy(),
+      b.yz(),
+      b.zx(),
+      b.zy(),
+      T(1) + b.zz());
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+matrix3x3<T> operator+(matrix3x3<T> const& a, identity3x3_type const& b)
+{
+  return b + a;
+}
+
+template <class T>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator+=(matrix3x3<T>& a, matrix3x3<T> const& b)
 {
-  a.xx() += b.xx();
-  a.xy() += b.xy();
-  a.xz() += b.xz();
-  a.yx() += b.yx();
-  a.yy() += b.yy();
-  a.yz() += b.yz();
-  a.zx() += b.zx();
-  a.zy() += b.zy();
-  a.zz() += b.zz();
+  a = a + b;
 }
 
 template <class A, class B>
@@ -188,6 +229,39 @@ auto inverse(matrix3x3<T> const& m)
       A, D, G,
       B, E, H,
       C, F, I) / determinant(m);
+}
+
+template <class T>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+matrix3x3<T> load_matrix3x3(T const* ptr, int stride, int offset)
+{
+  return matrix3x3<T>(
+      load(ptr, 0 * stride + offset),
+      load(ptr, 1 * stride + offset),
+      load(ptr, 2 * stride + offset),
+      load(ptr, 3 * stride + offset),
+      load(ptr, 4 * stride + offset),
+      load(ptr, 5 * stride + offset),
+      load(ptr, 6 * stride + offset),
+      load(ptr, 7 * stride + offset),
+      load(ptr, 8 * stride + offset));
+}
+
+template <class T>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
+    matrix3x3<T> const& value,
+    T* ptr, int stride, int offset)
+{
+  store(value.xx(), ptr, 0 * stride + offset);
+  store(value.xy(), ptr, 1 * stride + offset);
+  store(value.xz(), ptr, 2 * stride + offset);
+  store(value.yx(), ptr, 3 * stride + offset);
+  store(value.yy(), ptr, 4 * stride + offset);
+  store(value.yz(), ptr, 5 * stride + offset);
+  store(value.zx(), ptr, 6 * stride + offset);
+  store(value.zy(), ptr, 7 * stride + offset);
+  store(value.zz(), ptr, 8 * stride + offset);
 }
 
 }
