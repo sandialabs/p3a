@@ -35,7 +35,6 @@ set(P3A_HEADERS
   p3a_for_each.hpp
   p3a_reduce.hpp
   p3a_quantity.hpp
-  p3a_polyhedron.hpp
   p3a_scalar.hpp
   p3a_identity3x3.hpp
   p3a_memory.hpp
@@ -55,7 +54,6 @@ set(P3A_HEADERS
   p3a_static_matrix.hpp
   p3a_eigen.hpp
   p3a_svd.hpp
-  p3a_plane.hpp
   p3a_opts.hpp
   p3a_cg.hpp
   )
