@@ -1,9 +1,0 @@
-# Compute paths
-get_filename_component(P3A_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-
-set(P3A_ENABLE_CUDA @P3A_ENABLE_CUDA@)
-
-# Our library dependencies (contains definitions for IMPORTED targets)
-if(NOT TARGET p3a AND NOT P3A_BINARY_DIR)
-  include("${P3A_CMAKE_DIR}/P3ATargets.cmake")
-endif()

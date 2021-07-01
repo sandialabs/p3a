@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.12.0...3.18.0)
+cmake_minimum_required(VERSION 3.12.0...3.21.0)
 
-project(P3A VERSION 0.1.0 LANGUAGES CXX)
+project(p3a VERSION 1.0.0 LANGUAGES CXX)
 
 if(WIN32 AND NOT CYGWIN)
   set(INSTALL_CMAKE_DIR CMake)
@@ -8,9 +8,9 @@ else()
   set(INSTALL_CMAKE_DIR lib/cmake/${PROJECT_NAME})
 endif()
 
-option(P3A_ENABLE_CUDA "Enable CUDA" OFF)
+option(p3a_ENABLE_CUDA "Enable CUDA" OFF)
 
-if (P3A_ENABLE_CUDA)
+if (p3a_ENABLE_CUDA)
   enable_language(CUDA)
 endif()
 
@@ -80,17 +80,17 @@ target_include_directories(p3a
 
 target_link_libraries(p3a PUBLIC MPI::MPI_CXX)
 
-install(TARGETS p3a EXPORT P3ATargets)
+install(TARGETS p3a EXPORT p3a-targets)
 
-configure_file(P3AConfig.cmake.in
-  "${PROJECT_BINARY_DIR}/P3AConfig.cmake" @ONLY)
-configure_file(P3AConfigVersion.cmake.in
-  "${PROJECT_BINARY_DIR}/P3AConfigVersion.cmake" @ONLY)
+configure_file(p3a-config.cmake.in
+  "${PROJECT_BINARY_DIR}/p3a-config.cmake" @ONLY)
+configure_file(p3a-config-version.cmake.in
+  "${PROJECT_BINARY_DIR}/p3a-config-version.cmake" @ONLY)
 
 install(FILES
-  "${PROJECT_BINARY_DIR}/P3AConfig.cmake"
-  "${PROJECT_BINARY_DIR}/P3AConfigVersion.cmake"
-  DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+  "${PROJECT_BINARY_DIR}/p3a-config.cmake"
+  "${PROJECT_BINARY_DIR}/p3a-config-version.cmake"
+  DESTINATION "${INSTALL_CMAKE_DIR}")
 
-install(EXPORT P3ATargets
+install(EXPORT p3a-targets
     DESTINATION "${INSTALL_CMAKE_DIR}")
