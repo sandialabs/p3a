@@ -9,9 +9,14 @@ else()
 endif()
 
 option(P3A_ENABLE_CUDA "Enable CUDA" OFF)
+option(P3A_ENABLE_HIP "Enable HIP" OFF)
 
 if (P3A_ENABLE_CUDA)
   enable_language(CUDA)
+endif()
+
+if (P3A_ENABLE_HIP)
+  find_package(hip REQUIRED)
 endif()
 
 find_package(MPI REQUIRED)
@@ -77,6 +82,10 @@ set_target_properties(p3a PROPERTIES
   PUBLIC_HEADER "${P3A_HEADERS}")
 target_include_directories(p3a
   INTERFACE $<INSTALL_INTERFACE:include>)
+
+if (P3A_ENABLE_HIP)
+  target_link_libraries(p3a PUBLIC hip::device)
+endif()
 
 target_link_libraries(p3a PUBLIC MPI::MPI_CXX)
 
