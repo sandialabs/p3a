@@ -247,6 +247,46 @@ P3A_DEVICE P3A_ALWAYS_INLINE void copy(
 
 #endif
 
+#ifdef __HIPCC__
+
+template <class ForwardIt1, class ForwardIt2>
+P3A_NEVER_INLINE void copy(
+    hip_execution policy,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  using value_type = typename std::iterator_traits<ForwardIt2>::value_type;
+  if constexpr (std::is_trivially_copyable_v<value_type>) {
+    details::handle_hip_error(
+      hipMemcpy(
+        &*d_first,
+        &*first,
+        sizeof(value_type) * std::size_t(last - first), 
+        hipMemcpyDefault));
+  } else {
+    for_each(policy, first, last,
+    [=] __device__ (value_type& ref) P3A_ALWAYS_INLINE {
+      auto& d_ref = *(d_first + (&ref - &*first));
+      d_ref = ref;
+    });
+  }
+}
+
+template <class ForwardIt1, class ForwardIt2>
+__device__ P3A_ALWAYS_INLINE void copy(
+    hip_local_execution,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  while (first != last) {
+    *d_first++ = *first++;
+  }
+}
+
+#endif
+
 template <class ForwardIt, class T>
 P3A_NEVER_INLINE void fill(
     serial_execution,
