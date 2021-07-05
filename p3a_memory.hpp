@@ -120,6 +120,32 @@ P3A_NEVER_INLINE void destroy(
 
 #endif
 
+#ifdef __HIPCC__
+
+template <class T>
+__host__ __device__ P3A_ALWAYS_INLINE inline
+void destroy_at(hip_execution, T* p)
+{
+  p->~T();
+}
+
+template <class ForwardIt>
+P3A_NEVER_INLINE void destroy(
+    hip_execution policy,
+    ForwardIt first,
+    ForwardIt last)
+{
+  using T = typename std::iterator_traits<ForwardIt>::value_type;
+  if constexpr (!std::is_trivially_destructible_v<T>) {
+    for_each(policy, first, last,
+    [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
+      destroy_at(policy, &ref);
+    });
+  }
+}
+
+#endif
+
 template <class ForwardIt>
 P3A_NEVER_INLINE void uninitialized_default_construct(
     serial_execution,

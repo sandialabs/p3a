@@ -536,4 +536,43 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
 
 #endif
 
+#ifdef __HIPCC__
+
+template <class F>
+P3A_NEVER_INLINE
+void for_each(
+    hip_execution policy,
+    subgrid3 grid,
+    F f)
+{
+  details::grid_for_each(policy, grid.lower(), grid.upper(), f);
+}
+
+template <class T, class F>
+P3A_NEVER_INLINE
+void simd_for_each(
+    hip_execution policy,
+    subgrid3 grid,
+    F f)
+{
+  details::simd_grid_for_each<T>(policy, grid.lower(), grid.upper(), f);
+}
+
+template <class Functor>
+__device__ P3A_ALWAYS_INLINE constexpr void for_each(
+    hip_local_execution,
+    subgrid3 const& subgrid,
+    Functor const& functor)
+{
+  for (int k = subgrid.lower().z(); k < subgrid.upper().z(); ++k) {
+    for (int j = subgrid.lower().y(); j < subgrid.upper().y(); ++j) {
+      for (int i = subgrid.lower().x(); i < subgrid.upper().x(); ++i) {
+        functor(vector3<int>(i, j, k));
+      }
+    }
+  }
+}
+
+#endif
+
 }
