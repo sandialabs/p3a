@@ -5,6 +5,10 @@
 #include <exception>
 #include <string>
 
+#ifdef __HIPCC__
+#include <hip/hip_runtime.h>
+#endif
+
 namespace p3a {
 
 class serial_execution {

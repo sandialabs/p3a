@@ -14,12 +14,6 @@
 #endif
 #endif
 
-#ifdef __HIPCC__
-#ifndef __HIP_ARCH_HAS_DOUBLES__
-#error "P3A requires doubles, and the HIP arch doesn't support them"
-#endif
-#endif
-
 #if defined(__CUDACC__) || defined(__HIPCC__)
 #define P3A_HOST __host__
 #define P3A_DEVICE __device__
