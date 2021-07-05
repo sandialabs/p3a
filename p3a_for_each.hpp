@@ -312,6 +312,133 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
 
 #endif
 
+#ifdef __HIPCC__
+
+namespace details {
+
+template <class F>
+__global__ void hip_grid_for_each(
+    F const f,
+    vector3<int> const first,
+    vector3<int> const last)
+{
+  vector3<int> index;
+  index.x() = first.x() + hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+  if (index.x() >= last.x()) return;
+  index.y() = first.y() + hipBlockIdx_y;
+  index.z() = first.z() + hipBlockIdx_z;
+  f(index);
+}
+
+template <class T, class F>
+__global__ void hip_simd_grid_for_each(
+    F const f,
+    vector3<int> const first,
+    vector3<int> const last)
+{
+  vector3<int> index;
+  index.x() = first.x() + hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+  index.y() = first.y() + hipBlockIdx_y;
+  index.z() = first.z() + hipBlockIdx_z;
+  f(index, device_simd_mask<T>(index.x() < last.x()));
+}
+
+template <class F>
+P3A_NEVER_INLINE
+void grid_for_each(
+    hip_execution policy,
+    vector3<int> first,
+    vector3<int> last,
+    F f)
+{
+  dim3 const hip_block(64, 1, 1);
+  auto const limits = last - first;
+  if (limits.volume() == 0) return;
+  dim3 const hip_grid(
+      ceildiv(unsigned(limits.x()), hip_block.x),
+      limits.y(),
+      limits.z());
+  std::size_t const shared_memory_bytes = 0;
+  hipStream_t const hip_stream = nullptr;
+  hipLaunchKernelGGL(
+    details::hip_grid_for_each,
+    hip_grid,
+    hip_block,
+    shared_memory_bytes,
+    hip_stream,
+    f,
+    first,
+    last);
+}
+
+
+template <class T, class F>
+P3A_NEVER_INLINE
+void simd_grid_for_each(
+    hip_execution policy,
+    vector3<int> first,
+    vector3<int> last,
+    F f)
+{
+  dim3 const hip_block(64, 1, 1);
+  auto const limits = last - first;
+  if (limits.volume() == 0) return;
+  dim3 const hip_grid(
+      ceildiv(unsigned(limits.x()), hip_block.x),
+      limits.y(),
+      limits.z());
+  std::size_t const shared_memory_bytes = 0;
+  hipStream_t const hip_stream = nullptr;
+  hipLaunchKernelGGL(
+    details::hip_simd_grid_for_each<T>,
+    hip_grid,
+    hip_block,
+    shared_memory_bytes,
+    hip_stream,
+    f,
+    first,
+    last);
+}
+
+}
+
+template <class F>
+P3A_NEVER_INLINE
+void for_each(
+    hip_execution policy,
+    grid3 grid,
+    F f)
+{
+  details::grid_for_each(policy, vector3<int>::zero(), grid.extents(), f);
+}
+
+template <class T, class F>
+P3A_NEVER_INLINE
+void simd_for_each(
+    hip_execution policy,
+    grid3 grid,
+    F f)
+{
+  details::simd_grid_for_each<T>(policy, vector3<int>::zero(), grid.extents(), f);
+}
+
+template <class Functor>
+__device__ P3A_ALWAYS_INLINE constexpr void for_each(
+    hip_local_execution,
+    grid3 const& grid,
+    Functor const& functor)
+{
+  for (int k = 0; k < grid.extents().z(); ++k) {
+    for (int j = 0; j < grid.extents().y(); ++j) {
+      for (int i = 0; i < grid.extents().x(); ++i) {
+        functor(vector3<int>(i, j, k));
+      }
+    }
+  }
+}
+
+#endif
+
 template <class Functor>
 P3A_NEVER_INLINE void for_each(
     serial_execution,
