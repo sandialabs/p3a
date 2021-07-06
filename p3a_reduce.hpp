@@ -428,6 +428,7 @@ template <int Count>
 class hip_recursive_sliced_shuffle_helper<Count, true>
 {
   int val;
+ public:
   __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
   {
     val = __shfl_down(val, delta, 64);
@@ -439,6 +440,7 @@ class hip_recursive_sliced_shuffle_helper<Count, false>
 {
   int val;
   hip_recursive_sliced_shuffle_helper<Count - int(sizeof(int))> next;
+ public:
   __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
   {
     val = __shfl_down(val, delta, 64);
