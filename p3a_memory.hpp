@@ -32,7 +32,26 @@ P3A_NEVER_INLINE void uninitialized_move(
 {
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
   for_each(policy, first, last,
-  [=] P3A_DEVICE (value_type& src_value) P3A_ALWAYS_INLINE {
+  [=] __device__ (value_type& src_value) P3A_ALWAYS_INLINE {
+    auto addr = &(d_first[&src_value - &(*first)]);
+    ::new (static_cast<void*>(addr)) value_type(std::move(src_value));
+  });
+}
+
+#endif
+
+#ifdef __HIPCC__
+
+template <class InputIt, class ForwardIt>
+P3A_NEVER_INLINE void uninitialized_move(
+    hip_execution policy,
+    InputIt first,
+    InputIt last,
+    ForwardIt d_first)
+{
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  for_each(policy, first, last,
+  [=] __device__ (value_type& src_value) P3A_ALWAYS_INLINE {
     auto addr = &(d_first[&src_value - &(*first)]);
     ::new (static_cast<void*>(addr)) value_type(std::move(src_value));
   });
