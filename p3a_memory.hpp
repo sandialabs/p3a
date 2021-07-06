@@ -190,7 +190,26 @@ P3A_NEVER_INLINE void uninitialized_default_construct(
   using T = typename std::iterator_traits<ForwardIt>::value_type;
   if constexpr (!std::is_trivially_default_constructible_v<T>) {
     for_each(policy, first, last,
-    [=] P3A_DEVICE (T& ref) P3A_ALWAYS_INLINE {
+    [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
+      ::new (static_cast<void*>(&ref)) T;
+    });
+  }
+}
+
+#endif
+
+#ifdef __HIPCC__
+
+template <class ForwardIt>
+P3A_NEVER_INLINE void uninitialized_default_construct(
+    hip_execution policy,
+    ForwardIt first,
+    ForwardIt last)
+{
+  using T = typename std::iterator_traits<ForwardIt>::value_type;
+  if constexpr (!std::is_trivially_default_constructible_v<T>) {
+    for_each(policy, first, last,
+    [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
       ::new (static_cast<void*>(&ref)) T;
     });
   }
