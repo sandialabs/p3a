@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef __CUDACC__
-#include <cooperative_groups.h>
-#endif
-
 #include "p3a_mpi.hpp"
 #include "p3a_int128.hpp"
 #include "p3a_quantity.hpp"
@@ -146,11 +142,58 @@ struct SharedMemory<double> {
   }
 };
 
+template <std::size_t Count, bool FitsInInt = (Count <= sizeof(int))>
+class cuda_recursive_sliced_shuffle_helper;
+
+template <std::size_t Count>
+class cuda_recursive_sliced_shuffle_helper<Count, true>
+{
+  int val;
+  __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
+  {
+    val = __shfl_down_sync(0xFFFFFFFF, val, delta, 32);
+  }
+};
+
+template <std::size_t Count>
+class cuda_recursive_sliced_shuffle_helper<Count, false>
+{
+  int val;
+  cuda_recursive_sliced_shuffle_helper<Count - sizeof(int)> next;
+  __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
+  {
+    val = __shfl_down_sync(0xFFFFFFFF, val, delta, 32);
+    next.shuffle_down(delta);
+  }
+};
+
+template <class T>
+__device__ P3A_ALWAYS_INLINE T cuda_shuffle_down(T element, unsigned int delta)
+{
+  if constexpr (
+      std::is_same_v<T, int> ||
+      std::is_same_v<T, unsigned int> ||
+      std::is_same_v<T, long> ||
+      std::is_same_v<T, unsigned long> ||
+      std::is_same_v<T, long long> ||
+      std::is_same_v<T, unsigned long long> ||
+      std::is_same_v<T, float> ||
+      std::is_same_v<T, double>)
+  {
+    return __shfl_down_sync(0xFFFFFFFF, element, delta, 32);
+  } else {
+    cuda_recursive_sliced_shuffle_helper<sizeof<T>> helper;
+    static_assert(std::is_trivially_copyable_v<T>, "reduction types need to be trivially copyable to shuffle in CUDA");
+    memcpy(&helper, &element, sizeof<T>);
+    helper.shuffle_down(delta);
+    memcpy(&element, &helper, sizeof<T>);
+    return element;
+  }
+}
+
 template <class ForwardIt, class T, class BinaryOp, class UnaryOp>
 __global__ void cuda_reduce(ForwardIt first, T* g_odata, int n, T init, BinaryOp binop, UnaryOp unop) {
   constexpr int blockSize = reducer_threads_per_block;
-  // Handle to thread block group
-  cooperative_groups::thread_block cta = cooperative_groups::this_thread_block();
   T* sdata = SharedMemory<T>();
   // perform first level of reduction,
   // reading from global memory, writing to shared memory
@@ -169,27 +212,26 @@ __global__ void cuda_reduce(ForwardIt first, T* g_odata, int n, T init, BinaryOp
   }
   // each thread puts its local sum into shared memory
   sdata[tid] = myResult;
-  cooperative_groups::sync(cta);
+  __syncthreads();
   // do reduction in shared mem
   if (tid < 128) {
     sdata[tid] = myResult = binop(myResult, sdata[tid + 128]);
   }
-  cooperative_groups::sync(cta);
+  __syncthreads();
   if (tid < 64) {
     sdata[tid] = myResult = binop(myResult, sdata[tid + 64]);
   }
-  cooperative_groups::sync(cta);
-  cooperative_groups::thread_block_tile<32> tile32 = cooperative_groups::tiled_partition<32>(cta);
-  if (cta.thread_rank() < 32) {
+  __syncthreads();
+  if (tid < 32) {
     // Fetch final intermediate sum from 2nd warp
     myResult = binop(myResult, sdata[tid + 32]);
     // Reduce final warp using shuffle
-    for (int offset = tile32.size() / 2; offset > 0; offset /= 2) {
-      myResult = binop(myResult, tile32.shfl_down(myResult, offset));
+    for (unsigned int offset = 32 / 2; offset > 0; offset /= 2) {
+      myResult = binop(myResult, cuda_shuffle_down(myResult, offset));
     }
   }
   // write result for this block to global mem
-  if (cta.thread_rank() == 0) g_odata[blockIdx.x] = myResult;
+  if (tid == 0) g_odata[blockIdx.x] = myResult;
 }
 
 template <class T, class BinaryOp, class UnaryOp>
@@ -197,8 +239,6 @@ __global__ void cuda_grid_reduce(
     vector3<int> first, vector3<int> last,
     T* g_odata, T init, BinaryOp binop, UnaryOp unop) {
   constexpr int blockSize = grid_reducer_threads_per_block;
-  // Handle to thread block group
-  cooperative_groups::thread_block cta = cooperative_groups::this_thread_block();
   T* sdata = SharedMemory<T>();
   // perform first level of reduction,
   // reading from global memory, writing to shared memory
@@ -219,19 +259,18 @@ __global__ void cuda_grid_reduce(
   }
   // each thread puts its local sum into shared memory
   sdata[tid] = myResult;
-  cooperative_groups::sync(cta);
+  __syncthreads();
   // do reduction in shared mem
-  cooperative_groups::thread_block_tile<32> tile32 = cooperative_groups::tiled_partition<32>(cta);
-  if (cta.thread_rank() < 32) {
+  if (tid < 32) {
     // Fetch final intermediate sum from 2nd warp
     myResult = binop(myResult, sdata[tid + 32]);
     // Reduce final warp using shuffle
-    for (int offset = tile32.size() / 2; offset > 0; offset /= 2) {
-      myResult = binop(myResult, tile32.shfl_down(myResult, offset));
+    for (unsigned int offset = 32 / 2; offset > 0; offset /= 2) {
+      myResult = binop(myResult, cuda_shuffle_down(myResult, offset));
     }
   }
   // write result for this block to global mem
-  if (cta.thread_rank() == 0) g_odata[block_i] = myResult;
+  if (tid == 0) g_odata[block_i] = myResult;
 }
 
 }
