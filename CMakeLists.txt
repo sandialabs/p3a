@@ -63,7 +63,7 @@ set(P3A_SOURCES
   p3a_opts.cpp
   )
 
-if (P3A_ENABLE_CUDA AND P3A_SOURCES)
+if (p3a_ENABLE_CUDA AND P3A_SOURCES)
   set_source_files_properties(
     ${P3A_SOURCES} PROPERTIES LANGUAGE CUDA)
 endif()
