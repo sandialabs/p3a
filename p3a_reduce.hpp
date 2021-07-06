@@ -182,11 +182,11 @@ __device__ P3A_ALWAYS_INLINE T cuda_shuffle_down(T element, unsigned int delta)
   {
     return __shfl_down_sync(0xFFFFFFFF, element, delta, 32);
   } else {
-    cuda_recursive_sliced_shuffle_helper<sizeof<T>> helper;
+    cuda_recursive_sliced_shuffle_helper<sizeof(T)> helper;
     static_assert(std::is_trivially_copyable_v<T>, "reduction types need to be trivially copyable to shuffle in CUDA");
-    memcpy(&helper, &element, sizeof<T>);
+    memcpy(&helper, &element, sizeof(T));
     helper.shuffle_down(delta);
-    memcpy(&element, &helper, sizeof<T>);
+    memcpy(&element, &helper, sizeof(T));
     return element;
   }
 }
