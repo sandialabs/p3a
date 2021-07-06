@@ -240,7 +240,24 @@ P3A_NEVER_INLINE void uninitialized_fill(
     T value)
 {
   for_each(policy, first, last,
-  [=] P3A_DEVICE (T& ref) P3A_ALWAYS_INLINE {
+  [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
+    ::new (static_cast<void*>(&ref)) T(value);
+  });
+}
+
+#endif
+
+#ifdef __HIPCC__
+
+template <class ForwardIt, class T>
+P3A_NEVER_INLINE void uninitialized_fill(
+    hip_execution policy,
+    ForwardIt first,
+    ForwardIt last,
+    T value)
+{
+  for_each(policy, first, last,
+  [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
     ::new (static_cast<void*>(&ref)) T(value);
   });
 }
