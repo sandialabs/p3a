@@ -117,7 +117,7 @@ static constexpr int grid_reducer_threads_per_block = 64;
 // Utility class used to avoid linker errors with extern
 // unsized shared memory arrays with templated type
 template <class T>
-struct SharedMemory {
+struct cuda_shared_memory {
   __device__ inline operator T *() {
     extern __shared__ int __smem[];
     return (T *)__smem;
@@ -131,7 +131,7 @@ struct SharedMemory {
 // specialize for double to avoid unaligned memory
 // access compile errors
 template <>
-struct SharedMemory<double> {
+struct cuda_shared_memory<double> {
   __device__ inline operator double *() {
     extern __shared__ double __smem_d[];
     return (double *)__smem_d;
@@ -142,24 +142,26 @@ struct SharedMemory<double> {
   }
 };
 
-template <std::size_t Count, bool FitsInInt = (Count <= sizeof(int))>
+template <int Count, bool FitsInInt = (Count <= int(sizeof(int)))>
 class cuda_recursive_sliced_shuffle_helper;
 
-template <std::size_t Count>
+template <int Count>
 class cuda_recursive_sliced_shuffle_helper<Count, true>
 {
   int val;
+ public:
   __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
   {
     val = __shfl_down_sync(0xFFFFFFFF, val, delta, 32);
   }
 };
 
-template <std::size_t Count>
+template <int Count>
 class cuda_recursive_sliced_shuffle_helper<Count, false>
 {
   int val;
-  cuda_recursive_sliced_shuffle_helper<Count - sizeof(int)> next;
+  cuda_recursive_sliced_shuffle_helper<Count - int(sizeof(int))> next;
+ public:
   __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
   {
     val = __shfl_down_sync(0xFFFFFFFF, val, delta, 32);
@@ -194,7 +196,7 @@ __device__ P3A_ALWAYS_INLINE T cuda_shuffle_down(T element, unsigned int delta)
 template <class ForwardIt, class T, class BinaryOp, class UnaryOp>
 __global__ void cuda_reduce(ForwardIt first, T* g_odata, int n, T init, BinaryOp binop, UnaryOp unop) {
   constexpr int blockSize = reducer_threads_per_block;
-  T* sdata = SharedMemory<T>();
+  T* sdata = cuda_shared_memory<T>();
   // perform first level of reduction,
   // reading from global memory, writing to shared memory
   int tid = threadIdx.x;
@@ -239,7 +241,7 @@ __global__ void cuda_grid_reduce(
     vector3<int> first, vector3<int> last,
     T* g_odata, T init, BinaryOp binop, UnaryOp unop) {
   constexpr int blockSize = grid_reducer_threads_per_block;
-  T* sdata = SharedMemory<T>();
+  T* sdata = cuda_shared_memory<T>();
   // perform first level of reduction,
   // reading from global memory, writing to shared memory
   vector3<int> const thread_idx(threadIdx.x, threadIdx.y, threadIdx.z);
