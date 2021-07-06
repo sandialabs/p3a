@@ -391,7 +391,7 @@ T transform_reduce(
 namespace details {
 
 static constexpr int hip_reducer_threads_per_block = 256;
-static constexpr int hip_grid_reducer_threads_per_block = 64;
+static constexpr int hip_grid_reducer_threads_per_block = 128;
 
 // Utility class used to avoid linker errors with extern
 // unsized shared memory arrays with templated type
@@ -421,11 +421,56 @@ struct hip_shared_memory<double> {
   }
 };
 
+template <int Count, bool FitsInInt = (Count <= int(sizeof(int)))>
+class hip_recursive_sliced_shuffle_helper;
+
+template <int Count>
+class hip_recursive_sliced_shuffle_helper<Count, true>
+{
+  int val;
+  __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
+  {
+    val = __shfl_down(val, delta, 64);
+  }
+};
+
+template <int Count>
+class hip_recursive_sliced_shuffle_helper<Count, false>
+{
+  int val;
+  hip_recursive_sliced_shuffle_helper<Count - int(sizeof(int))> next;
+  __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
+  {
+    val = __shfl_down(val, delta, 64);
+    next.shuffle_down(delta);
+  }
+};
+
+template <class T>
+__device__ P3A_ALWAYS_INLINE T hip_shuffle_down(T val, unsigned int delta)
+{
+  if constexpr (
+      std::is_same_v<T, int> ||
+      std::is_same_v<T, unsigned int> ||
+      std::is_same_v<T, float> ||
+      std::is_same_v<T, double> ||
+      std::is_same_v<T, long> ||
+      std::is_same_v<T, long long>)
+  {
+    return __shfl_down(val, delta, 64);
+  } else {
+    hip_recursive_sliced_shuffle_helper<int(sizeof(T))> helper;
+    memcpy(&helper, &val, sizeof(T));
+    helper.shuffle_down(delta);
+    memcpy(&val, &helper, sizeof(T));
+    return val;
+  }
+}
+
 template <class ForwardIt, class T, class BinaryOp, class UnaryOp>
 __global__ void hip_reduce(ForwardIt first, T* g_odata, int n, T init, BinaryOp binop, UnaryOp unop) {
   constexpr int blockSize = hip_reducer_threads_per_block;
   // Handle to thread block group
-  cooperative_groups::thread_block cta = cooperative_groups::this_thread_block();
   T* sdata = hip_shared_memory<T>();
   // perform first level of reduction,
   // reading from global memory, writing to shared memory
@@ -444,27 +489,22 @@ __global__ void hip_reduce(ForwardIt first, T* g_odata, int n, T init, BinaryOp 
   }
   // each thread puts its local sum into shared memory
   sdata[tid] = myResult;
-  cooperative_groups::sync(cta);
+  __syncthreads();
   // do reduction in shared mem
   if (tid < 128) {
     sdata[tid] = myResult = binop(myResult, sdata[tid + 128]);
   }
-  cooperative_groups::sync(cta);
+  __syncthreads();
   if (tid < 64) {
-    sdata[tid] = myResult = binop(myResult, sdata[tid + 64]);
-  }
-  cooperative_groups::sync(cta);
-  cooperative_groups::thread_block_tile<32> tile32 = cooperative_groups::tiled_partition<32>(cta);
-  if (cta.thread_rank() < 32) {
     // Fetch final intermediate sum from 2nd warp
-    myResult = binop(myResult, sdata[tid + 32]);
+    myResult = binop(myResult, sdata[tid + 64]);
     // Reduce final warp using shuffle
-    for (int offset = tile32.size() / 2; offset > 0; offset /= 2) {
-      myResult = binop(myResult, tile32.shfl_down(myResult, offset));
+    for (unsigned int offset = 64 / 2; offset > 0; offset /= 2) {
+      myResult = binop(myResult, hip_shuffle_down(myResult, offset));
     }
   }
   // write result for this block to global mem
-  if (cta.thread_rank() == 0) g_odata[blockIdx.x] = myResult;
+  if (tid == 0) g_odata[blockIdx.x] = myResult;
 }
 
 template <class T, class BinaryOp, class UnaryOp>
@@ -473,7 +513,6 @@ __global__ void hip_grid_reduce(
     T* g_odata, T init, BinaryOp binop, UnaryOp unop) {
   constexpr int blockSize = hip_grid_reducer_threads_per_block;
   // Handle to thread block group
-  cooperative_groups::thread_block cta = cooperative_groups::this_thread_block();
   T* sdata = hip_shared_memory<T>();
   // perform first level of reduction,
   // reading from global memory, writing to shared memory
@@ -494,19 +533,18 @@ __global__ void hip_grid_reduce(
   }
   // each thread puts its local sum into shared memory
   sdata[tid] = myResult;
-  cooperative_groups::sync(cta);
+  __syncthreads();
   // do reduction in shared mem
-  cooperative_groups::thread_block_tile<32> tile32 = cooperative_groups::tiled_partition<32>(cta);
-  if (cta.thread_rank() < 32) {
+  if (tid < 64) {
     // Fetch final intermediate sum from 2nd warp
-    myResult = binop(myResult, sdata[tid + 32]);
+    myResult = binop(myResult, sdata[tid + 64]);
     // Reduce final warp using shuffle
-    for (int offset = tile32.size() / 2; offset > 0; offset /= 2) {
-      myResult = binop(myResult, tile32.shfl_down(myResult, offset));
+    for (unsigned int offset = 64 / 2; offset > 0; offset /= 2) {
+      myResult = binop(myResult, hip_shuffle_down(myResult, offset));
     }
   }
   // write result for this block to global mem
-  if (cta.thread_rank() == 0) g_odata[block_i] = myResult;
+  if (tid == 0) g_odata[block_i] = myResult;
 }
 
 }
@@ -531,7 +569,7 @@ class reducer<T, hip_execution> {
     return get_block_grid(user_grid).volume();
   }
   static int get_num_blocks(int size) {
-    return minimum(64, (size + threads_per_block - 1) / threads_per_block);
+    return minimum(128, (size + threads_per_block - 1) / threads_per_block);
   }
   template <class ForwardIt, class BinaryOp, class UnaryOp>
   void reduction_pass(int size, int blocks, ForwardIt first, T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
