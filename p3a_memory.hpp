@@ -386,14 +386,44 @@ P3A_NEVER_INLINE void fill(
 {
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
   for_each(policy, first, last,
-  [=] P3A_DEVICE (value_type& range_value) P3A_ALWAYS_INLINE {
+  [=] __device__ (value_type& range_value) P3A_ALWAYS_INLINE {
     range_value = value;
   });
 }
 
 template <class ForwardIt, class T>
-P3A_DEVICE P3A_ALWAYS_INLINE void fill(
+__device__ P3A_ALWAYS_INLINE void fill(
     cuda_local_execution,
+    ForwardIt first,
+    ForwardIt last,
+    const T& value)
+{
+  for (; first != last; ++first) {
+    *first = value;
+  }
+}
+
+#endif
+
+#ifdef __HIPCC__
+
+template <class ForwardIt, class T>
+P3A_NEVER_INLINE void fill(
+    hip_execution policy,
+    ForwardIt first,
+    ForwardIt last,
+    T value)
+{
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  for_each(policy, first, last,
+  [=] __device__ (value_type& range_value) P3A_ALWAYS_INLINE {
+    range_value = value;
+  });
+}
+
+template <class ForwardIt, class T>
+__device__ P3A_ALWAYS_INLINE void fill(
+    hip_local_execution,
     ForwardIt first,
     ForwardIt last,
     const T& value)
