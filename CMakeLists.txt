@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.12.0...3.18.0)
+cmake_minimum_required(VERSION 3.12.0...3.21.0)
 
-project(P3A VERSION 0.1.0 LANGUAGES CXX)
+project(p3a VERSION 1.0.0 LANGUAGES CXX)
 
 if(WIN32 AND NOT CYGWIN)
   set(INSTALL_CMAKE_DIR CMake)
@@ -8,14 +8,14 @@ else()
   set(INSTALL_CMAKE_DIR lib/cmake/${PROJECT_NAME})
 endif()
 
-option(P3A_ENABLE_CUDA "Enable CUDA" OFF)
-option(P3A_ENABLE_HIP "Enable HIP" OFF)
+option(p3a_ENABLE_CUDA "Enable CUDA" OFF)
+option(p3a_ENABLE_HIP "Enable HIP" OFF)
 
-if (P3A_ENABLE_CUDA)
+if (p3a_ENABLE_CUDA)
   enable_language(CUDA)
 endif()
 
-if (P3A_ENABLE_HIP)
+if (p3a_ENABLE_HIP)
   find_package(hip REQUIRED)
 endif()
 
@@ -40,7 +40,6 @@ set(P3A_HEADERS
   p3a_for_each.hpp
   p3a_reduce.hpp
   p3a_quantity.hpp
-  p3a_polyhedron.hpp
   p3a_scalar.hpp
   p3a_identity3x3.hpp
   p3a_memory.hpp
@@ -60,9 +59,7 @@ set(P3A_HEADERS
   p3a_static_matrix.hpp
   p3a_eigen.hpp
   p3a_svd.hpp
-  p3a_plane.hpp
   p3a_opts.hpp
-  p3a_cg.hpp
   )
 
 set(P3A_SOURCES
@@ -71,7 +68,7 @@ set(P3A_SOURCES
   p3a_opts.cpp
   )
 
-if (P3A_ENABLE_CUDA AND P3A_SOURCES)
+if (p3a_ENABLE_CUDA AND P3A_SOURCES)
   set_source_files_properties(
     ${P3A_SOURCES} PROPERTIES LANGUAGE CUDA)
 endif()
@@ -83,23 +80,23 @@ set_target_properties(p3a PROPERTIES
 target_include_directories(p3a
   INTERFACE $<INSTALL_INTERFACE:include>)
 
-if (P3A_ENABLE_HIP)
+if (p3a_ENABLE_HIP)
   target_link_libraries(p3a PUBLIC hip::device)
 endif()
 
 target_link_libraries(p3a PUBLIC MPI::MPI_CXX)
 
-install(TARGETS p3a EXPORT P3ATargets)
+install(TARGETS p3a EXPORT p3a-targets)
 
-configure_file(P3AConfig.cmake.in
-  "${PROJECT_BINARY_DIR}/P3AConfig.cmake" @ONLY)
-configure_file(P3AConfigVersion.cmake.in
-  "${PROJECT_BINARY_DIR}/P3AConfigVersion.cmake" @ONLY)
+configure_file(p3a-config.cmake.in
+  "${PROJECT_BINARY_DIR}/p3a-config.cmake" @ONLY)
+configure_file(p3a-config-version.cmake.in
+  "${PROJECT_BINARY_DIR}/p3a-config-version.cmake" @ONLY)
 
 install(FILES
-  "${PROJECT_BINARY_DIR}/P3AConfig.cmake"
-  "${PROJECT_BINARY_DIR}/P3AConfigVersion.cmake"
-  DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+  "${PROJECT_BINARY_DIR}/p3a-config.cmake"
+  "${PROJECT_BINARY_DIR}/p3a-config-version.cmake"
+  DESTINATION "${INSTALL_CMAKE_DIR}")
 
-install(EXPORT P3ATargets
+install(EXPORT p3a-targets
     DESTINATION "${INSTALL_CMAKE_DIR}")
