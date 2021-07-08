@@ -506,7 +506,7 @@ __global__ void hip_reduce(ForwardIt first, T* g_odata, int n, T init, BinaryOp 
     }
   }
   // write result for this block to global mem
-  if (tid == 0) g_odata[blockIdx.x] = myResult;
+  if (tid == 0) g_odata[hipBlockIdx_x] = myResult;
 }
 
 template <class T, class BinaryOp, class UnaryOp>
@@ -571,7 +571,7 @@ class reducer<T, hip_execution> {
     return get_block_grid(user_grid).volume();
   }
   static int get_num_blocks(int size) {
-    return minimum(128, (size + threads_per_block - 1) / threads_per_block);
+    return (size + threads_per_block - 1) / threads_per_block;
   }
   template <class ForwardIt, class BinaryOp, class UnaryOp>
   void reduction_pass(int size, int blocks, ForwardIt first, T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
