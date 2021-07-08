@@ -5,6 +5,10 @@
 #include <exception>
 #include <string>
 
+#ifdef __HIPCC__
+#include <hip/hip_runtime.h>
+#endif
+
 namespace p3a {
 
 class serial_execution {
@@ -56,9 +60,47 @@ inline constexpr cuda_local_execution cuda_local = {};
 
 #endif
 
-#ifdef __CUDACC__
+#ifdef __HIPCC__
+
+class hip_exception : public std::exception
+{
+  std::string error_string;
+ public:
+  hip_exception(hipError_t error);
+  virtual const char* what() const noexcept override;
+};
+
+namespace details {
+
+void handle_hip_error(hipError_t error);
+
+}
+
+class hip_execution {
+ hipStream_t stream{nullptr};
+ public:
+  void synchronize() const;
+};
+
+inline constexpr hip_execution hip = {};
+
+class hip_local_execution {
+ public:
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr void synchronize() const
+  {
+  }
+};
+
+inline constexpr hip_local_execution hip_local = {};
+
+#endif
+
+#if defined(__CUDACC__)
 using device_execution = cuda_execution;
 using device_local_execution = cuda_local_execution;
+#elif defined(__HIPCC__)
+using device_execution = hip_execution;
+using device_local_execution = hip_local_execution;
 #else
 using device_execution = serial_execution;
 using device_local_execution = serial_local_execution;
