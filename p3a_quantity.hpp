@@ -362,6 +362,14 @@ quantity<T, Dimension> load_scalar(
 
 template <class T, class Dimension, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+quantity<simd<T, Abi>, Dimension> load(
+    quantity<T, Dimension> const* ptr, int offset, simd_mask<T, Abi> const& mask)
+{
+  return simd<T, Abi>::masked_load(&(ptr->value()) + offset, mask);
+}
+
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 quantity<simd<T, Abi>, Dimension> load_scalar(
     quantity<T, Dimension> const* ptr, int offset, simd_mask<T, Abi> const& mask)
 {
