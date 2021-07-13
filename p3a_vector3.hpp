@@ -5,6 +5,7 @@
 #include "p3a_macros.hpp"
 #include "p3a_scalar.hpp"
 #include "p3a_functions.hpp"
+#include "p3a_simd.hpp"
 
 namespace p3a {
 
@@ -262,6 +263,17 @@ vector3<T> load_vector3(
       load(ptr, 2 * stride + offset));
 }
 
+template <class T, class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+vector3<simd<T, Abi>> load_vector3(
+    T const* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
+{
+  return vector3<simd<T, Abi>>(
+      simd<T, Abi>::masked_load(ptr + 0 * stride + offset, mask),
+      simd<T, Abi>::masked_load(ptr + 1 * stride + offset, mask),
+      simd<T, Abi>::masked_load(ptr + 2 * stride + offset, mask));
+}
+
 template <class T>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
@@ -271,6 +283,17 @@ void store(
   store(value.x(), ptr, 0 * stride + offset);
   store(value.y(), ptr, 1 * stride + offset);
   store(value.z(), ptr, 2 * stride + offset);
+}
+
+template <class T, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
+    vector3<simd<T, Abi>> const& value,
+    T* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
+{
+  store(value.x(), ptr, 0 * stride + offset, mask);
+  store(value.y(), ptr, 1 * stride + offset, mask);
+  store(value.z(), ptr, 2 * stride + offset, mask);
 }
 
 }
