@@ -414,7 +414,7 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 matrix3x3<quantity<simd<T, Abi>, Dimension>> load_matrix3x3(
     quantity<T, Dimension> const* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
 {
-  return symmetric3x3<quantity<simd<T, Abi>, Dimension>>(
+  return matrix3x3<quantity<simd<T, Abi>, Dimension>>(
       simd<T, Abi>::masked_load(&(ptr->value()) + stride * 0 + offset, mask),
       simd<T, Abi>::masked_load(&(ptr->value()) + stride * 1 + offset, mask),
       simd<T, Abi>::masked_load(&(ptr->value()) + stride * 2 + offset, mask),
