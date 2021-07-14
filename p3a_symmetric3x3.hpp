@@ -2,6 +2,7 @@
 
 #include "p3a_macros.hpp"
 #include "p3a_scaled_identity3x3.hpp"
+#include "p3a_diagonal3x3.hpp"
 
 namespace p3a {
 

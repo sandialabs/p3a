@@ -32,6 +32,7 @@ set(P3A_HEADERS
   p3a_box3.hpp
   p3a_grid3.hpp
   p3a_scaled_identity3x3.hpp
+  p3a_diagonal3x3.hpp
   p3a_symmetric3x3.hpp
   p3a_matrix2x2.hpp
   p3a_matrix3x3.hpp
@@ -59,6 +60,7 @@ set(P3A_HEADERS
   p3a_static_matrix.hpp
   p3a_eigen.hpp
   p3a_svd.hpp
+  p3a_lie.hpp
   p3a_opts.hpp
   )
 

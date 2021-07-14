@@ -1,6 +1,8 @@
 #pragma once
 
 #include "p3a_eigen.hpp"
+#include "p3a_matrix3x3.hpp"
+#include "p3a_diagonal3x3.hpp"
 
 namespace p3a {
 
@@ -143,7 +145,7 @@ void svd_2x2(
 
 template <class T, int N>
 P3A_HOST P3A_DEVICE
-void decompose_svd(
+void decompose_singular_values(
     matrix<T, N, N> const& A,
     matrix<T, N, N>& U,
     matrix<T, N, N>& S,
@@ -196,6 +198,49 @@ void decompose_svd(
     }
   }
   S *= scale;
+}
+
+template <class T, int N>
+P3A_HOST P3A_DEVICE
+void decompose_singular_values(
+    matrix3x3<T> const& A,
+    matrix3x3<T>& U,
+    diagonal3x3<T>& S,
+    matrix3x3<T>& V)
+{
+  matrix<T, 3, 3> A2;
+  A2(0, 0) = A.xx();
+  A2(0, 1) = A.xy();
+  A2(0, 2) = A.xz();
+  A2(1, 0) = A.yx();
+  A2(1, 1) = A.yy();
+  A2(1, 2) = A.yz();
+  A2(2, 0) = A.zx();
+  A2(2, 1) = A.zy();
+  A2(2, 2) = A.zz();
+  matrix<T, 3, 3> U2, S2, V2;
+  decompose_singular_values(A2, U2, S2, V2);
+  U.xx() = U2(0, 0);
+  U.xy() = U2(0, 1);
+  U.xz() = U2(0, 2);
+  U.yx() = U2(1, 0);
+  U.yy() = U2(1, 1);
+  U.yz() = U2(1, 2);
+  U.zx() = U2(2, 0);
+  U.zy() = U2(2, 1);
+  U.zz() = U2(2, 2);
+  S.xx() = S2(0, 0);
+  S.yy() = S2(1, 1);
+  S.zz() = S2(2, 2);
+  V.xx() = V2(0, 0);
+  V.xy() = V2(0, 1);
+  V.xz() = V2(0, 2);
+  V.yx() = V2(1, 0);
+  V.yy() = V2(1, 1);
+  V.yz() = V2(1, 2);
+  V.zx() = V2(2, 0);
+  V.zy() = V2(2, 1);
+  V.zz() = V2(2, 2);
 }
 
 }

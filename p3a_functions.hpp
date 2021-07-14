@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "p3a_macros.hpp"
+#include "p3a_constants.hpp"
 
 namespace p3a {
 
@@ -128,12 +129,47 @@ double arcsin(double a)
   return std::asin(a);
 }
 
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+double arccos(double a)
+{
+  return std::acos(a);
+}
+
 template <typename T>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
 void swap(T& t1, T& t2) {
     T temp(std::move(t1));
     t1 = std::move(t2);
     t2 = std::move(temp);
+}
+
+// In the algrebra of rotations one often comes across functions that
+// take undefined (0/0) values at some points. Close to such points
+// these functions must be evaluated using their asymptotic
+// expansions; otherwise the computer may produce wildly erroneous
+// results or a floating point exception. To avoid unreachable code
+// everywhere such functions are used, we introduce here functions to
+// the same effect.
+//
+// Function form: sin(x) / x
+// X: 0
+// Asymptotics: 1.0 (-x^2/6)
+// First radius: (6 * EPS)^(.5)
+// Second radius: (120 * EPS)^(.25)
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE inline
+T sin_x_over_x(T const& x) {
+  auto const y = absolute_value(x);
+  auto constexpr epsilon = epsilon_value<T>();
+  auto const e2 = square_root(epsilon);
+  auto const e4 = square_root(e2);
+  if (y > e4) {
+    return std::sin(y) / y;
+  } else if (y > e2) {
+    return 1.0 - y * y / 6.0;
+  } else {
+    return 1.0;
+  }
 }
 
 }

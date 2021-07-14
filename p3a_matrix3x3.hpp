@@ -1,6 +1,8 @@
 #pragma once
 
 #include "p3a_identity3x3.hpp"
+#include "p3a_symmetric3x3.hpp"
+#include "p3a_diagonal3x3.hpp"
 
 namespace p3a {
 
@@ -262,6 +264,38 @@ void store(
   store(value.zx(), ptr, 6 * stride + offset);
   store(value.zy(), ptr, 7 * stride + offset);
   store(value.zz(), ptr, 8 * stride + offset);
+}
+
+template <class A, class B>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+auto multiply_at_b_a(
+    matrix3x3<A> const& a,
+    diagonal3x3<B> const& b)
+{
+  using C = decltype(a.xx() * b.xx() * a.xx());
+  return symmetric3x3<C>(
+      a.xx() * b.xx() * a.xx() + a.yx() * b.yy() * a.yx() + a.zx() * b.zz() * a.zx(),
+      a.xx() * b.xx() * a.xy() + a.yx() * b.yy() * a.yy() + a.zx() * b.zz() * a.zy(),
+      a.xx() * b.xx() * a.xz() + a.yx() * b.yy() * a.yz() + a.zx() * b.zz() * a.zz(),
+      a.xy() * b.xx() * a.xy() + a.yy() * b.yy() * a.yy() + a.zy() * b.zz() * a.zy(),
+      a.xy() * b.xx() * a.xz() + a.yy() * b.yy() * a.yz() + a.zy() * b.zz() * a.zz(),
+      a.xz() * b.xx() * a.xz() + a.yz() * b.yy() * a.yz() + a.zz() * b.zz() * a.zz());
+}
+
+template <class A, class B>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+auto multiply_a_b_at(
+    matrix3x3<A> const& a,
+    diagonal3x3<B> const& b)
+{
+  using C = decltype(a.xx() * b.xx() * a.xx());
+  return symmetric3x3<C>(
+      a.xx() * b.xx() * a.xx() + a.xy() * b.yy() * a.xy() + a.xz() * b.zz() * a.xz(),
+      a.xx() * b.xx() * a.yx() + a.xy() * b.yy() * a.yy() + a.xz() * b.zz() * a.yz(),
+      a.xx() * b.xx() * a.zx() + a.xy() * b.yy() * a.zy() + a.xz() * b.zz() * a.zz(),
+      a.yx() * b.xx() * a.yx() + a.yy() * b.yy() * a.yy() + a.yz() * b.zz() * a.yz(),
+      a.yx() * b.xx() * a.zx() + a.yy() * b.yy() * a.zy() + a.yz() * b.zz() * a.zz(),
+      a.zx() * b.xx() * a.zx() + a.zy() * b.yy() * a.zy() + a.zz() * b.zz() * a.zz());
 }
 
 }
