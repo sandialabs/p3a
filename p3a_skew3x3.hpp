@@ -78,4 +78,27 @@ auto square(skew3x3<T> const& a)
       -xz_xz - yz_yz);
 }
 
+template <class A, class B>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+typename std::enable_if<is_scalar<B>, skew3x3<decltype(A() * B())>>::type
+operator*(
+    skew3x3<A> const& a,
+    B const& b)
+{
+  return skew3x3<decltype(a.xy() * b)>(
+      a.xy() * b,
+      a.xz() * b,
+      a.yz() * b);
+}
+
+template <class A, class B>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+typename std::enable_if<is_scalar<A>, skew3x3<decltype(A() * B())>>::type
+operator*(
+    A const& a,
+    skew3x3<B> const& b)
+{
+  return b * a;
+}
+
 }

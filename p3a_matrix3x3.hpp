@@ -3,6 +3,7 @@
 #include "p3a_identity3x3.hpp"
 #include "p3a_symmetric3x3.hpp"
 #include "p3a_diagonal3x3.hpp"
+#include "p3a_skew3x3.hpp"
 
 namespace p3a {
 
@@ -317,11 +318,105 @@ auto operator*(
       a.zx() * b.xz() + a.zy() * b.yz() + a.zz() * b.zz());
 }
 
+template <class A, class B>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+auto operator*(
+    matrix3x3<A> const& a,
+    symmetric3x3<B> const& b)
+{
+  using C = decltype(a.xx() * b.xx());
+  return matrix3x3<C>(
+      a.xx() * b.xx() + a.xy() * b.yx() + a.xz() * b.zx(),
+      a.xx() * b.xy() + a.xy() * b.yy() + a.xz() * b.zy(),
+      a.xx() * b.xz() + a.xy() * b.yz() + a.xz() * b.zz(),
+      a.yx() * b.xx() + a.yy() * b.yx() + a.yz() * b.zx(),
+      a.yx() * b.xy() + a.yy() * b.yy() + a.yz() * b.zy(),
+      a.yx() * b.xz() + a.yy() * b.yz() + a.yz() * b.zz(),
+      a.zx() * b.xx() + a.zy() * b.yx() + a.zz() * b.zx(),
+      a.zx() * b.xy() + a.zy() * b.yy() + a.zz() * b.zy(),
+      a.zx() * b.xz() + a.zy() * b.yz() + a.zz() * b.zz());
+}
+
+template <class A, class B>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+typename std::enable_if<is_scalar<B>, matrix3x3<decltype(A() * B())>>::type
+operator*(
+    matrix3x3<A> const& a,
+    B const& b)
+{
+  return matrix3x3<decltype(a.xx() * b)>(
+      a.xx() * b,
+      a.xy() * b,
+      a.xz() * b,
+      a.yx() * b,
+      a.yy() * b,
+      a.yz() * b,
+      a.zx() * b,
+      a.zy() * b,
+      a.zz() * b);
+}
+
+template <class A, class B>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+typename std::enable_if<is_scalar<A>, matrix3x3<decltype(A() * B())>>::type
+operator*(
+    A const& a,
+    matrix3x3<B> const& b)
+{
+  return b * a;
+}
+
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 T trace(matrix3x3<T> const& a)
 {
   return a.xx() + a.yy() + a.zz();
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+matrix3x3<T> operator+(symmetric3x3<T> const& a, skew3x3<T> const& b)
+{
+  return matrix3x3<T>(
+      a.xx(),
+      a.xy() + b.xy(),
+      a.xz() + b.xz(),
+      a.yx() + b.yx(),
+      a.yy(),
+      a.yz() + b.yz(),
+      a.zx() + b.zx(),
+      a.zy() + b.zy(),
+      a.zz());
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+matrix3x3<T> operator+(skew3x3<T> const& a, symmetric3x3<T> const& b)
+{
+  return b + a;
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+matrix3x3<T> operator+(matrix3x3<T> const& a, scaled_identity3x3<T> const& b)
+{
+  return matrix3x3<T>(
+      a.xx() + b.xx(),
+      a.xy(),
+      a.xz(),
+      a.yx(),
+      a.yy() + b.yy(),
+      a.yz(),
+      a.zx(),
+      a.zy(),
+      a.zz() + b.zz());
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+matrix3x3<T> operator+(scaled_identity3x3<T> const& a, matrix3x3<T> const& b)
+{
+  return b + a;
 }
 
 }

@@ -5,6 +5,7 @@
 
 #include "p3a_eigen.hpp"
 #include "p3a_svd.hpp"
+#include "p3a_skew3x3.hpp"
 
 namespace p3a {
 
@@ -91,7 +92,7 @@ matrix3x3<T> tensor_from_axis_angle(vector3<T> const& aa)
   auto const temp = T(0.5) * sin_x_over_x(halfnorm);
   auto const qv = temp * aa;
   auto const qs = std::cos(halfnorm);
-  return T(2.0) * outer_product(qv, qv) +
+  return T(2.0) * outer_product(qv) +
          T(2.0) * qs * cross_product_matrix(qv) +
          (T(2.0) * square(qs) - T(1.0)) * identity3x3;
 }
@@ -187,9 +188,9 @@ symmetric3x3<T> spd_exponential(symmetric3x3<T> const& log_m)
   matrix3x3<T> q;
   eigendecompose(log_m, l, q);
   diagonal3x3<T> const exp_l(
-      std::exp(l.x()),
-      std::exp(l.y()),
-      std::exp(l.z()));
+      std::exp(l.xx()),
+      std::exp(l.yy()),
+      std::exp(l.zz()));
   return multiply_a_b_at(q, exp_l);
 }
 

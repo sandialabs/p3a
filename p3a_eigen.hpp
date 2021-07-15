@@ -163,7 +163,7 @@ void eigendecompose(
   eigendecompose(a, q, eigen_tolerance(a));
 }
 
-template <class T, int N>
+template <class T>
 P3A_HOST P3A_DEVICE inline
 void eigendecompose(
     symmetric3x3<T> const& a,
