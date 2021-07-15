@@ -301,6 +301,16 @@ auto operator!=(
   return a.value() != b.value();
 }
 
+template <class T, class Dimension, class B>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+std::enable_if_t<is_scalar<B>, decltype(T() != B())>
+operator!=(
+    quantity<T, Dimension> const& a,
+    B const& b)
+{
+  return a.value() != b;
+}
+
 template <class T, class Dimension>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator>(

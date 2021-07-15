@@ -172,7 +172,7 @@ matrix3x3<T> polar_logarithm(matrix3x3<T> const& a)
   matrix3x3<T> w, vt;
   diagonal3x3<T> s;
   decompose_singular_values(a, w, s, vt);
-  auto const U = w * vt;
+  auto const u = w * vt;
   auto const log_u = axis_angle_from_tensor(u);
   auto const log_s = logarithm(s);
   auto const log_p = multiply_at_b_a(vt, log_s);

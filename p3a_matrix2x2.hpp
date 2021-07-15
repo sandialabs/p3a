@@ -1,5 +1,7 @@
 #pragma once
 
+#include "p3a_vector2.hpp"
+
 namespace p3a {
 
 template <class T>
@@ -117,6 +119,20 @@ matrix2x2<T> transpose(matrix2x2<T> const& m)
   return matrix2x2<T>(
       m.xx(), m.yx(),
       m.xy(), m.yy());
+}
+
+template <class A, class B>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+auto operator*(
+    matrix2x2<A> const& a,
+    matrix2x2<B> const& b)
+{
+  using C = decltype(a.xx() * b.xx());
+  return matrix2x2<C>(
+      a.xx() * b.xx() + a.xy() * b.yx(),
+      a.xx() * b.xy() + a.xy() * b.yy(),
+      a.yx() * b.xx() + a.yy() * b.yx(),
+      a.yx() * b.xy() + a.yy() * b.yy());
 }
 
 }

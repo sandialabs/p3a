@@ -1,8 +1,10 @@
 #pragma once
 
 #include "p3a_eigen.hpp"
+#include "p3a_matrix2x2.hpp"
 #include "p3a_matrix3x3.hpp"
 #include "p3a_diagonal3x3.hpp"
+#include "p3a_static_matrix.hpp"
 
 namespace p3a {
 
@@ -146,17 +148,17 @@ void svd_2x2(
 template <class T, int N>
 P3A_HOST P3A_DEVICE
 void decompose_singular_values(
-    matrix<T, N, N> const& A,
-    matrix<T, N, N>& U,
-    matrix<T, N, N>& S,
-    matrix<T, N, N>& V)
+    static_matrix<T, N, N> const& A,
+    static_matrix<T, N, N>& U,
+    static_matrix<T, N, N>& S,
+    static_matrix<T, N, N>& V)
 {
   // Scale first
   T const norm_a = norm(A);
   T const scale = norm_a > 0.0 ? norm_a : T(1.0);
-  auto S = A / scale;
-  auto U = static_matrix<T, N, N>::identity();
-  auto V = static_matrix<T, N, N>::identity();
+  S = A / scale;
+  U = static_matrix<T, N, N>::identity();
+  V = static_matrix<T, N, N>::identity();
   auto off = off_diagonal_norm(S);
   T constexpr tol = std::numeric_limits<T>::epsilon();
   int const max_iter = 2048;
@@ -180,10 +182,10 @@ void decompose_singular_values(
       (-R.xy()) : (R.xy());
     // Apply both Givens rotations to matrices
     // that are converging to singular values and singular vectors
-    givens_left(cl, sl, p, q, S);
-    givens_right(cr, sr, p, q, S);
-    givens_right(cl, sl, p, q, U);
-    givens_left(cr, sr, p, q, V);
+    rotate_givens_left(cl, sl, p, q, S);
+    rotate_givens_right(cr, sr, p, q, S);
+    rotate_givens_right(cl, sl, p, q, U);
+    rotate_givens_left(cr, sr, p, q, V);
     off = off_diagonal_norm(S);
     ++num_iter;
   }
@@ -200,7 +202,7 @@ void decompose_singular_values(
   S *= scale;
 }
 
-template <class T, int N>
+template <class T>
 P3A_HOST P3A_DEVICE
 void decompose_singular_values(
     matrix3x3<T> const& A,
@@ -208,7 +210,7 @@ void decompose_singular_values(
     diagonal3x3<T>& S,
     matrix3x3<T>& V)
 {
-  matrix<T, 3, 3> A2;
+  static_matrix<T, 3, 3> A2;
   A2(0, 0) = A.xx();
   A2(0, 1) = A.xy();
   A2(0, 2) = A.xz();
@@ -218,7 +220,7 @@ void decompose_singular_values(
   A2(2, 0) = A.zx();
   A2(2, 1) = A.zy();
   A2(2, 2) = A.zz();
-  matrix<T, 3, 3> U2, S2, V2;
+  static_matrix<T, 3, 3> U2, S2, V2;
   decompose_singular_values(A2, U2, S2, V2);
   U.xx() = U2(0, 0);
   U.xy() = U2(0, 1);

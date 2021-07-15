@@ -317,4 +317,11 @@ auto operator*(
       a.zx() * b.xz() + a.zy() * b.yz() + a.zz() * b.zz());
 }
 
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+T trace(matrix3x3<T> const& a)
+{
+  return a.xx() + a.yy() + a.zz();
+}
+
 }

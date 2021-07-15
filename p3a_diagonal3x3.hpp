@@ -19,6 +19,8 @@ class diagonal3x3 {
     ,m_yy(b)
     ,m_zz(c)
   {}
+  P3A_ALWAYS_INLINE inline
+  diagonal3x3() = default;
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xx() const { return m_xx; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr

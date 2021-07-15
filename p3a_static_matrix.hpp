@@ -69,7 +69,7 @@ template <class A, int M, int N, class B>
 typename std::enable_if<is_scalar<B>, static_matrix<decltype(A() / B()), M, N>>::type
 operator/(static_matrix<A, M, N> const& a, B const& b)
 {
-  using result_type = decltype(a.xx() / b);
+  using result_type = decltype(a(0, 0) / b);
   static_matrix<result_type, M, N> result;
   for (int i = 0; i < M; ++i) {
     for (int j = 0; j < N; ++j) {
