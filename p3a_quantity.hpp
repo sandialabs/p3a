@@ -566,4 +566,11 @@ adimensional_quantity<T> natural_logarithm(adimensional_quantity<T> const& a)
   return adimensional_quantity<T>(natural_logarithm(a.value()));
 }
 
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+adimensional_quantity<T> exponentiate(adimensional_quantity<T> const& a, adimensional_quantity<T> const& b)
+{
+  return exponentiate(a.value(), b.value());
+}
+
 }
