@@ -95,16 +95,54 @@ class dynamic_array {
     m_begin = new_allocation;
     m_capacity = new_capacity;
   }
-  void move_range_through_uninitialized(
+  void move_left(
       iterator first,
       iterator last,
       iterator d_first)
   {
+    printf("move range left through uninit first=%ld last=%ld d_first=%ld\n",
+        first - begin(),
+        last - begin(),
+        d_first - begin());
     auto const range_size = last - first;
     std::remove_const_t<decltype(range_size)> constexpr zero(0);
     auto const left_uninit_size =
       minimum(range_size,
         maximum(zero, first - d_first));
+    auto const init_size =
+      maximum(zero,
+          range_size
+          - left_uninit_size);
+    printf("uninit move first=%ld last=%ld d_first=%ld\n",
+        first - begin(),
+        (first + left_uninit_size) - begin(),
+        d_first - begin());
+    uninitialized_move(
+        m_execution_policy,
+        first,
+        first + left_uninit_size,
+        d_first);
+    printf("move first=%ld last=%ld d_first=%ld\n",
+        (first + left_uninit_size) - begin(),
+        (first + left_uninit_size + init_size) - begin(),
+        (d_first + left_uninit_size) - begin());
+    move(
+        m_execution_policy,
+        first + left_uninit_size,
+        first + left_uninit_size + init_size,
+        d_first + left_uninit_size);
+  }
+  void move_right(
+      iterator first,
+      iterator last,
+      iterator d_first)
+  {
+    printf("move range right through uninit first=%ld last=%ld d_first=%ld\n",
+        first - begin(),
+        last - begin(),
+        d_first - begin());
+    auto const range_size = last - first;
+    std::remove_const_t<decltype(range_size)> constexpr zero(0);
     auto const d_last = d_first + range_size;
     auto const right_uninit_size =
       minimum(range_size,
@@ -112,23 +150,25 @@ class dynamic_array {
     auto const init_size =
       maximum(zero,
           range_size
-          - left_uninit_size
           - right_uninit_size);
-    uninitialized_move(
-        m_execution_policy,
-        first,
-        first + left_uninit_size,
-        d_first);
+    printf("uninit move first=%ld last=%ld d_first=%ld\n",
+        (first + init_size) - begin(),
+        (first + init_size + right_uninit_size) - begin(),
+        (d_first + init_size) - begin());
     uninitialized_move(
         m_execution_policy,
         first + init_size,
         first + init_size + right_uninit_size,
         d_first + init_size);
-    move(
+    printf("move_backward first=%ld last=%ld d_last=%ld\n",
+        (first) - begin(),
+        (first + init_size) - begin(),
+        (d_first + init_size) - begin());
+    move_backward(
         m_execution_policy,
-        first + left_uninit_size,
-        first + left_uninit_size + init_size,
-        d_first + left_uninit_size);
+        first,
+        first + init_size,
+        d_first + init_size);
   }
  public:
   P3A_NEVER_INLINE void reserve(size_type const count)
@@ -190,7 +230,7 @@ class dynamic_array {
     auto const pos_n = pos - begin();
     reserve(size() + 1);
     auto const new_pos = begin() + pos_n;
-    move_range_through_uninitialized(
+    move_right(
         new_pos, end(), new_pos + 1);
     ::new (static_cast<void*>(new_pos)) T(value);
     ++m_size;
@@ -206,8 +246,9 @@ class dynamic_array {
         m_execution_policy,
         nonconst_first,
         nonconst_last);
-    move_range_through_uninitialized(
+    move_left(
         nonconst_last, end(), nonconst_first);
+    m_size -= (last - first);
     return nonconst_first;
   }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T* data() { return m_begin; }

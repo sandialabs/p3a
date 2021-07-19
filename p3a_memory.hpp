@@ -395,21 +395,6 @@ P3A_ALWAYS_INLINE void move(
 #ifdef __CUDACC__
 
 template <class ForwardIt1, class ForwardIt2>
-P3A_NEVER_INLINE void move(
-    cuda_execution policy,
-    ForwardIt1 first,
-    ForwardIt1 last,
-    ForwardIt2 d_first)
-{
-  using value_type = typename std::iterator_traits<ForwardIt2>::value_type;
-  for_each(policy, first, last,
-  [=] P3A_DEVICE (value_type& ref) P3A_ALWAYS_INLINE {
-    auto& d_ref = *(d_first + (&ref - &*first));
-    d_ref = std::move(ref);
-  });
-}
-
-template <class ForwardIt1, class ForwardIt2>
 P3A_DEVICE P3A_ALWAYS_INLINE void move(
     cuda_local_execution,
     ForwardIt1 first,
@@ -426,21 +411,6 @@ P3A_DEVICE P3A_ALWAYS_INLINE void move(
 #ifdef __HIPCC__
 
 template <class ForwardIt1, class ForwardIt2>
-P3A_NEVER_INLINE void move(
-    hip_execution policy,
-    ForwardIt1 first,
-    ForwardIt1 last,
-    ForwardIt2 d_first)
-{
-  using value_type = typename std::iterator_traits<ForwardIt2>::value_type;
-  for_each(policy, first, last,
-  [=] __device__ (value_type& ref) P3A_ALWAYS_INLINE {
-    auto& d_ref = *(d_first + (&ref - &*first));
-    d_ref = std::move(ref);
-  });
-}
-
-template <class ForwardIt1, class ForwardIt2>
 __device__ P3A_ALWAYS_INLINE void move(
     hip_local_execution,
     ForwardIt1 first,
@@ -449,6 +419,62 @@ __device__ P3A_ALWAYS_INLINE void move(
 {
   while (first != last) {
     *d_first++ = std::move(*first++);
+  }
+}
+
+#endif
+
+template <class BidirIt1, class BidirIt2>
+P3A_NEVER_INLINE void move_backward(
+    serial_execution,
+    BidirIt1 first,
+    BidirIt1 last,
+    BidirIt2 d_last)
+{
+  while (first != last) {
+    *(--d_last) = std::move(*(--last));
+  }
+}
+
+template <class BidirIt1, class BidirIt2>
+P3A_ALWAYS_INLINE void move_backward(
+    serial_local_execution,
+    BidirIt1 first,
+    BidirIt1 last,
+    BidirIt2 d_last)
+{
+  while (first != last) {
+    *(--d_last) = std::move(*(--last));
+  }
+}
+
+#ifdef __CUDACC__
+
+template <class BidirIt1, class BidirIt2>
+__device__ P3A_ALWAYS_INLINE void move_backward(
+    cuda_local_execution,
+    BidirIt1 first,
+    BidirIt1 last,
+    BidirIt2 d_last)
+{
+  while (first != last) {
+    *(--d_last) = std::move(*(--last));
+  }
+}
+
+#endif
+
+#ifdef __HIPCC__
+
+template <class BidirIt1, class BidirIt2>
+__device__ P3A_ALWAYS_INLINE void move_backward(
+    hip_local_execution,
+    BidirIt1 first,
+    BidirIt1 last,
+    BidirIt2 d_last)
+{
+  while (first != last) {
+    *(--d_last) = std::move(*(--last));
   }
 }
 
