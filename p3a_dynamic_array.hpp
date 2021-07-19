@@ -100,10 +100,6 @@ class dynamic_array {
       iterator last,
       iterator d_first)
   {
-    printf("move range left through uninit first=%ld last=%ld d_first=%ld\n",
-        first - begin(),
-        last - begin(),
-        d_first - begin());
     auto const range_size = last - first;
     std::remove_const_t<decltype(range_size)> constexpr zero(0);
     auto const left_uninit_size =
@@ -113,19 +109,11 @@ class dynamic_array {
       maximum(zero,
           range_size
           - left_uninit_size);
-    printf("uninit move first=%ld last=%ld d_first=%ld\n",
-        first - begin(),
-        (first + left_uninit_size) - begin(),
-        d_first - begin());
     uninitialized_move(
         m_execution_policy,
         first,
         first + left_uninit_size,
         d_first);
-    printf("move first=%ld last=%ld d_first=%ld\n",
-        (first + left_uninit_size) - begin(),
-        (first + left_uninit_size + init_size) - begin(),
-        (d_first + left_uninit_size) - begin());
     move(
         m_execution_policy,
         first + left_uninit_size,
@@ -137,10 +125,6 @@ class dynamic_array {
       iterator last,
       iterator d_first)
   {
-    printf("move range right through uninit first=%ld last=%ld d_first=%ld\n",
-        first - begin(),
-        last - begin(),
-        d_first - begin());
     auto const range_size = last - first;
     std::remove_const_t<decltype(range_size)> constexpr zero(0);
     auto const d_last = d_first + range_size;
@@ -151,19 +135,11 @@ class dynamic_array {
       maximum(zero,
           range_size
           - right_uninit_size);
-    printf("uninit move first=%ld last=%ld d_first=%ld\n",
-        (first + init_size) - begin(),
-        (first + init_size + right_uninit_size) - begin(),
-        (d_first + init_size) - begin());
     uninitialized_move(
         m_execution_policy,
         first + init_size,
         first + init_size + right_uninit_size,
         d_first + init_size);
-    printf("move_backward first=%ld last=%ld d_last=%ld\n",
-        (first) - begin(),
-        (first + init_size) - begin(),
-        (d_first + init_size) - begin());
     move_backward(
         m_execution_policy,
         first,
