@@ -368,6 +368,92 @@ __device__ P3A_ALWAYS_INLINE void copy(
 
 #endif
 
+template <class ForwardIt1, class ForwardIt2>
+P3A_NEVER_INLINE void move(
+    serial_execution,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  while (first != last) {
+    *d_first++ = std::move(*first++);
+  }
+}
+
+template <class ForwardIt1, class ForwardIt2>
+P3A_ALWAYS_INLINE void move(
+    serial_local_execution,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  while (first != last) {
+    *d_first++ = std::move(*first++);
+  }
+}
+
+#ifdef __CUDACC__
+
+template <class ForwardIt1, class ForwardIt2>
+P3A_NEVER_INLINE void move(
+    cuda_execution policy,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  using value_type = typename std::iterator_traits<ForwardIt2>::value_type;
+  for_each(policy, first, last,
+  [=] P3A_DEVICE (value_type& ref) P3A_ALWAYS_INLINE {
+    auto& d_ref = *(d_first + (&ref - &*first));
+    d_ref = std::move(ref);
+  });
+}
+
+template <class ForwardIt1, class ForwardIt2>
+P3A_DEVICE P3A_ALWAYS_INLINE void move(
+    cuda_local_execution,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  while (first != last) {
+    *d_first++ = std::move(*first++);
+  }
+}
+
+#endif
+
+#ifdef __HIPCC__
+
+template <class ForwardIt1, class ForwardIt2>
+P3A_NEVER_INLINE void move(
+    hip_execution policy,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  using value_type = typename std::iterator_traits<ForwardIt2>::value_type;
+  for_each(policy, first, last,
+  [=] __device__ (value_type& ref) P3A_ALWAYS_INLINE {
+    auto& d_ref = *(d_first + (&ref - &*first));
+    d_ref = std::move(ref);
+  });
+}
+
+template <class ForwardIt1, class ForwardIt2>
+__device__ P3A_ALWAYS_INLINE void move(
+    hip_local_execution,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  while (first != last) {
+    *d_first++ = std::move(*first++);
+  }
+}
+
+#endif
+
 template <class ForwardIt, class T>
 P3A_NEVER_INLINE void fill(
     serial_execution,

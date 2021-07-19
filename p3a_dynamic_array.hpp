@@ -2,6 +2,7 @@
 
 #include "p3a_memory.hpp"
 #include "p3a_allocator.hpp"
+#include "p3a_functions.hpp"
 
 namespace p3a {
 
@@ -12,6 +13,7 @@ template <
 class dynamic_array {
  public:
   using size_type = std::int64_t;
+  using difference_type = std::int64_t;
   using iterator = T*;
   using const_iterator = T const*;
   using allocator_type = Allocator;
@@ -93,6 +95,41 @@ class dynamic_array {
     m_begin = new_allocation;
     m_capacity = new_capacity;
   }
+  void move_range_through_uninitialized(
+      iterator first,
+      iterator last,
+      iterator d_first)
+  {
+    auto const range_size = last - first;
+    std::remove_const_t<decltype(range_size)> constexpr zero(0);
+    auto const left_uninit_size =
+      minimum(range_size,
+        maximum(zero, first - d_first));
+    auto const d_last = d_first + range_size;
+    auto const right_uninit_size =
+      minimum(range_size,
+        maximum(zero, d_last - last));
+    auto const init_size =
+      maximum(zero,
+          range_size
+          - left_uninit_size
+          - right_uninit_size);
+    uninitialized_move(
+        m_execution_policy,
+        first,
+        first + left_uninit_size,
+        d_first);
+    uninitialized_move(
+        m_execution_policy,
+        first + init_size,
+        first + init_size + right_uninit_size,
+        d_first + init_size);
+    move(
+        m_execution_policy,
+        first + left_uninit_size,
+        first + left_uninit_size + init_size,
+        d_first + left_uninit_size);
+  }
  public:
   P3A_NEVER_INLINE void reserve(size_type const count)
   {
@@ -128,6 +165,14 @@ class dynamic_array {
     ::new (static_cast<void*>(m_begin + m_size)) T(value);
     ++m_size;
   }
+  T& front()
+  {
+    return operator[](0);
+  }
+  T const& front() const
+  {
+    return operator[](0);
+  }
   T& back()
   {
     return operator[](size() - 1);
@@ -139,6 +184,31 @@ class dynamic_array {
   void pop_back()
   {
     resize(size() - 1);
+  }
+  iterator insert(const_iterator pos, T const& value)
+  {
+    auto const pos_n = pos - begin();
+    reserve(size() + 1);
+    auto const new_pos = begin() + pos_n;
+    move_range_through_uninitialized(
+        new_pos, end(), new_pos + 1);
+    ::new (static_cast<void*>(new_pos)) T(value);
+    ++m_size;
+    return new_pos;
+  }
+  iterator erase(const_iterator first, const_iterator last)
+  {
+    auto const nonconst_first =
+      begin() + (first - cbegin());
+    auto const nonconst_last =
+      begin() + (last - cbegin());
+    destroy(
+        m_execution_policy,
+        nonconst_first,
+        nonconst_last);
+    move_range_through_uninitialized(
+        nonconst_last, end(), nonconst_first);
+    return nonconst_first;
   }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T* data() { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T const* data() const { return m_begin; }
