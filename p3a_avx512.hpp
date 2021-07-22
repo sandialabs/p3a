@@ -105,16 +105,22 @@ class simd<float, simd_abi::avx512> {
   }
   P3A_ALWAYS_INLINE inline constexpr __m512 get() const { return m_value; }
   P3A_ALWAYS_INLINE inline simd_mask<float, simd_abi::avx512> operator<(simd const& other) const {
-    return simd_mask<float, simd_abi::avx512>(_mm512_cmp_ps_mask(m_value, other.m_value, _CMP_LT_OQ));
+    return simd_mask<float, simd_abi::avx512>(_mm512_cmplt_ps_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE inline simd_mask<float, simd_abi::avx512> operator>(simd const& other) const {
-    return simd_mask<float, simd_abi::avx512>(_mm512_cmp_ps_mask(m_value, other.m_value, _CMP_GT_OQ));
+    return simd_mask<float, simd_abi::avx512>(_mm512_cmplt_ps_mask(other.m_value, m_value));
+  }
+  P3A_ALWAYS_INLINE inline simd_mask<float, simd_abi::avx512> operator<=(simd const& other) const {
+    return simd_mask<float, simd_abi::avx512>(_mm512_cmple_ps_mask(m_value, other.m_value));
+  }
+  P3A_ALWAYS_INLINE inline simd_mask<float, simd_abi::avx512> operator>=(simd const& other) const {
+    return simd_mask<float, simd_abi::avx512>(_mm512_cmple_ps_mask(other.m_value, m_value));
   }
   P3A_ALWAYS_INLINE inline simd_mask<float, simd_abi::avx512> operator==(simd const& other) const {
-    return simd_mask<float, simd_abi::avx512>(_mm512_cmp_ps_mask(m_value, other.m_value, _CMP_EQ_OQ));
+    return simd_mask<float, simd_abi::avx512>(_mm512_cmpeq_ps_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE inline simd_mask<float, simd_abi::avx512> operator!=(simd const& other) const {
-    return simd_mask<float, simd_abi::avx512>(_mm512_cmp_ps_mask(m_value, other.m_value, _CMP_NEQ_OQ));
+    return simd_mask<float, simd_abi::avx512>(_mm512_cmpneq_ps_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE static inline simd zero() {
     return simd(float(0));
@@ -373,16 +379,22 @@ class simd<double, simd_abi::avx512> {
   }
   P3A_ALWAYS_INLINE inline constexpr __m512d get() const { return m_value; }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator<(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm512_cmp_pd_mask(m_value, other.m_value, _CMP_LT_OQ));
+    return simd_mask<double, simd_abi::avx512>(_mm512_cmplt_pd_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator>(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm512_cmp_pd_mask(m_value, other.m_value, _CMP_GT_OQ));
+    return simd_mask<double, simd_abi::avx512>(_mm512_cmplt_pd_mask(other.m_value, m_value));
+  }
+  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator<=(simd const& other) const {
+    return simd_mask<double, simd_abi::avx512>(_mm512_cmple_pd_mask(m_value, other.m_value));
+  }
+  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator>=(simd const& other) const {
+    return simd_mask<double, simd_abi::avx512>(_mm512_cmple_pd_mask(other.m_value, m_value));
   }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator==(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm512_cmp_pd_mask(m_value, other.m_value, _CMP_EQ_OQ));
+    return simd_mask<double, simd_abi::avx512>(_mm512_cmpeq_pd_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator!=(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm512_cmp_pd_mask(m_value, other.m_value, _CMP_NEQ_OQ));
+    return simd_mask<double, simd_abi::avx512>(_mm512_cmpneq_pd_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE static inline simd zero() {
     return simd(double(0));
