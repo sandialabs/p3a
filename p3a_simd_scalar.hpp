@@ -147,6 +147,12 @@ class simd<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator>(simd const& other) const {
     return simd_mask<T, simd_abi::scalar>(m_value > other.m_value);
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator<=(simd const& other) const {
+    return simd_mask<T, simd_abi::scalar>(m_value <= other.m_value);
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator>=(simd const& other) const {
+    return simd_mask<T, simd_abi::scalar>(m_value >= other.m_value);
+  }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator==(simd const& other) const {
     return simd_mask<T, simd_abi::scalar>(m_value == other.m_value);
   }
