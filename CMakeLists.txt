@@ -10,6 +10,7 @@ endif()
 
 option(p3a_ENABLE_CUDA "Enable CUDA" OFF)
 option(p3a_ENABLE_HIP "Enable HIP" OFF)
+option(p3a_ENABLE_TESTS "Enable unit tests" OFF)
 
 if (p3a_ENABLE_CUDA)
   enable_language(CUDA)
@@ -17,6 +18,10 @@ endif()
 
 if (p3a_ENABLE_HIP)
   find_package(hip REQUIRED)
+endif()
+
+if (p3a_ENABLE_TESTS)
+  find_package(GTest REQUIRED)
 endif()
 
 find_package(MPI REQUIRED)
@@ -89,6 +94,13 @@ endif()
 target_link_libraries(p3a PUBLIC MPI::MPI_CXX)
 
 install(TARGETS p3a EXPORT p3a-targets)
+
+if (p3a_ENABLE_TESTS)
+  add_executable(p3a-unit-tests p3a_unit_tests.cpp)
+  target_link_libraries(p3a-unit-tests PRIVATE p3a)
+  target_link_libraries(p3a-unit-tests PRIVATE GTest::gtest_main)
+  install(TARGETS p3a-unit-tests EXPORT p3a-targets)
+endif()
 
 configure_file(p3a-config.cmake.in
   "${PROJECT_BINARY_DIR}/p3a-config.cmake" @ONLY)
