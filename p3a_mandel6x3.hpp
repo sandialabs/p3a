@@ -13,6 +13,12 @@
  *
  * - `mandel6x3` (6x3) 3rd order Tensor
  *
+ *   Constructors:
+ *   
+ *   - `mandel6x3(mandel6x3)`
+ *   - `mandel6x3(<list of values>)`
+ *   - `mandel6x3(static_matrix<6,3>)` -- includes testing for symmetry
+ *
  * See additional notes in `p3a_mandel6x1.hpp`.
  */
 
@@ -35,9 +41,17 @@ class Mandel6x3
    x61,x62,x63;
  bool applyTransform;
 
- const T r2 = std::sqrt(T(2.0));
- const T r2i = T(1.0)/std::sqrt(T(2.0));
- const T two = T(2.0);
+ template<class T>
+ P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static
+ T r2() {std::sqrt(T(2.0));}
+
+ template<class T>
+ P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static
+ T r2i() {T(1.0)/std::sqrt(T(2.0));}
+
+ template<class T>
+ P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static 
+ T two() {T(2.0);}
 
  public:
   /**** constructors, destructors, and assigns ****/
@@ -82,6 +96,34 @@ class Mandel6x3
   {
     if (applyTransform)
         this->MandelXform();
+  }
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  mandel6x3(
+      static_matrix<T,6,3> const& X, bool const& Xform):
+    x11(X(0,0)),x12(X(0,1)),x13(X(0,2)),
+    x21(X(1,0)),x22(X(1,1)),x23(X(1,2)),
+    x31(X(2,0)),x32(X(2,1)),x33(X(2,2)),
+    x41(X(3,0)),x42(X(3,1)),x43(X(3,2)),
+    x51(X(4,0)),x52(X(4,1)),x53(X(4,2)),
+    x61(X(5,0)),x62(X(5,1)),x63(X(5,2)),
+    applyTransform(Xform)
+  {
+    if (applyTransform)
+        this->MandelXform();
+  }
+
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  mandel6x3(
+      static_matrix<T,6,3> const& X):
+    x11(X(0,0)),x12(X(0,1)),x13(X(0,2)),
+    x21(X(1,0)),x22(X(1,1)),x23(X(1,2)),
+    x31(X(2,0)),x32(X(2,1)),x33(X(2,2)),
+    x41(X(3,0)),x42(X(3,1)),x43(X(3,2)),
+    x51(X(4,0)),x52(X(4,1)),x53(X(4,2)),
+    x61(X(5,0)),x62(X(5,1)),x63(X(5,2)),
+    applyTransform(true)
+  {
+    this->MandelXform();
   }
 
   //return by mandel index 1-6

@@ -1,9 +1,12 @@
 #pragma once
 
 #include "p3a_macros.hpp"
+#include "p3a_functions.hpp"
 #include "p3a_diagonal3x3.hpp"
+#include "p3a_constants.hpp"
 #include "p3a_vector3.hpp"
 #include "p3a_symmetric3x3.hpp"
+#include "p3a_static_matrix.hpp"
 #include "p3a_matrix3x3.hpp"
 /********************************* NOTES ************************************
  *
@@ -24,6 +27,14 @@
  * This header provides the class: 
  *
  * - `mandel6x1` (6x1) 2nd order Tensor
+ *   
+ *   Constructors:
+ *   
+ *   - `mandel6x1(mandel6x1)`
+ *   - `mandel6x1(<list of values>)`
+ *   - `mandel6x1(symmetric3x3)`
+ *   - `mandel6x1(matrix3x3)` -- includes testing for symmetry
+ *   - `mandel6x1(static_matrix3x3)` -- includes testing for symmetry
  *
  * Other `mandelNxN` headers provide the classes:
  *
@@ -50,7 +61,8 @@
  *
  * Mandel Transformation is applied internally upon construction of a Mandel-type 
  * object which includes all of the symmetric Mandel Tensor types (6x1, 6x6, 3x6, 
- * or 6x3). By default, all constructors apply the Mandel Transform, but it can be 
+ * or 6x3). Avaliable constructors vary by mandel tensor type, so see notes in each
+ * specific header. By default, all constructors apply the Mandel Transform, but it can be 
  * overridden by specifying a Boolean `false` value to the end of the constructor 
  * argument list. Note that, if you use the `zero()` or `identity()` constructor, 
  * you will have a tensor that won't carry the transform to further operations, the 
@@ -69,9 +81,6 @@
 
 namespace p3a {
 
-template <class T>
-static bool compare(T a, T b){
-    return std::fabs(a-b) <= epsilon_value<T>();
 
 /******************************************************************/
 /******************************************************************/
@@ -85,9 +94,13 @@ class Mandel6x1
  T x1,x2,x3,x4,x5,x6;
  bool applyTransform;
 
- const T r2 = std::sqrt(T(2.0));
- const T r2i = T(1.0)/std::sqrt(T(2.0));
- const T two = T(2.0);
+ template<class T>
+ P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static
+ T r2() {std::sqrt(T(2.0));}
+
+ template<class T>
+ P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static 
+ T two() {T(2.0);}
 
  public:
   /**** constructors, destructors, and assigns ****/
@@ -106,8 +119,7 @@ class Mandel6x1
        x6(X6),
        applyTransform(true)
   {
-    if (applyTransform)
-        this->MandelXform();
+    this->MandelXform();
   }
 
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
@@ -154,19 +166,56 @@ class Mandel6x1
         this->MandelXform();
   }
 
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  mandel6x1(diagonal3x3<T> const& a, bool const& Xform):
+  P3A_NEVER_INLINE
+  mandel6x1(matrix3x3<T> const& a):
     x1(a.xx()),
     x2(a.yy()),
     x3(a.zz()),
-    x4(T(0.0)),
-    x5(T(0.0)),
-    x6(T(0.0)),
+    x4(a.yz()),
+    x5(a.xz()),
+    x6(a.xy()),
+    applyTransform(true)
+  {
+    if(compare(a.yz(),a.zy()) && compare(a.zx(),a.xz()) && compare(a.xy(),a.yx()))
+        throw std::invalid_argument(
+                "Initialization ERROR of p3a::mandel6x6 from p3a::matrix3x3, matrix3x3 not symmetric!");
+    this->MandelXform();
+  }
+
+  P3A_NEVER_INLINE
+  mandel6x1(matrix3x3<T> const& a, bool const& Xform):
+    x1(a.xx()),
+    x2(a.yy()),
+    x3(a.zz()),
+    x4(a.yz()),
+    x5(a.xz()),
+    x6(a.xy()),
     applyTransform(Xform)
   {
+    if(compare(a.yz(),a.zy()) && compare(a.zx(),a.xz()) && compare(a.xy(),a.yx()))
+        throw std::invalid_argument(
+                "Initialization ERROR of p3a::mandel6x6 from p3a::matrix3x3, matrix3x3 not symmetric!");
     if (applyTransform)
         this->MandelXform();
   }
+
+  P3A_NEVER_INLINE
+  mandel6x1(static_matrix<T,3,3> const& a, bool const& Xform):
+    x1(a(0,0)),
+    x2(a(1,1)),
+    x3(a(2,2)),
+    x4(a(1,2)),
+    x5(a(0,2)),
+    x6(a(0,1)),
+    applyTransform(Xform)
+  {
+    if(compare(a(1,2),a(2,1)) && compare(a(0,2),a(2,0)) && compare(a(0,1),a(1,0)))
+        throw std::invalid_argument(
+                "Initialization ERROR of p3a::mandel6x1 from p3a::static_matrix<3,3>, static_matrix<3,3> not symmetric!");
+    if (applyTransform)
+        this->MandelXform();
+  }
+
 
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1(diagonal3x3<T> const& a):
@@ -178,10 +227,22 @@ class Mandel6x1
     x6(T(0.0)),
     applyTransform(true)
   {
-    if (applyTransform)
-        this->MandelXform();
+    this->MandelXform();
   }
 
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  mandel6x1(diagonal3x3<T> const& a, bool const& Xform):
+    x1(a.xx()),
+    x2(a.yy()),
+    x3(a.zz()),
+    x4(T(0.0)),
+    x5(T(0.0)),
+    x6(T(0.0)),
+    applyTransform(Xform)
+  {
+      if(applyTransform)
+          this->MandelXform();
+  }
   //Return components by ij descriptor
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xx() const { return x1; }
@@ -299,13 +360,26 @@ symmetric3x3<T> operator=(
     t.invMandelXform();
 
     return symmetric3x3<T>(
-            t.xx(),
-            t.yy(),
-            t.zz(),
-            t.yz(),
-            t.xz(),
-            t.xy());
+            t.x1(), t.x6(), t.x5(),
+                    t.x2(), t.x4(),
+                            t.x3());
 }
+
+//conversion to matrix3x3 via assignment
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+matrix3x3<T> operator=(
+    madel6x1<T> const& tt)
+{
+    mandel6x1<T> t = tt;
+    t.invMandelXform();
+
+    return matrix3x3<T>(
+            t.x1(), t.x6(), t.x5(),
+            t.x6(), t.x2(), t.x4(),
+            t.x5(), t.x4(), t.x3());
+}
+
 
 //mandel6x1 binary operators with scalars
 //multiplication by constant
@@ -485,9 +559,9 @@ template <class T>
 T Det(
     mandel6x1<T> const& t)
 {
-      return t.x1()    * (t.x2()*t.x3()    - t.x4()*t.x4()/two) -
-             t.x6()/r2 * (t.x3()*t.x6()/r2 - t.x4()*t.x5()/two) +
-             t.x5()/r2 * (t.x6()*t.x4()/two - t.x2()*t.x5()/r2);
+      return t.x1()    * (t.x2()*t.x3()    - t.x4()*t.x4()/two<T>()) -
+             t.x6()/r2<T>() * (t.x3()*t.x6()/r2<T>() - t.x4()*t.x5()/two<T>()) +
+             t.x5()/r2<T>() * (t.x6()*t.x4()/two<T>() - t.x2()*t.x5()/r2<T>());
 }
 
 //inverse
@@ -501,12 +575,12 @@ mandel6x1<T> Inverse(
     T inv_det = 0.0;
     T det = Det(V);
 
-    u.x1() = (V.x2()*V.x3()    - V.x4()*V.x4()/two)*inv_det;
-    u.x2() = (V.x1()*V.x3()    - V.x5()*V.x5()/two)*inv_det;
-    u.x3() = (V.x1()*V.x2()    - V.x6()*V.x6()/two)*inv_det;
-    u.x4() = (V.x6()*V.x5()/two - V.x1()*V.x4()/r2)*inv_det;
-    u.x5() = (V.x6()*V.x4()/two - V.x2()*V.x5()/r2)*inv_det;
-    u.x6() = (V.x4()*V.x5()/two - V.x6()*V.x3()/r2)*inv_det;
+    u.x1() = (V.x2()*V.x3()    - V.x4()*V.x4()/two<T>())*inv_det;
+    u.x2() = (V.x1()*V.x3()    - V.x5()*V.x5()/two<T>())*inv_det;
+    u.x3() = (V.x1()*V.x2()    - V.x6()*V.x6()/two<T>())*inv_det;
+    u.x4() = (V.x6()*V.x5()/two<T>() - V.x1()*V.x4()/r2<T>())*inv_det;
+    u.x5() = (V.x6()*V.x4()/two<T>() - V.x2()*V.x5()/r2<T>())*inv_det;
+    u.x6() = (V.x4()*V.x5()/two<T>() - V.x6()*V.x3()/r2<T>())*inv_det;
     //not in mandel form anymore; return to mandel form for consistency with 
     //other functions
     u.MandelXform();
@@ -643,7 +717,7 @@ template <class T, class U>
 auto ddot(mandel6x1<T> const &t, mandel6x1<U> const &v)
 {
     using result_type = decltype(t.x1() * v.x());
-    return result_type(t.x1()*v.x1() + t.x2()*v.x2() + t.x3()*v.x3() + two*t.x4()*v.x4() + two*t.x5()*v.x5() + two*t.x6()*v.x6());
+    return result_type(t.x1()*v.x1() + t.x2()*v.x2() + t.x3()*v.x3() + two<T>()*t.x4()*v.x4() + two<T>()*t.x5()*v.x5() + two<T>()*t.x6()*v.x6());
 }
 
 //double dot product of mandel6x1 with diagonal3x3
@@ -670,7 +744,7 @@ template <class T, class U>
 auto ddot( mandel6x1<T> const &v, symmetric3x3<U> const &t)
 {
     using result_type = decltype(v.x1() * t.xx());
-    return result_type(t.xx()*v.x1() + t.yy()*v.x2() + t.zz()*v.x3() + two*t.yz()*v.x4() + two*t.xz()*v.x5() + two*t.xy()*v.x6());
+    return result_type(t.xx()*v.x1() + t.yy()*v.x2() + t.zz()*v.x3() + two<T>()*t.yz()*v.x4() + two<T>()*t.xz()*v.x5() + two<T>()*t.xy()*v.x6());
 }
 
 //double dot product of symmetric3x3 and mandel6x1
@@ -679,7 +753,7 @@ template <class T, class U>
 auto ddot(symmetric3x3<T> const& t, mandel6x1<U> const &v) 
 {
     using result_type = decltype(v.x1() * t.xx());
-    return result_type(t.xx()*v.x1() + t.yy()*v.x2() + t.zz()*v.x3() + two*t.yz()*v.x4() + two*t.xz()*v.x5() + two*t.xy()*v.x6());
+    return result_type(t.xx()*v.x1() + t.yy()*v.x2() + t.zz()*v.x3() + two<T>()*t.yz()*v.x4() + two<T>()*t.xz()*v.x5() + two<T>()*t.xy()*v.x6());
 }
 
 //double dot product of mandel6x1 and matrix3x3
@@ -710,9 +784,9 @@ auto operator*(mandel6x1<T> const& v, matrix3x3<U> const& t)
     using result_type = decltype(t.xx() * v.x1());
     //The transformation is reversed as the operation is performed 
     // by first converting to a tensor.
-    return matrix3x3<result_type>(v.x1()*t.xx()+v.x6()/r2*t.yx()+v.x5()/r2*t.zx(),v.x1()*t.xy()+v.x6()/r2*t.yy()+v.x5()/r2*t.zy(),v.x1()*t.xz()+v.x6()/r2*t.yz()+v.x5()/r2*t.zz(),
-                       v.x6()/r2*t.xx()+v.x2()*t.yx()+v.x4()/r2*t.zx(),v.x6()/r2*t.xy()+v.x2()*t.yy()+v.x4()/r2*t.zy(),v.x6()/r2*t.xz()+v.x2()*t.yz()+v.x4()/r2*t.zz(),
-                       v.x5()/r2*t.xx()+v.x4()/r2*t.yx()+v.x3()*t.zx(),v.x5()/r2*t.xy()+v.x4()/r2*t.yy()+v.x3()*t.zy(),v.x5()/r2*t.xz()+v.x4()/r2*t.yz()+v.x3()*t.zz());
+    return matrix3x3<result_type>(v.x1()*t.xx()+v.x6()/r2<T>()*t.yx()+v.x5()/r2<T>()*t.zx(),v.x1()*t.xy()+v.x6()/r2<T>()*t.yy()+v.x5()/r2<T>()*t.zy(),v.x1()*t.xz()+v.x6()/r2<T>()*t.yz()+v.x5()/r2<T>()*t.zz(),
+                       v.x6()/r2<T>()*t.xx()+v.x2()*t.yx()+v.x4()/r2<T>()*t.zx(),v.x6()/r2<T>()*t.xy()+v.x2()*t.yy()+v.x4()/r2<T>()*t.zy(),v.x6()/r2<T>()*t.xz()+v.x2()*t.yz()+v.x4()/r2<T>()*t.zz(),
+                       v.x5()/r2<T>()*t.xx()+v.x4()/r2<T>()*t.yx()+v.x3()*t.zx(),v.x5()/r2<T>()*t.xy()+v.x4()/r2<T>()*t.yy()+v.x3()*t.zy(),v.x5()/r2<T>()*t.xz()+v.x4()/r2<T>()*t.yz()+v.x3()*t.zz());
 }
 
 /** Tensor mult: matrix3x3 by mandel6x1 **/ 
@@ -723,9 +797,9 @@ auto operator*(matrix3x3<T> const& t, mandel6x1<U> const& v)
     //The transformation is reversed as the operation is performed 
     // by first converting to a tensor.
     using result_type = decltype(t.xx() * v.x1());
-    return matrix3x3<result_type>(t.xx()*v.x1()+t.xy()*v.x6()/r2+t.xz()*v.x5()/r2,t.xx()*v.x6()/r2+t.xy()*v.x2()+t.xz()*v.x4()/r2,t.xx()*v.x5()/r2+t.xy()*v.x4()/r2+t.xz()*v.x3(),
-                  t.yx()*v.x1()+t.yy()*v.x6()/r2+t.yz()*v.x5()/r2,t.yx()*v.x6()/r2+t.yy()*v.x2()+t.yz()*v.x4()/r2,t.yx()*v.x5()/r2+t.yy()*v.x4()/r2+t.yz()*v.x3(),
-                  t.zx()*v.x1()+t.zy()*v.x6()/r2+t.zz()*v.x5()/r2,t.zx()*v.x6()/r2+t.zy()*v.x2()+t.zz()*v.x4()/r2,t.zx()*v.x5()/r2+t.zy()*v.x4()/r2+t.zz()*v.x3());
+    return matrix3x3<result_type>(t.xx()*v.x1()+t.xy()*v.x6()/r2<T>()+t.xz()*v.x5()/r2<T>(),t.xx()*v.x6()/r2<T>()+t.xy()*v.x2()+t.xz()*v.x4()/r2<T>(),t.xx()*v.x5()/r2<T>()+t.xy()*v.x4()/r2<T>()+t.xz()*v.x3(),
+                  t.yx()*v.x1()+t.yy()*v.x6()/r2<T>()+t.yz()*v.x5()/r2<T>(),t.yx()*v.x6()/r2<T>()+t.yy()*v.x2()+t.yz()*v.x4()/r2<T>(),t.yx()*v.x5()/r2<T>()+t.yy()*v.x4()/r2<T>()+t.yz()*v.x3(),
+                  t.zx()*v.x1()+t.zy()*v.x6()/r2<T>()+t.zz()*v.x5()/r2<T>(),t.zx()*v.x6()/r2<T>()+t.zy()*v.x2()+t.zz()*v.x4()/r2<T>(),t.zx()*v.x5()/r2<T>()+t.zy()*v.x4()/r2<T>()+t.zz()*v.x3());
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -738,8 +812,8 @@ template <class T>
 symmetric3x3<T> mandel6x1_to_symmetric3x3(mandel6x1<T> const& v)
 {
     //invert Mandel Tranformation of MandelVector 
-    return symmetric3x3<T>(v.x1(),v.x6()/r2,v.x5()/r2,
-                                  v.x2()   ,v.x4()/r2,
+    return symmetric3x3<T>(v.x1(),v.x6()/r2<T>(),v.x5()/r2<T>(),
+                                  v.x2()   ,v.x4()/r2<T>(),
                                             v.x3());
 }
 

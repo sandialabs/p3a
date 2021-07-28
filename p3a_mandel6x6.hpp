@@ -6,10 +6,18 @@
 #include "p3a_symmetric3x3.hpp"
 #include "p3a_matrix3x3.hpp"
 #include "p3a_mandel6x1.hpp"
+#include "p3a_static_vector.hpp"
+#include "p3a_static_matrix.hpp"
 /********************************* NOTES ************************************
  * This header provides the class: 
  *
  * - `mandel6x6` (6x6) 4th order Tensor
+ *   
+ *   Constructors:
+ *   
+ *   - `mandel6x6(mandel6x6)`
+ *   - `mandel6x6(<list of values>)`
+ *   - `mandel6x6(static_matrix<6,6>)`
  *
  * See additional notes in `p3a_mandel6x1.hpp`.
  */
@@ -33,9 +41,17 @@ class Mandel6x6
    x61,x62,x63,x64,x65,x66;
  bool applyTransform;
 
- const T r2 = std::sqrt(T(2.0));
- const T r2i = T(1.0)/std::sqrt(T(2.0));
- const T two = T(2.0);
+ template<class T>
+ P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static
+ T r2() {std::sqrt(T(2.0));}
+
+ template<class T>
+ P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static
+ T r2i() {T(1.0)/std::sqrt(T(2.0));}
+
+ template<class T>
+ P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static 
+ T two() {T(2.0);}
 
  public:
   /**** constructors, destructors, and assigns ****/
@@ -83,7 +99,36 @@ class Mandel6x6
         this->MandelXform();
   }
 
-  //return by mandel index 1-6
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  mandel6x6(
+      static_matrix<T,6,6> const& X, bool const& Xform):
+    x11(X(0,0)),x12(X(0,1)),x13(X(0,2)),x14(X(0,3)),x15(X(0,4)),x16(X(0,5)),
+    x21(X(1,0)),x22(X(1,1)),x23(X(1,2)),x24(X(1,3)),x25(X(1,4)),x26(X(1,5)),
+    x31(X(2,0)),x32(X(2,1)),x33(X(2,2)),x34(X(2,3)),x35(X(2,4)),x36(X(2,5)),
+    x41(X(3,0)),x42(X(3,1)),x43(X(3,2)),x44(X(3,3)),x45(X(3,4)),x46(X(3,5)),
+    x51(X(4,0)),x52(X(4,1)),x53(X(4,2)),x54(X(4,3)),x55(X(4,4)),x56(X(4,5)),
+    x61(X(5,0)),x62(X(5,1)),x63(X(5,2)),x64(X(5,3)),x65(X(5,4)),x66(X(5,5)),
+    applyTransform(Xform)
+  {
+    if (applyTransform)
+        this->MandelXform();
+  }
+
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  mandel6x6(
+      static_matrix<T,6,6> const& X):
+    x11(X(0,0)),x12(X(0,1)),x13(X(0,2)),x14(X(0,3)),x15(X(0,4)),x16(X(0,5)),
+    x21(X(1,0)),x22(X(1,1)),x23(X(1,2)),x24(X(1,3)),x25(X(1,4)),x26(X(1,5)),
+    x31(X(2,0)),x32(X(2,1)),x33(X(2,2)),x34(X(2,3)),x35(X(2,4)),x36(X(2,5)),
+    x41(X(3,0)),x42(X(3,1)),x43(X(3,2)),x44(X(3,3)),x45(X(3,4)),x46(X(3,5)),
+    x51(X(4,0)),x52(X(4,1)),x53(X(4,2)),x54(X(4,3)),x55(X(4,4)),x56(X(4,5)),
+    x61(X(5,0)),x62(X(5,1)),x63(X(5,2)),x64(X(5,3)),x65(X(5,4)),x66(X(5,5)),
+    applyTransform(true)
+  {
+    this->MandelXform();
+  }
+
+  //return by mandel index 1-6,1-6
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x11() const { return x11; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
@@ -561,7 +606,7 @@ mandel6x6<T> operator-(
 }
 
 /***************************************************************************** 
- * Linear Algebra for MandelVector (2nd order tensor)
+ * Linear Algebra for Mandel6x6(4th order tensor)
  *****************************************************************************/
 //trace
 template <class T>
@@ -573,27 +618,167 @@ T trace(
 }
 
 //inverse
-template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-mandel6x6<T> Inverse(
-    mandel6x6<T> const &V)
+template <class U>
+P3A_NEVER_INLINE 
+mandel6x6<U> Inverse(
+    mandel6x6<U> const &V)
 {
-    //partial pivoting in <dynamic_matrix.hpp>
-    //Direct calculation of inverse of (6x1) 2nd-order Mandel tensor 
-    mandel6x6<T> u;
-    T inv_det = 0.0;
-    T det = Det(V);
+    /**************************************************************************
+    * This procedure computes the inverse of a MandelTensor (6x6) using
+    * Gauss-Jordan elimination with partial pivoting.
+    *
+    * Converted to C++ from F90/95 and uses MandelTensor
+    * class. Algorithm taken from "alegranevada/alegra/electromech/tensor_toolkit.f90".
+    ***************************************************************************/
+    mandel6x6<U> T(V);
+    T.invMandelXform();
+    //......................................................................local
+    int row=0;
+    int col=0;
+    int icond = 0;
+    int startrow = -1;
+    int v = 0;
+    int n = 6 ;
+    int span = 5;
+    int loc = 0;
+    U vval=0;
+    U wmax =0;
+    U fac =0; 
+    U wcond = minimum<U>();
+    static_matrix<U,6,6> w;
+    static_matrix<U,6,6> ainv;
+    static_vector<U,6> dummy;
 
-    u.x1() = (V.x2()*V.x3()    - V.x4()*V.x4()/two)*inv_det;
-    u.x2() = (V.x1()*V.x3()    - V.x5()*V.x5()/two)*inv_det;
-    u.x3() = (V.x1()*V.x2()    - V.x6()*V.x6()/two)*inv_det;
-    u.x4() = (V.x6()*V.x5()/two - V.x1()*V.x4()/r2)*inv_det;
-    u.x5() = (V.x6()*V.x4()/two - V.x2()*V.x5()/r2)*inv_det;
-    u.x6() = (V.x4()*V.x5()/two - V.x6()*V.x3()/r2)*inv_det;
-    //not in mandel form anymore; return to mandel form for consistency with 
-    //other functions
-    u.MandelXform();
-    return u;
+     
+    dummy.zeros();
+    ainv.zeros();
+    ainv.identity();
+    w.zeros();
+
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Initialize and allocate
+    //
+    // Make working tensor from input Mandel Tensor
+    // while converting input 6x6 tensor T from Mandel form to normal form
+    
+    // Row 1
+    w(0,0)=T.x11;
+    w(0,1)=T.x12;
+    w(0,2)=T.x13;
+    w(0,3)=T.x14;
+    w(0,4)=T.x15;
+    w(0,5)=T.x16;
+    // Row 2
+    w(1,0)=T.x21;
+    w(1,1)=T.x22;
+    w(1,2)=T.x23;
+    w(1,3)=T.x24;
+    w(1,4)=T.x25;
+    w(1,5)=T.x26;
+    //Row 3
+    w(2,0)=T.x31;
+    w(2,1)=T.x32;
+    w(2,2)=T.x33;
+    w(2,3)=T.x34;
+    w(2,4)=T.x35;
+    w(2,5)=T.x36;
+    //Row 4
+    w(3,0)=T.x41;
+    w(3,1)=T.x42;
+    w(3,2)=T.x43;
+    w(3,3)=T.x44;
+    w(3,4)=T.x45;
+    w(3,5)=T.x46;
+    //Row 5
+    w(4,0)=T.x51;
+    w(4,1)=T.x52;
+    w(4,2)=T.x53;
+    w(4,3)=T.x54;
+    w(4,4)=T.x55;
+    w(4,5)=T.x56;
+    //Row 6
+    w(5,0)=T.x61;
+    w(5,1)=T.x62;
+    w(5,2)=T.x63;
+    w(5,3)=T.x64;
+    w(5,4)=T.x65;
+    w(5,5)=T.x66;
+
+    //Locate maximum value in each row and normalize by that value
+    for(row=0;row<n;row++)
+    {
+        wmax = 0.0;
+        for(col=0;col<n;col++)
+        {
+            //find max value of each row
+            if(std::abs(w(row,col))>std::abs(wmax))
+            {
+                wmax = w(row,col);
+            }
+        }
+        //if the row is empty: error
+        if(std::abs(wmax) <= minimum<U>();
+        {
+           icond = 1;
+           throw std::invalid_argument(
+                   "p3a_mandel6x6::Inverse: ERROR, row is zero during inversion of 4th order Mandel Tensor");
+        }
+        //normalize rows by max value in row
+        for(col=0;col<n;col++)
+        {
+            w(row,col) /= wmax;
+            ainv(row,col) /= wmax;
+        }
+    }
+
+    // Gauss-Jordan elimination with partial pivoting
+    for(col=0;col<n;col++)
+    {
+        //find location of max in each column
+        wmax=0.0;
+        startrow = -1;
+        for(row=col;row<n;row++)
+        {
+            if(std::abs(w(row,col))>wmax)
+            {
+                wmax = std::abs(w(row,col));
+                
+                startrow=row;
+            }
+        }
+
+        for(int j=col;j<n;j++) dummy(j) = w(col,j);
+        for(int j=col;j<n;j++) w(col,j) = w(startrow,j);
+        for(int j=col;j<n;j++) w(startrow,j) = dummy(j);
+        for(int j=0;j<n;j++) dummy(j) = ainv(col,j);
+        for(int j=0;j<n;j++) ainv(col,j) = ainv(startrow,j);
+        for(int j=0;j<n;j++) ainv(startrow,j) = dummy(j);
+
+        wmax = w(col,col);
+
+        //check for ill conditioned tensor
+        if(std::abs(wmax) < wcond)
+        {
+            icond = 1;
+            throw std::invalid_argument(
+                    "p3a_mandel6x6::Inverse: illconditioned 4th order Mandel Tensor");
+        }
+
+        row = col;
+        for(int j=col;j<n;j++) w[row,j] /= wmax;
+        for(int k=0;k<n;k++) ainv[row,k] /= wmax;
+
+        for(row=0;row<n;row++)
+        {
+            if(row == col) continue;
+            fac = w[row*n+col];
+            for(int j=col;j<n;j++) w[row,j] -= fac * w[col,j];
+            for(int k=0;k<n;k++) ainv[row,k] -= fac * ainv[col,k];
+        }//end row loop
+
+    }//end col loop
+
+    return mandel6x6<U>(ainv,true);
 }
 
 /** Create a 6x6 Mandel Tensor to Rotate a 6x6 Mandel Tensor
@@ -694,37 +879,20 @@ auto operator*(
     return C*v;
 }
 
-/** Tensor multiply MandelVector (6x6) by diagonal3x3 (3x3) **/
+/** Tensor multiply MandelVector (6x6) by diagonal3x3 (3x3 as 6x1) **/
 template <class T, class U>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(
-    mandel6x6<T> const &v, 
+    mandel6x6<T> const &C, 
     diagonal3x3<U> const &t)
 {
-    return mandel6x1<decltype(t.xx() * v.xx())>(
-          t.xx()*v.x1(),
-          t.yy()*v.x2(),
-          t.zz()*v.x3(),
-          t.yy()*v.x4(),
-          t.xx()*v.x5(),
-          t.xx()*v.x6(),
-          false);
-}
-
-/** Tensor multiply diagonal3x3 (3x3) by MandelVector (6x1) **/
-template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto operator*(
-    diagonal3x3<T> const &t, 
-    mandel6x1<U> const &v)
-{
-    return mandel6x1<decltype(tt.xx() * v.xx())>(
-          tt.xx()*vv.x1(),
-          tt.yy()*vv.x2(),
-          tt.zz()*vv.x3(),
-          tt.yy()*vv.x4(),
-          tt.xx()*vv.x5(),
-          tt.xx()*vv.x6(),
+    return mandel6x1<decltype(t.xx() * C.x11())>(
+          C.x11()*t.xx() + C.x12()*t.yy() + C.x13()*t.zz(),
+          C.x21()*t.xx() + C.x22()*t.yy() + C.x23()*t.zz(),
+          C.x31()*t.xx() + C.x32()*t.yy() + C.x33()*t.zz(),
+          C.x41()*t.xx() + C.x42()*t.yy() + C.x43()*t.zz(),
+          C.x51()*t.xx() + C.x52()*t.yy() + C.x53()*t.zz(),
+          C.x61()*t.xx() + C.x62()*t.yy() + C.x63()*t.zz(),
           false);
 }
 
