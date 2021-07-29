@@ -27,31 +27,25 @@ namespace p3a {
 /******************************************************************/
 /******************************************************************/
 template <class T>
-class Mandel6x6
+class mandel6x6
 /** 
  * Represents a 4th order tensor as a 6x6 Mandel array
  */
 /******************************************************************/
 {
- T x11,x12,x13,x14,x15,x16,
-   x21,x22,x23,x24,x25,x26,
-   x31,x32,x33,x34,x35,x36,
-   x41,x42,x43,x44,x45,x46,
-   x51,x52,x53,x54,x55,x56,
-   x61,x62,x63,x64,x65,x66;
+ T m_x11,m_x12,m_x13,m_x14,m_x15,m_x16,
+   m_x21,m_x22,m_x23,m_x24,m_x25,m_x26,
+   m_x31,m_x32,m_x33,m_x34,m_x35,m_x36,
+   m_x41,m_x42,m_x43,m_x44,m_x45,m_x46,
+   m_x51,m_x52,m_x53,m_x54,m_x55,m_x56,
+   m_x61,m_x62,m_x63,m_x64,m_x65,m_x66;
  bool applyTransform;
 
- template<class T>
- P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static
- T r2() {std::sqrt(T(2.0));}
+ static const T r2 = square_root(T(2.0));
 
- template<class T>
- P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static
- T r2i() {T(1.0)/std::sqrt(T(2.0));}
+ static const T r2i = T(1.0)/square_root(T(2.0));
 
- template<class T>
- P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static 
- T two() {T(2.0);}
+ static const T two = T(2.0);
 
  public:
   /**** constructors, destructors, and assigns ****/
@@ -66,12 +60,12 @@ class Mandel6x6
       T const& X41, T const& X42, T const& X43, T const& X44, T const& X45, T const& X46,
       T const& X51, T const& X52, T const& X53, T const& X54, T const& X55, T const& X56,
       T const& X61, T const& X62, T const& X63, T const& X64, T const& X65, T const& X66):
-      x11(X11),x12(X12),x13(X13),x14(X14),x15(X15),x16(X16),
-      x21(X21),x22(X22),x23(X23),x24(X24),x25(X25),x26(X26),
-      x31(X31),x32(X32),x33(X33),x34(X34),x35(X35),x36(X36),
-      x41(X41),x42(X42),x43(X43),x44(X44),x45(X45),x46(X46),
-      x51(X51),x52(X52),x53(X53),x54(X54),x55(X55),x56(X56),
-      x61(X61),x62(X62),x63(X63),x64(X64),x65(X65),x66(X66),
+      m_x11(X11),m_x12(X12),m_x13(X13),m_x14(X14),m_x15(X15),m_x16(X16),
+      m_x21(X21),m_x22(X22),m_x23(X23),m_x24(X24),m_x25(X25),m_x26(X26),
+      m_x31(X31),m_x32(X32),m_x33(X33),m_x34(X34),m_x35(X35),m_x36(X36),
+      m_x41(X41),m_x42(X42),m_x43(X43),m_x44(X44),m_x45(X45),m_x46(X46),
+      m_x51(X51),m_x52(X52),m_x53(X53),m_x54(X54),m_x55(X55),m_x56(X56),
+      m_x61(X61),m_x62(X62),m_x63(X63),m_x64(X64),m_x65(X65),m_x66(X66),
        applyTransform(true)
   {
     if (applyTransform)
@@ -87,12 +81,12 @@ class Mandel6x6
       T const& X51, T const& X52, T const& X53, T const& X54, T const& X55, T const& X56,
       T const& X61, T const& X62, T const& X63, T const& X64, T const& X65, T const& X66, 
       bool const& Xform):
-    x11(X11),x12(X12),x13(X13),x14(X14),x15(X15),x16(X16),
-    x21(X21),x22(X22),x23(X23),x24(X24),x25(X25),x26(X26),
-    x31(X31),x32(X32),x33(X33),x34(X34),x35(X35),x36(X36),
-    x41(X41),x42(X42),x43(X43),x44(X44),x45(X45),x46(X46),
-    x51(X51),x52(X52),x53(X53),x54(X54),x55(X55),x56(X56),
-    x61(X61),x62(X62),x63(X63),x64(X64),x65(X65),x66(X66),
+    m_x11(X11),m_x12(X12),m_x13(X13),m_x14(X14),m_x15(X15),m_x16(X16),
+    m_x21(X21),m_x22(X22),m_x23(X23),m_x24(X24),m_x25(X25),m_x26(X26),
+    m_x31(X31),m_x32(X32),m_x33(X33),m_x34(X34),m_x35(X35),m_x36(X36),
+    m_x41(X41),m_x42(X42),m_x43(X43),m_x44(X44),m_x45(X45),m_x46(X46),
+    m_x51(X51),m_x52(X52),m_x53(X53),m_x54(X54),m_x55(X55),m_x56(X56),
+    m_x61(X61),m_x62(X62),m_x63(X63),m_x64(X64),m_x65(X65),m_x66(X66),
     applyTransform(Xform)
   {
     if (applyTransform)
@@ -102,12 +96,12 @@ class Mandel6x6
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x6(
       static_matrix<T,6,6> const& X, bool const& Xform):
-    x11(X(0,0)),x12(X(0,1)),x13(X(0,2)),x14(X(0,3)),x15(X(0,4)),x16(X(0,5)),
-    x21(X(1,0)),x22(X(1,1)),x23(X(1,2)),x24(X(1,3)),x25(X(1,4)),x26(X(1,5)),
-    x31(X(2,0)),x32(X(2,1)),x33(X(2,2)),x34(X(2,3)),x35(X(2,4)),x36(X(2,5)),
-    x41(X(3,0)),x42(X(3,1)),x43(X(3,2)),x44(X(3,3)),x45(X(3,4)),x46(X(3,5)),
-    x51(X(4,0)),x52(X(4,1)),x53(X(4,2)),x54(X(4,3)),x55(X(4,4)),x56(X(4,5)),
-    x61(X(5,0)),x62(X(5,1)),x63(X(5,2)),x64(X(5,3)),x65(X(5,4)),x66(X(5,5)),
+    m_x11(X(0,0)),m_x12(X(0,1)),m_x13(X(0,2)),m_x14(X(0,3)),m_x15(X(0,4)),m_x16(X(0,5)),
+    m_x21(X(1,0)),m_x22(X(1,1)),m_x23(X(1,2)),m_x24(X(1,3)),m_x25(X(1,4)),m_x26(X(1,5)),
+    m_x31(X(2,0)),m_x32(X(2,1)),m_x33(X(2,2)),m_x34(X(2,3)),m_x35(X(2,4)),m_x36(X(2,5)),
+    m_x41(X(3,0)),m_x42(X(3,1)),m_x43(X(3,2)),m_x44(X(3,3)),m_x45(X(3,4)),m_x46(X(3,5)),
+    m_x51(X(4,0)),m_x52(X(4,1)),m_x53(X(4,2)),m_x54(X(4,3)),m_x55(X(4,4)),m_x56(X(4,5)),
+    m_x61(X(5,0)),m_x62(X(5,1)),m_x63(X(5,2)),m_x64(X(5,3)),m_x65(X(5,4)),m_x66(X(5,5)),
     applyTransform(Xform)
   {
     if (applyTransform)
@@ -117,12 +111,12 @@ class Mandel6x6
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x6(
       static_matrix<T,6,6> const& X):
-    x11(X(0,0)),x12(X(0,1)),x13(X(0,2)),x14(X(0,3)),x15(X(0,4)),x16(X(0,5)),
-    x21(X(1,0)),x22(X(1,1)),x23(X(1,2)),x24(X(1,3)),x25(X(1,4)),x26(X(1,5)),
-    x31(X(2,0)),x32(X(2,1)),x33(X(2,2)),x34(X(2,3)),x35(X(2,4)),x36(X(2,5)),
-    x41(X(3,0)),x42(X(3,1)),x43(X(3,2)),x44(X(3,3)),x45(X(3,4)),x46(X(3,5)),
-    x51(X(4,0)),x52(X(4,1)),x53(X(4,2)),x54(X(4,3)),x55(X(4,4)),x56(X(4,5)),
-    x61(X(5,0)),x62(X(5,1)),x63(X(5,2)),x64(X(5,3)),x65(X(5,4)),x66(X(5,5)),
+    m_x11(X(0,0)),m_x12(X(0,1)),m_x13(X(0,2)),m_x14(X(0,3)),m_x15(X(0,4)),m_x16(X(0,5)),
+    m_x21(X(1,0)),m_x22(X(1,1)),m_x23(X(1,2)),m_x24(X(1,3)),m_x25(X(1,4)),m_x26(X(1,5)),
+    m_x31(X(2,0)),m_x32(X(2,1)),m_x33(X(2,2)),m_x34(X(2,3)),m_x35(X(2,4)),m_x36(X(2,5)),
+    m_x41(X(3,0)),m_x42(X(3,1)),m_x43(X(3,2)),m_x44(X(3,3)),m_x45(X(3,4)),m_x46(X(3,5)),
+    m_x51(X(4,0)),m_x52(X(4,1)),m_x53(X(4,2)),m_x54(X(4,3)),m_x55(X(4,4)),m_x56(X(4,5)),
+    m_x61(X(5,0)),m_x62(X(5,1)),m_x63(X(5,2)),m_x64(X(5,3)),m_x65(X(5,4)),m_x66(X(5,5)),
     applyTransform(true)
   {
     this->MandelXform();
@@ -130,152 +124,152 @@ class Mandel6x6
 
   //return by mandel index 1-6,1-6
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x11() const { return x11; }
+  T const& x11() const { return m_x11; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x12() const { return x12; }
+  T const& x12() const { return m_x12; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x13() const { return x13; }
+  T const& x13() const { return m_x13; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x14() const { return x14; }
+  T const& x14() const { return m_x14; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x15() const { return x15; }
+  T const& x15() const { return m_x15; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x16() const { return x16; }
+  T const& x16() const { return m_x16; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x21() const { return x21; }
+  T const& x21() const { return m_x21; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x22() const { return x22; }
+  T const& x22() const { return m_x22; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x23() const { return x23; }
+  T const& x23() const { return m_x23; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x24() const { return x24; }
+  T const& x24() const { return m_x24; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x25() const { return x25; }
+  T const& x25() const { return m_x25; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x26() const { return x26; }
+  T const& x26() const { return m_x26; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x31() const { return x31; }
+  T const& x31() const { return m_x31; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x32() const { return x32; }
+  T const& x32() const { return m_x32; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x33() const { return x33; }
+  T const& x33() const { return m_x33; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x34() const { return x34; }
+  T const& x34() const { return m_x34; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x35() const { return x35; }
+  T const& x35() const { return m_x35; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x36() const { return x36; }
+  T const& x36() const { return m_x36; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x41() const { return x41; }
+  T const& x41() const { return m_x41; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x42() const { return x42; }
+  T const& x42() const { return m_x42; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x43() const { return x43; }
+  T const& x43() const { return m_x43; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x44() const { return x44; }
+  T const& x44() const { return m_x44; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x45() const { return x45; }
+  T const& x45() const { return m_x45; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x46() const { return x46; }
+  T const& x46() const { return m_x46; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x51() const { return x51; }
+  T const& x51() const { return m_x51; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x52() const { return x52; }
+  T const& x52() const { return m_x52; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x53() const { return x53; }
+  T const& x53() const { return m_x53; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x54() const { return x54; }
+  T const& x54() const { return m_x54; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x55() const { return x55; }
+  T const& x55() const { return m_x55; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x56() const { return x56; }
+  T const& x56() const { return m_x56; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x61() const { return x61; }
+  T const& x61() const { return m_x61; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x62() const { return x62; }
+  T const& x62() const { return m_x62; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x63() const { return x63; }
+  T const& x63() const { return m_x63; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x64() const { return x64; }
+  T const& x64() const { return m_x64; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x65() const { return x65; }
+  T const& x65() const { return m_x65; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x66() const { return x66; }
+  T const& x66() const { return m_x66; }
 
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x11() { return x11; }
+  T& x11() { return m_x11; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x12() { return x12; }
+  T& x12() { return m_x12; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x13() { return x13; }
+  T& x13() { return m_x13; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x14() { return x14; }
+  T& x14() { return m_x14; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x15() { return x15; }
+  T& x15() { return m_x15; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x16() { return x16; }
+  T& x16() { return m_x16; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x21() { return x21; }
+  T& x21() { return m_x21; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x22() { return x22; }
+  T& x22() { return m_x22; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x23() { return x23; }
+  T& x23() { return m_x23; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x24() { return x24; }
+  T& x24() { return m_x24; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x25() { return x25; }
+  T& x25() { return m_x25; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x26() { return x26; }
+  T& x26() { return m_x26; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x31() { return x31; }
+  T& x31() { return m_x31; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x32() { return x32; }
+  T& x32() { return m_x32; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x33() { return x33; }
+  T& x33() { return m_x33; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x34() { return x34; }
+  T& x34() { return m_x34; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x35() { return x35; }
+  T& x35() { return m_x35; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x36() { return x36; }
+  T& x36() { return m_x36; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x41() { return x41; }
+  T& x41() { return m_x41; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x42() { return x42; }
+  T& x42() { return m_x42; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x43() { return x43; }
+  T& x43() { return m_x43; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x44() { return x44; }
+  T& x44() { return m_x44; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x45() { return x45; }
+  T& x45() { return m_x45; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x46() { return x46; }
+  T& x46() { return m_x46; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x51() { return x51; }
+  T& x51() { return m_x51; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x52() { return x52; }
+  T& x52() { return m_x52; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x53() { return x53; }
+  T& x53() { return m_x53; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x54() { return x54; }
+  T& x54() { return m_x54; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x55() { return x55; }
+  T& x55() { return m_x55; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x56() { return x56; }
+  T& x56() { return m_x56; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x61() { return x61; }
+  T& x61() { return m_x61; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x62() { return x62; }
+  T& x62() { return m_x62; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x63() { return x63; }
+  T& x63() { return m_x63; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x64() { return x64; }
+  T& x64() { return m_x64; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x65() { return x65; }
+  T& x65() { return m_x65; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x66() { return x66; }
+  T& x66() { return m_x66; }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
   mandel6x6<T> zero()
   {
     return mandel6x6<T>(
@@ -288,7 +282,7 @@ class Mandel6x6
         false);
   }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
   mandel6x6<T> identity()
   {
     return mandel6x6<T>(
@@ -301,28 +295,28 @@ class Mandel6x6
         true);
   }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   void MandelXform()
   {
-                              x14*=r2,x15*=r2,x16*=r2;
-                              x24*=r2,x25*=r2,x26*=r2;
-                              x34*=r2,x35*=r2,x36*=r2;
-      x41*=r2,x42*=r2,x43*=r2,x44*=two,x45*=two,x46*=two;
-      x51*=r2,x52*=r2,x53*=r2,x54*=two,x55*=two,x56*=two;
-      x61*=r2,x62*=r2,x63*=r2,x64*=two,x65*=two,x66*=two;
+                              m_x14*=r2,m_x15*=r2,m_x16*=r2;
+                              m_x24*=r2,m_x25*=r2,m_x26*=r2;
+                              m_x34*=r2,m_x35*=r2,m_x36*=r2;
+      m_x41*=r2,m_x42*=r2,m_x43*=r2,m_x44*=two,m_x45*=two,m_x46*=two;
+      m_x51*=r2,m_x52*=r2,m_x53*=r2,m_x54*=two,m_x55*=two,m_x56*=two;
+      m_x61*=r2,m_x62*=r2,m_x63*=r2,m_x64*=two,m_x65*=two,m_x66*=two;
   }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   void invMandelXform()
   {
-                              x14/=r2,x15/=r2,x16/=r2;
-                              x24/=r2,x25/=r2,x26/=r2;
-                              x34/=r2,x35/=r2,x36/=r2;
-      x41/=r2,x42/=r2,x43/=r2,x44/=two,x45/=two,x46/=two;
-      x51/=r2,x52/=r2,x53/=r2,x54/=two,x55/=two,x56/=two;
-      x61/=r2,x62/=r2,x63/=r2,x64/=two,x65/=two,x66/=two;
-  }
-
+                              m_x14/=r2,m_x15/=r2,m_x16/=r2;
+                              m_x24/=r2,m_x25/=r2,m_x26/=r2;
+                              m_x34/=r2,m_x35/=r2,m_x36/=r2;
+      m_x41/=r2,m_x42/=r2,m_x43/=r2,m_x44/=two,m_x45/=two,m_x46/=two;
+      m_x51/=r2,m_x52/=r2,m_x53/=r2,m_x54/=two,m_x55/=two,m_x56/=two;
+      m_x61/=r2,m_x62/=r2,m_x63/=r2,m_x64/=two,m_x65/=two,m_x66/=two;
+  }                        
+                             
 };
 
 /***************************************************************************** 
@@ -366,7 +360,7 @@ operator/(
         mandel6x6<A> const& a, 
         B const& c)
 {
-    return mandel6x6<decltype<(a.x11() / c)>(
+    return mandel6x6<decltype(A()*B())>(
             a.x11()/c, a.x12()/c, a.x13()/c, a.x14()/c, a.x15()/c, a.x16()/c,
             a.x21()/c, a.x22()/c, a.x23()/c, a.x24()/c, a.x25()/c, a.x26()/c,
             a.x31()/c, a.x32()/c, a.x33()/c, a.x34()/c, a.x35()/c, a.x36()/c,
@@ -378,7 +372,7 @@ operator/(
 
 //division /= by constant
 template <class A>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator/=(
         mandel6x6<A>& a, 
         A const& c)
@@ -423,7 +417,7 @@ void operator/=(
 
 //multiplication *= by constant
 template <class A>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator*=(
         mandel6x6<A>& a, 
         A const& c)
@@ -468,7 +462,7 @@ void operator*=(
 
 //mandel6x6 += addition
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator+=(
     mandel6x6<T>& a, 
     mandel6x6<T> const& b)
@@ -513,7 +507,7 @@ void operator+=(
 
 //mandel6x6 -= subtraction
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator-=(
     mandel6x6<T>& a, 
     mandel6x6<T> const& b)
@@ -711,13 +705,13 @@ mandel6x6<U> Inverse(
         for(col=0;col<n;col++)
         {
             //find max value of each row
-            if(std::abs(w(row,col))>std::abs(wmax))
+            if(absolute_value(w(row,col))>absolut_value(wmax))
             {
                 wmax = w(row,col);
             }
         }
         //if the row is empty: error
-        if(std::abs(wmax) <= minimum<U>();
+        if(absolute_value(wmax) <= minimum<U>())
         {
            icond = 1;
            throw std::invalid_argument(
@@ -739,9 +733,9 @@ mandel6x6<U> Inverse(
         startrow = -1;
         for(row=col;row<n;row++)
         {
-            if(std::abs(w(row,col))>wmax)
+            if(absolute_value(w(row,col))>wmax)
             {
-                wmax = std::abs(w(row,col));
+                wmax = absolute_value(w(row,col));
                 
                 startrow=row;
             }
@@ -757,7 +751,7 @@ mandel6x6<U> Inverse(
         wmax = w(col,col);
 
         //check for ill conditioned tensor
-        if(std::abs(wmax) < wcond)
+        if(absolute_value(wmax) < wcond)
         {
             icond = 1;
             throw std::invalid_argument(
@@ -799,36 +793,36 @@ mandel6x6<T> MandelTransformation(
         a.xx()*a.xx(),
         a.xy()*a.xy(),
         a.xz()*a.xz(),
-        a.xy()*a.xz()*r2,
-        a.xx()*a.xz()*r2,
-        a.xx()*a.xy()*r2,
+        a.xy()*a.xz()*a.r2,
+        a.xx()*a.xz()*a.r2,
+        a.xx()*a.xy()*a.r2,
         a.yx()*a.yx(),
         a.yy()*a.yy(),
         a.yz()*a.yz(),
-        a.yy()*a.yz()*r2,
-        a.yx()*a.yz()*r2,
-        a.yx()*a.yy()*r2,
+        a.yy()*a.yz()*a.r2,
+        a.yx()*a.yz()*a.r2,
+        a.yx()*a.yy()*a.r2,
         a.zx()*a.zx(),
         a.zy()*a.zy(),
         a.zz()*a.zz(),
-        a.zy()*a.zz()*r2,
-        a.zx()*a.zz()*r2,
-        a.zx()*a.zy()*r2,
-        a.yx()*a.zx()*r2,
-        a.yy()*a.zy()*r2,
-        a.yz()*a.zz()*r2,
+        a.zy()*a.zz()*a.r2,
+        a.zx()*a.zz()*a.r2,
+        a.zx()*a.zy()*a.r2,
+        a.yx()*a.zx()*a.r2,
+        a.yy()*a.zy()*a.r2,
+        a.yz()*a.zz()*a.r2,
         a.yy()*a.zz()+a.yz()*a.zy(),
         a.yz()*a.zx()+a.yx()*a.zz(),
         a.yx()*a.zy()+a.yy()*a.zx(),
-        a.xx()*a.zx()*r2,
-        a.xy()*a.zy()*r2,
-        a.xz()*a.zz()*r2,
+        a.xx()*a.zx()*a.r2,
+        a.xy()*a.zy()*a.r2,
+        a.xz()*a.zz()*a.r2,
         a.zy()*a.xz()+a.zz()*a.xy(),
         a.zz()*a.xx()+a.zx()*a.xz(),
         a.zx()*a.xy()+a.zy()*a.xx(),
-        a.xx()*a.yx()*r2,
-        a.xy()*a.yy()*r2,
-        a.xz()*a.yz()*r2,
+        a.xx()*a.yx()*a.r2,
+        a.xy()*a.yy()*a.r2,
+        a.xz()*a.yz()*a.r2,
         a.xy()*a.yz()+a.xz()*a.yy(),
         a.xz()*a.yx()+a.xx()*a.yz(),
         a.xx()*a.yy()+a.xy()*a.yx(),
@@ -875,7 +869,7 @@ auto operator*(
     mandel6x6<T> const &C, 
     symmetric3x3<U> const &s)
 {
-    v = mandel6x1<T>(s);
+    mandel6x1<T> v(s);
     return C*v;
 }
 
@@ -899,3 +893,4 @@ auto operator*(
 //misc
 inline int constexpr mandel6x6_component_count = 36;
 
+}

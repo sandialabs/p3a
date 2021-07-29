@@ -1,5 +1,6 @@
 #pragma once
 
+#include "p3a_scalar.hpp"
 #include "p3a_macros.hpp"
 #include "p3a_functions.hpp"
 #include "p3a_diagonal3x3.hpp"
@@ -69,7 +70,7 @@
  * transformation must be applied manually by applying the method `MandelXform()` 
  * method to the Mandel-type object. The transform will be contained in any result 
  * returning a Mandel-type object. This means that the Mandel transformation must be 
- * inverted when converting MandelVectors (6-element symmetric tensors) to full 
+ * inverted when converting mandel6x1 (6-element symmetric tensors) to full 
  * 9-element (3x3) 2<sup>nd</sup>-order tensors. 
  *
  * This library automatically inverts the Mandel transformation when returning a
@@ -85,22 +86,18 @@ namespace p3a {
 /******************************************************************/
 /******************************************************************/
 template <class T>
-class Mandel6x1
+class mandel6x1
 /** 
  * Represents a 2nd order tensor as a 6x1 Mandel array
  */
 /******************************************************************/
 {
- T x1,x2,x3,x4,x5,x6;
+ T m_x1,m_x2,m_x3,m_x4,m_x5,m_x6;
  bool applyTransform;
 
- template<class T>
- P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static
- T r2() {std::sqrt(T(2.0));}
+ static const T r2 = square_root(T(2.0));
 
- template<class T>
- P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr static 
- T two() {T(2.0);}
+ static const T two= T(2.0);
 
  public:
   /**** constructors, destructors, and assigns ****/
@@ -111,12 +108,12 @@ class Mandel6x1
   mandel6x1(
       T const& X1, T const& X2, T const& X3,
       T const& X4, T const& X5, T const& X6):
-       x1(X1),
-       x2(X2),
-       x3(X3),
-       x4(X4),
-       x5(X5),
-       x6(X6),
+       m_x1(X1),
+       m_x2(X2),
+       m_x3(X3),
+       m_x4(X4),
+       m_x5(X5),
+       m_x6(X6),
        applyTransform(true)
   {
     this->MandelXform();
@@ -126,12 +123,12 @@ class Mandel6x1
   mandel6x1(
       T const& X1, T const& X2, T const& X3,
       T const& X4, T const& X5, T const& X6, bool const& Xform)
-    :x1(X1)
-    ,x2(X2)
-    ,x3(X3)
-    ,x4(X4)
-    ,x5(X5)
-    ,x6(X6)
+    :m_x1(X1)
+    ,m_x2(X2)
+    ,m_x3(X3)
+    ,m_x4(X4)
+    ,m_x5(X5)
+    ,m_x6(X6)
     ,applyTransform(Xform)
   {
     if (applyTransform)
@@ -140,26 +137,25 @@ class Mandel6x1
 
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1(symmetric3x3<T> const& a):
-    x1(a.xx()),
-    x2(a.yy()),
-    x3(a.zz()),
-    x4(a.yz()),
-    x5(a.xz()),
-    x6(a.xy()),
+    m_x1(a.xx()),
+    m_x2(a.yy()),
+    m_x3(a.zz()),
+    m_x4(a.yz()),
+    m_x5(a.xz()),
+    m_x6(a.xy()),
     applyTransform(true)
   {
-    if (applyTransform)
-        this->MandelXform();
+    this->MandelXform();
   }
 
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1(symmetric3x3<T> const& a, bool const& Xform):
-    x1(a.xx()),
-    x2(a.yy()),
-    x3(a.zz()),
-    x4(a.yz()),
-    x5(a.xz()),
-    x6(a.xy()),
+    m_x1(a.xx()),
+    m_x2(a.yy()),
+    m_x3(a.zz()),
+    m_x4(a.yz()),
+    m_x5(a.xz()),
+    m_x6(a.xy()),
     applyTransform(Xform)
   {
     if (applyTransform)
@@ -168,12 +164,12 @@ class Mandel6x1
 
   P3A_NEVER_INLINE
   mandel6x1(matrix3x3<T> const& a):
-    x1(a.xx()),
-    x2(a.yy()),
-    x3(a.zz()),
-    x4(a.yz()),
-    x5(a.xz()),
-    x6(a.xy()),
+    m_x1(a.xx()),
+    m_x2(a.yy()),
+    m_x3(a.zz()),
+    m_x4(a.yz()),
+    m_x5(a.xz()),
+    m_x6(a.xy()),
     applyTransform(true)
   {
     if(compare(a.yz(),a.zy()) && compare(a.zx(),a.xz()) && compare(a.xy(),a.yx()))
@@ -184,12 +180,12 @@ class Mandel6x1
 
   P3A_NEVER_INLINE
   mandel6x1(matrix3x3<T> const& a, bool const& Xform):
-    x1(a.xx()),
-    x2(a.yy()),
-    x3(a.zz()),
-    x4(a.yz()),
-    x5(a.xz()),
-    x6(a.xy()),
+    m_x1(a.xx()),
+    m_x2(a.yy()),
+    m_x3(a.zz()),
+    m_x4(a.yz()),
+    m_x5(a.xz()),
+    m_x6(a.xy()),
     applyTransform(Xform)
   {
     if(compare(a.yz(),a.zy()) && compare(a.zx(),a.xz()) && compare(a.xy(),a.yx()))
@@ -201,12 +197,12 @@ class Mandel6x1
 
   P3A_NEVER_INLINE
   mandel6x1(static_matrix<T,3,3> const& a, bool const& Xform):
-    x1(a(0,0)),
-    x2(a(1,1)),
-    x3(a(2,2)),
-    x4(a(1,2)),
-    x5(a(0,2)),
-    x6(a(0,1)),
+    m_x1(a(0,0)),
+    m_x2(a(1,1)),
+    m_x3(a(2,2)),
+    m_x4(a(1,2)),
+    m_x5(a(0,2)),
+    m_x6(a(0,1)),
     applyTransform(Xform)
   {
     if(compare(a(1,2),a(2,1)) && compare(a(0,2),a(2,0)) && compare(a(0,1),a(1,0)))
@@ -219,12 +215,12 @@ class Mandel6x1
 
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1(diagonal3x3<T> const& a):
-    x1(a.xx()),
-    x2(a.yy()),
-    x3(a.zz()),
-    x4(T(0.0)),
-    x5(T(0.0)),
-    x6(T(0.0)),
+    m_x1(a.xx()),
+    m_x2(a.yy()),
+    m_x3(a.zz()),
+    m_x4(T(0.0)),
+    m_x5(T(0.0)),
+    m_x6(T(0.0)),
     applyTransform(true)
   {
     this->MandelXform();
@@ -232,12 +228,12 @@ class Mandel6x1
 
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1(diagonal3x3<T> const& a, bool const& Xform):
-    x1(a.xx()),
-    x2(a.yy()),
-    x3(a.zz()),
-    x4(T(0.0)),
-    x5(T(0.0)),
-    x6(T(0.0)),
+    m_x1(a.xx()),
+    m_x2(a.yy()),
+    m_x3(a.zz()),
+    m_x4(T(0.0)),
+    m_x5(T(0.0)),
+    m_x6(T(0.0)),
     applyTransform(Xform)
   {
       if(applyTransform)
@@ -245,59 +241,59 @@ class Mandel6x1
   }
   //Return components by ij descriptor
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& xx() const { return x1; }
+  T const& xx() const { return m_x1; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& yy() const { return x2; }
+  T const& yy() const { return m_x2; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& zz() const { return x3; }
+  T const& zz() const { return m_x3; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& yz() const { return x4; }
+  T const& yz() const { return m_x4; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& xz() const { return x5; }
+  T const& xz() const { return m_x5; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& xy() const { return x6; }
+  T const& xy() const { return m_x6; }
 
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& xx() { return x1; }
+  T& xx() { return m_x1; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& yy() { return x2; }
+  T& yy() { return m_x2; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& zz() { return x3; }
+  T& zz() { return m_x3; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& yz() { return x4; }
+  T& yz() { return m_x4; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& xz() { return x5; }
+  T& xz() { return m_x5; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& xy() { return x6; }
+  T& xy() { return m_x6; }
 
   //return by mandel index 1-6
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x1() const { return x1; }
+  T const& x1() const { return m_x1; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x2() const { return x2; }
+  T const& x2() const { return m_x2; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x3() const { return x3; }
+  T const& x3() const { return m_x3; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x4() const { return x4; }
+  T const& x4() const { return m_x4; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x5() const { return x5; }
+  T const& x5() const { return m_x5; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T const& x6() const { return x6; }
+  T const& x6() const { return m_x6; }
 
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x1() { return x1; }
+  T& x1() { return m_x1; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x2() { return x2; }
+  T& x2() { return m_x2; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x3() { return x3; }
+  T& x3() { return m_x3; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x4() { return x4; }
+  T& x4() { return m_x4; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x5() { return x5; }
+  T& x5() { return m_x5; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  T& x6() { return x6; }
+  T& x6() { return m_x6; }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
   mandel6x1<T> zero()
   {
     return mandel6x1<T>(
@@ -305,7 +301,7 @@ class Mandel6x1
         T(0), T(0), T(0),false);
   }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
   mandel6x1<T> identity()
   {
     return mandel6x1<T>(
@@ -313,20 +309,66 @@ class Mandel6x1
         T(0), T(0), T(0),true);
   }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   void MandelXform()
   {
-      x4 *= r2;
-      x5 *= r2;
-      x6 *= r2;
+      m_x4 *= r2;
+      m_x5 *= r2;
+      m_x6 *= r2;
   }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   void invMandelXform()
   {
-      x4 /= r2;
-      x5 /= r2;
-      x6 /= r2;
+      m_x4 /= r2;
+      m_x5 /= r2;
+      m_x6 /= r2;
+  }
+
+  //conversion of symmetric3x3 to mandel6x1 via assignment
+  template <class U>
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  mandel6x1<U> operator=(
+      symmetric3x3<U> const& t)
+  {
+      return mandel6x1<U>(
+              t.xx(),
+              t.yy(),
+              t.zz(),
+              t.yz(),
+              t.xz(),
+              t.xy(),
+              true);
+  }
+
+  //conversion of mandel6x1 to symmetric3x3 via assignment
+  template <class U>
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  symmetric3x3<U> operator=(
+      mandel6x1<U> const& tt)
+  {
+      mandel6x1<T> t = tt;
+      t.invMandelXform();
+
+      return symmetric3x3<U>(
+              t.x1(), t.x6(), t.x5(),
+                      t.x2(), t.x4(),
+                              t.x3());
+  }
+
+  //conversion to matrix3x3 via assignment
+  template <class U>
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  matrix3x3<U> operator=(
+      mandel6x1<U> const& tt)
+  {
+      mandel6x1<U> t = tt;
+      t.invMandelXform();
+
+      return matrix3x3<U>(
+              t.x1(), t.x6(), t.x5(),
+              t.x6(), t.x2(), t.x4(),
+              t.x5(), t.x4(), t.x3());
   }
 
 };
@@ -334,51 +376,6 @@ class Mandel6x1
 /***************************************************************************** 
  * Operators overloads for mandel6x1 tensors (2nd order tensor)
  *****************************************************************************/
-//conversion of symmetric3x3 to mande6x1 via assignment
-template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto operator=(
-    symmetric3x3<T> const& t)
-{
-    return mandel6x1<T>(
-            t.xx(),
-            t.yy(),
-            t.zz(),
-            t.yz(),
-            t.xz(),
-            t.xy(),
-            true);
-}
-
-//conversion of mandel6x1 to symmetric3x3 via assignment
-template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-symmetric3x3<T> operator=(
-    madel6x1<T> const& tt)
-{
-    mandel6x1<T> t = tt;
-    t.invMandelXform();
-
-    return symmetric3x3<T>(
-            t.x1(), t.x6(), t.x5(),
-                    t.x2(), t.x4(),
-                            t.x3());
-}
-
-//conversion to matrix3x3 via assignment
-template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-matrix3x3<T> operator=(
-    madel6x1<T> const& tt)
-{
-    mandel6x1<T> t = tt;
-    t.invMandelXform();
-
-    return matrix3x3<T>(
-            t.x1(), t.x6(), t.x5(),
-            t.x6(), t.x2(), t.x4(),
-            t.x5(), t.x4(), t.x3());
-}
 
 
 //mandel6x1 binary operators with scalars
@@ -391,18 +388,18 @@ operator*(
     B const& c)
 {
     return mandel6x1<decltype(t.x1()*c)>(
-            a.x1()*c,
-            a.x2()*c,
-            a.x3()*c,
-            a.x4()*c,
-            a.x5()*c,
-            a.x6()*c,
+            t.x1()*c,
+            t.x2()*c,
+            t.x3()*c,
+            t.x4()*c,
+            t.x5()*c,
+            t.x6()*c,
             false);
 }
 
 //multiplication by constant
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexp, 
 typename std::enable_if<is_scalar<A>, mandel6x1<decltype(A() * B())>>::type 
 operator*(
     A const& c, 
@@ -414,12 +411,12 @@ operator*(
 //division by constant
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-typename std::enable_if<is_scalar<B>, mandel6x1<decltype(A() * B())>>::type
+typename std::enable_if<is_scalar<B>, mandel6x1<decltype(A() * B())>>::type 
 operator/(
     mandel6x1<A> const& t, 
     B const& c)
 {
-    return mandel6x1<decltype<(t.x1() / c)>(
+    return mandel6x1<decltype(A() * B())>(
             t.x1() / c,
             t.x2() / c,
             t.x3() / c,
@@ -431,7 +428,7 @@ operator/(
 
 //multiplication *= by constant
 template <class A>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator*=(
     mandel6x1<A>& t, 
     A const& c)
@@ -446,7 +443,7 @@ void operator*=(
 
 //division /= by constant
 template <class A>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator/=(
     mandel6x1<A>& t, 
     A const& c)
@@ -461,7 +458,7 @@ void operator/=(
 
 //mandel6x1 -= subtraction
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator-=(
     mandel6x1<T>& a, 
     mandel6x1<T> const& b)
@@ -482,8 +479,7 @@ mandel6x1<T> operator+(
     mandel6x1<T> const& a, 
     mandel6x1<U> const& b)
 {
-  using result_type (a.x11*b.x12)
-  return mandel6x1<result_type>(
+  return mandel6x1<decltype(a.x11*b.x12)>(
     a.x1() + b.x1(),
     a.x2() + b.x2(),
     a.x3() + b.x3(),
@@ -495,7 +491,7 @@ mandel6x1<T> operator+(
 
 //mandel6x1 += addition
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator+=(
     mandel6x1<T>& a, 
     mandel6x1<T> const& b)
@@ -542,7 +538,7 @@ mandel6x1<T> operator-(
 }
 
 /***************************************************************************** 
- * Linear Algebra for MandelVector (2nd order tensor)
+ * Linear Algebra for Mandel6x1 (2nd order tensor)
  *****************************************************************************/
 //trace
 template <class T>
@@ -559,9 +555,9 @@ template <class T>
 T Det(
     mandel6x1<T> const& t)
 {
-      return t.x1()    * (t.x2()*t.x3()    - t.x4()*t.x4()/two<T>()) -
-             t.x6()/r2<T>() * (t.x3()*t.x6()/r2<T>() - t.x4()*t.x5()/two<T>()) +
-             t.x5()/r2<T>() * (t.x6()*t.x4()/two<T>() - t.x2()*t.x5()/r2<T>());
+      return t.x1()    * (t.x2()*t.x3()    - t.x4()*t.x4()/t.two) -
+             t.x6()/t.r2 * (t.x3()*t.x6()/t.r2 - t.x4()*t.x5()/t.two) +
+             t.x5()/t.r2 * (t.x6()*t.x4()/t.two - t.x2()*t.x5()/t.r2);
 }
 
 //inverse
@@ -575,12 +571,12 @@ mandel6x1<T> Inverse(
     T inv_det = 0.0;
     T det = Det(V);
 
-    u.x1() = (V.x2()*V.x3()    - V.x4()*V.x4()/two<T>())*inv_det;
-    u.x2() = (V.x1()*V.x3()    - V.x5()*V.x5()/two<T>())*inv_det;
-    u.x3() = (V.x1()*V.x2()    - V.x6()*V.x6()/two<T>())*inv_det;
-    u.x4() = (V.x6()*V.x5()/two<T>() - V.x1()*V.x4()/r2<T>())*inv_det;
-    u.x5() = (V.x6()*V.x4()/two<T>() - V.x2()*V.x5()/r2<T>())*inv_det;
-    u.x6() = (V.x4()*V.x5()/two<T>() - V.x6()*V.x3()/r2<T>())*inv_det;
+    u.x1() = (V.x2()*V.x3()    - V.x4()*V.x4()/V.two)*inv_det;
+    u.x2() = (V.x1()*V.x3()    - V.x5()*V.x5()/V.two)*inv_det;
+    u.x3() = (V.x1()*V.x2()    - V.x6()*V.x6()/V.two)*inv_det;
+    u.x4() = (V.x6()*V.x5()/V.two - V.x1()*V.x4()/V.r2)*inv_det;
+    u.x5() = (V.x6()*V.x4()/V.two - V.x2()*V.x5()/V.r2)*inv_det;
+    u.x6() = (V.x4()*V.x5()/V.two - V.x6()*V.x3()/V.r2)*inv_det;
     //not in mandel form anymore; return to mandel form for consistency with 
     //other functions
     u.MandelXform();
@@ -599,7 +595,7 @@ auto operator*(
     tt.invMandelXform();
     vv.invMandelXform();
 
-    using result_type decltype(v.xx() * t.xx());
+    using result_type = decltype(v.xx() * t.xx());
     return mandel6x1<result_type>(
           tt.x1()*vv.x1()+tt.x6()*vv.x6()+tt.x5()*vv.x5(),
           tt.x6()*vv.x6()+tt.x2()*vv.x2()+tt.x4()*vv.x4(),
@@ -617,7 +613,7 @@ auto operator*(
     mandel6x1<T> const &v, 
     symmetric3x3<U> const &tt)
 {
-    MandelVector<T> vv = v;
+    mandel6x1<T> vv = v;
     vv.invMandelXform();
 
     using result_type = decltype(tt.xx() * v.xx());
@@ -635,8 +631,8 @@ auto operator*(
 template <class T, class U>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(
-    symmetric3x3<T> const &tt)
-    mandel6x1<U> const &v, 
+    symmetric3x3<T> const &tt,
+    mandel6x1<U> const &v) 
 {
     mandel6x1<U> vv = v;
     vv.invMandelXform();
@@ -717,7 +713,7 @@ template <class T, class U>
 auto ddot(mandel6x1<T> const &t, mandel6x1<U> const &v)
 {
     using result_type = decltype(t.x1() * v.x());
-    return result_type(t.x1()*v.x1() + t.x2()*v.x2() + t.x3()*v.x3() + two<T>()*t.x4()*v.x4() + two<T>()*t.x5()*v.x5() + two<T>()*t.x6()*v.x6());
+    return result_type(t.x1()*v.x1() + t.x2()*v.x2() + t.x3()*v.x3() + t.two*t.x4()*v.x4() + t.two*t.x5()*v.x5() + t.two*t.x6()*v.x6());
 }
 
 //double dot product of mandel6x1 with diagonal3x3
@@ -744,7 +740,7 @@ template <class T, class U>
 auto ddot( mandel6x1<T> const &v, symmetric3x3<U> const &t)
 {
     using result_type = decltype(v.x1() * t.xx());
-    return result_type(t.xx()*v.x1() + t.yy()*v.x2() + t.zz()*v.x3() + two<T>()*t.yz()*v.x4() + two<T>()*t.xz()*v.x5() + two<T>()*t.xy()*v.x6());
+    return result_type(t.xx()*v.x1() + t.yy()*v.x2() + t.zz()*v.x3() + v.two*t.yz()*v.x4() + v.two*t.xz()*v.x5() + v.two*t.xy()*v.x6());
 }
 
 //double dot product of symmetric3x3 and mandel6x1
@@ -753,7 +749,7 @@ template <class T, class U>
 auto ddot(symmetric3x3<T> const& t, mandel6x1<U> const &v) 
 {
     using result_type = decltype(v.x1() * t.xx());
-    return result_type(t.xx()*v.x1() + t.yy()*v.x2() + t.zz()*v.x3() + two<T>()*t.yz()*v.x4() + two<T>()*t.xz()*v.x5() + two<T>()*t.xy()*v.x6());
+    return result_type(t.xx()*v.x1() + t.yy()*v.x2() + t.zz()*v.x3() + v.two*t.yz()*v.x4() + v.two*t.xz()*v.x5() + v.two*t.xy()*v.x6());
 }
 
 //double dot product of mandel6x1 and matrix3x3
@@ -784,9 +780,9 @@ auto operator*(mandel6x1<T> const& v, matrix3x3<U> const& t)
     using result_type = decltype(t.xx() * v.x1());
     //The transformation is reversed as the operation is performed 
     // by first converting to a tensor.
-    return matrix3x3<result_type>(v.x1()*t.xx()+v.x6()/r2<T>()*t.yx()+v.x5()/r2<T>()*t.zx(),v.x1()*t.xy()+v.x6()/r2<T>()*t.yy()+v.x5()/r2<T>()*t.zy(),v.x1()*t.xz()+v.x6()/r2<T>()*t.yz()+v.x5()/r2<T>()*t.zz(),
-                       v.x6()/r2<T>()*t.xx()+v.x2()*t.yx()+v.x4()/r2<T>()*t.zx(),v.x6()/r2<T>()*t.xy()+v.x2()*t.yy()+v.x4()/r2<T>()*t.zy(),v.x6()/r2<T>()*t.xz()+v.x2()*t.yz()+v.x4()/r2<T>()*t.zz(),
-                       v.x5()/r2<T>()*t.xx()+v.x4()/r2<T>()*t.yx()+v.x3()*t.zx(),v.x5()/r2<T>()*t.xy()+v.x4()/r2<T>()*t.yy()+v.x3()*t.zy(),v.x5()/r2<T>()*t.xz()+v.x4()/r2<T>()*t.yz()+v.x3()*t.zz());
+    return matrix3x3<result_type>(v.x1()*t.xx()+v.x6()/v.r2*t.yx()+v.x5()/v.r2*t.zx(),v.x1()*t.xy()+v.x6()/v.r2*t.yy()+v.x5()/v.r2*t.zy(),v.x1()*t.xz()+v.x6()/v.r2*t.yz()+v.x5()/v.r2*t.zz(),
+                       v.x6()/v.r2*t.xx()+v.x2()*t.yx()+v.x4()/v.r2*t.zx(),v.x6()/v.r2*t.xy()+v.x2()*t.yy()+v.x4()/v.r2*t.zy(),v.x6()/v.r2*t.xz()+v.x2()*t.yz()+v.x4()/v.r2*t.zz(),
+                       v.x5()/v.r2*t.xx()+v.x4()/v.r2*t.yx()+v.x3()*t.zx(),v.x5()/v.r2*t.xy()+v.x4()/v.r2*t.yy()+v.x3()*t.zy(),v.x5()/v.r2*t.xz()+v.x4()/v.r2*t.yz()+v.x3()*t.zz());
 }
 
 /** Tensor mult: matrix3x3 by mandel6x1 **/ 
@@ -797,9 +793,9 @@ auto operator*(matrix3x3<T> const& t, mandel6x1<U> const& v)
     //The transformation is reversed as the operation is performed 
     // by first converting to a tensor.
     using result_type = decltype(t.xx() * v.x1());
-    return matrix3x3<result_type>(t.xx()*v.x1()+t.xy()*v.x6()/r2<T>()+t.xz()*v.x5()/r2<T>(),t.xx()*v.x6()/r2<T>()+t.xy()*v.x2()+t.xz()*v.x4()/r2<T>(),t.xx()*v.x5()/r2<T>()+t.xy()*v.x4()/r2<T>()+t.xz()*v.x3(),
-                  t.yx()*v.x1()+t.yy()*v.x6()/r2<T>()+t.yz()*v.x5()/r2<T>(),t.yx()*v.x6()/r2<T>()+t.yy()*v.x2()+t.yz()*v.x4()/r2<T>(),t.yx()*v.x5()/r2<T>()+t.yy()*v.x4()/r2<T>()+t.yz()*v.x3(),
-                  t.zx()*v.x1()+t.zy()*v.x6()/r2<T>()+t.zz()*v.x5()/r2<T>(),t.zx()*v.x6()/r2<T>()+t.zy()*v.x2()+t.zz()*v.x4()/r2<T>(),t.zx()*v.x5()/r2<T>()+t.zy()*v.x4()/r2<T>()+t.zz()*v.x3());
+    return matrix3x3<result_type>(t.xx()*v.x1()+t.xy()*v.x6()/v.r2+t.xz()*v.x5()/v.r2,t.xx()*v.x6()/v.r2+t.xy()*v.x2()+t.xz()*v.x4()/v.r2,t.xx()*v.x5()/v.r2+t.xy()*v.x4()/v.r2+t.xz()*v.x3(),
+                  t.yx()*v.x1()+t.yy()*v.x6()/v.r2+t.yz()*v.x5()/v.r2,t.yx()*v.x6()/v.r2+t.yy()*v.x2()+t.yz()*v.x4()/v.r2,t.yx()*v.x5()/v.r2+t.yy()*v.x4()/v.r2+t.yz()*v.x3(),
+                  t.zx()*v.x1()+t.zy()*v.x6()/v.r2+t.zz()*v.x5()/v.r2,t.zx()*v.x6()/v.r2+t.zy()*v.x2()+t.zz()*v.x4()/v.r2,t.zx()*v.x5()/v.r2+t.zy()*v.x4()/v.r2+t.zz()*v.x3());
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -812,11 +808,12 @@ template <class T>
 symmetric3x3<T> mandel6x1_to_symmetric3x3(mandel6x1<T> const& v)
 {
     //invert Mandel Tranformation of MandelVector 
-    return symmetric3x3<T>(v.x1(),v.x6()/r2<T>(),v.x5()/r2<T>(),
-                                  v.x2()   ,v.x4()/r2<T>(),
+    return symmetric3x3<T>(v.x1(),v.x6()/v.r2,v.x5()/v.r2,
+                                  v.x2()   ,v.x4()/v.r2,
                                             v.x3());
 }
 
 //misc
 inline int constexpr mandel6x1_component_count = 6;
 
+}
