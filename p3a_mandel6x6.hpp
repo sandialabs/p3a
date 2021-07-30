@@ -41,11 +41,11 @@ class mandel6x6
    m_x61,m_x62,m_x63,m_x64,m_x65,m_x66;
  bool applyTransform;
 
- static const T r2 = square_root(T(2.0));
+ static constexpr T r2 = std::sqrt(T(2.0));
 
- static const T r2i = T(1.0)/square_root(T(2.0));
+ static constexpr T r2i = T(1.0)/std::sqrt(T(2.0));
 
- static const T two = T(2.0);
+ static constexpr T two = T(2.0);
 
  public:
   /**** constructors, destructors, and assigns ****/
@@ -614,7 +614,7 @@ T trace(
 //inverse
 template <class U>
 P3A_NEVER_INLINE 
-mandel6x6<U> Inverse(
+mandel6x6<U> inverse(
     mandel6x6<U> const &V)
 {
     /**************************************************************************
@@ -638,16 +638,15 @@ mandel6x6<U> Inverse(
     U vval=0;
     U wmax =0;
     U fac =0; 
-    U wcond = minimum<U>();
+    U wcond = minimum_value<U>();
     static_matrix<U,6,6> w;
     static_matrix<U,6,6> ainv;
     static_vector<U,6> dummy;
 
      
-    dummy.zeros();
-    ainv.zeros();
-    ainv.identity();
-    w.zeros();
+    dummy = dummy.zero();
+    ainv = ainv.identity();
+    w = w.zero();
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Initialize and allocate
@@ -656,47 +655,47 @@ mandel6x6<U> Inverse(
     // while converting input 6x6 tensor T from Mandel form to normal form
     
     // Row 1
-    w(0,0)=T.x11;
-    w(0,1)=T.x12;
-    w(0,2)=T.x13;
-    w(0,3)=T.x14;
-    w(0,4)=T.x15;
-    w(0,5)=T.x16;
+    w(0,0)=T.x11();
+    w(0,1)=T.x12();
+    w(0,2)=T.x13();
+    w(0,3)=T.x14();
+    w(0,4)=T.x15();
+    w(0,5)=T.x16();
     // Row 2
-    w(1,0)=T.x21;
-    w(1,1)=T.x22;
-    w(1,2)=T.x23;
-    w(1,3)=T.x24;
-    w(1,4)=T.x25;
-    w(1,5)=T.x26;
+    w(1,0)=T.x21();
+    w(1,1)=T.x22();
+    w(1,2)=T.x23();
+    w(1,3)=T.x24();
+    w(1,4)=T.x25();
+    w(1,5)=T.x26();
     //Row 3
-    w(2,0)=T.x31;
-    w(2,1)=T.x32;
-    w(2,2)=T.x33;
-    w(2,3)=T.x34;
-    w(2,4)=T.x35;
-    w(2,5)=T.x36;
+    w(2,0)=T.x31();
+    w(2,1)=T.x32();
+    w(2,2)=T.x33();
+    w(2,3)=T.x34();
+    w(2,4)=T.x35();
+    w(2,5)=T.x36();
     //Row 4
-    w(3,0)=T.x41;
-    w(3,1)=T.x42;
-    w(3,2)=T.x43;
-    w(3,3)=T.x44;
-    w(3,4)=T.x45;
-    w(3,5)=T.x46;
+    w(3,0)=T.x41();
+    w(3,1)=T.x42();
+    w(3,2)=T.x43();
+    w(3,3)=T.x44();
+    w(3,4)=T.x45();
+    w(3,5)=T.x46();
     //Row 5
-    w(4,0)=T.x51;
-    w(4,1)=T.x52;
-    w(4,2)=T.x53;
-    w(4,3)=T.x54;
-    w(4,4)=T.x55;
-    w(4,5)=T.x56;
+    w(4,0)=T.x51();
+    w(4,1)=T.x52();
+    w(4,2)=T.x53();
+    w(4,3)=T.x54();
+    w(4,4)=T.x55();
+    w(4,5)=T.x56();
     //Row 6
-    w(5,0)=T.x61;
-    w(5,1)=T.x62;
-    w(5,2)=T.x63;
-    w(5,3)=T.x64;
-    w(5,4)=T.x65;
-    w(5,5)=T.x66;
+    w(5,0)=T.x61();
+    w(5,1)=T.x62();
+    w(5,2)=T.x63();
+    w(5,3)=T.x64();
+    w(5,4)=T.x65();
+    w(5,5)=T.x66();
 
     //Locate maximum value in each row and normalize by that value
     for(row=0;row<n;row++)
@@ -705,13 +704,13 @@ mandel6x6<U> Inverse(
         for(col=0;col<n;col++)
         {
             //find max value of each row
-            if(absolute_value(w(row,col))>absolut_value(wmax))
+            if(absolute_value(w(row,col))>absolute_value(wmax))
             {
                 wmax = w(row,col);
             }
         }
         //if the row is empty: error
-        if(absolute_value(wmax) <= minimum<U>())
+        if(absolute_value(wmax) <= minimum_value<U>())
         {
            icond = 1;
            throw std::invalid_argument(
@@ -741,12 +740,12 @@ mandel6x6<U> Inverse(
             }
         }
 
-        for(int j=col;j<n;j++) dummy(j) = w(col,j);
+        for(int j=col;j<n;j++) dummy[j] = w(col,j);
         for(int j=col;j<n;j++) w(col,j) = w(startrow,j);
-        for(int j=col;j<n;j++) w(startrow,j) = dummy(j);
-        for(int j=0;j<n;j++) dummy(j) = ainv(col,j);
+        for(int j=col;j<n;j++) w(startrow,j) = dummy[j];
+        for(int j=0;j<n;j++) dummy[j] = ainv(col,j);
         for(int j=0;j<n;j++) ainv(col,j) = ainv(startrow,j);
-        for(int j=0;j<n;j++) ainv(startrow,j) = dummy(j);
+        for(int j=0;j<n;j++) ainv(startrow,j) = dummy[j];
 
         wmax = w(col,col);
 
@@ -759,15 +758,15 @@ mandel6x6<U> Inverse(
         }
 
         row = col;
-        for(int j=col;j<n;j++) w[row,j] /= wmax;
-        for(int k=0;k<n;k++) ainv[row,k] /= wmax;
+        for(int j=col;j<n;j++) w(row,j) /= wmax;
+        for(int k=0;k<n;k++) ainv(row,k) /= wmax;
 
         for(row=0;row<n;row++)
         {
             if(row == col) continue;
-            fac = w[row*n+col];
-            for(int j=col;j<n;j++) w[row,j] -= fac * w[col,j];
-            for(int k=0;k<n;k++) ainv[row,k] -= fac * ainv[col,k];
+            fac = w(row,col);
+            for(int j=col;j<n;j++) w(row,j) -= fac * w(col,j);
+            for(int k=0;k<n;k++) ainv(row,k) -= fac * ainv(col,k);
         }//end row loop
 
     }//end col loop
@@ -845,6 +844,53 @@ mandel6x6<T> transpose(
         false); //already transformed
 }
 
+/** Tensor multiplication: Mandel6x6 * Mandel6x6 **/
+template <class T, class U>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto operator*(
+    mandel6x6<T> const &e,
+    mandel6x6<U> const &d)
+{
+    return mandel6x6<decltype(e.x11()*d.x11())>(
+            e.x11()*d.x11() + e.x12()*d.x21() + e.x13()*d.x31() + e.x14()*d.x41() + e.x15()*d.x51() + e.x16()*d.x61(),
+            e.x11()*d.x12() + e.x12()*d.x22() + e.x13()*d.x32() + e.x14()*d.x42() + e.x15()*d.x52() + e.x16()*d.x62(),
+            e.x11()*d.x13() + e.x12()*d.x23() + e.x13()*d.x33() + e.x14()*d.x43() + e.x15()*d.x53() + e.x16()*d.x63(),
+            e.x11()*d.x14() + e.x12()*d.x24() + e.x13()*d.x34() + e.x14()*d.x44() + e.x15()*d.x54() + e.x16()*d.x64(),
+            e.x11()*d.x15() + e.x12()*d.x25() + e.x13()*d.x35() + e.x14()*d.x45() + e.x15()*d.x55() + e.x16()*d.x65(),
+            e.x11()*d.x16() + e.x12()*d.x26() + e.x13()*d.x36() + e.x14()*d.x46() + e.x15()*d.x56() + e.x16()*d.x66(),
+            e.x21()*d.x11() + e.x22()*d.x21() + e.x23()*d.x31() + e.x24()*d.x41() + e.x25()*d.x51() + e.x26()*d.x61(),
+            e.x21()*d.x12() + e.x22()*d.x22() + e.x23()*d.x32() + e.x24()*d.x42() + e.x25()*d.x52() + e.x26()*d.x62(),
+            e.x21()*d.x13() + e.x22()*d.x23() + e.x23()*d.x33() + e.x24()*d.x43() + e.x25()*d.x53() + e.x26()*d.x63(),
+            e.x21()*d.x14() + e.x22()*d.x24() + e.x23()*d.x34() + e.x24()*d.x44() + e.x25()*d.x54() + e.x26()*d.x64(),
+            e.x21()*d.x15() + e.x22()*d.x25() + e.x23()*d.x35() + e.x24()*d.x45() + e.x25()*d.x55() + e.x26()*d.x65(),
+            e.x21()*d.x16() + e.x22()*d.x26() + e.x23()*d.x36() + e.x24()*d.x46() + e.x25()*d.x56() + e.x26()*d.x66(),
+            e.x31()*d.x11() + e.x32()*d.x21() + e.x33()*d.x31() + e.x34()*d.x41() + e.x35()*d.x51() + e.x36()*d.x61(),
+            e.x31()*d.x12() + e.x32()*d.x22() + e.x33()*d.x32() + e.x34()*d.x42() + e.x35()*d.x52() + e.x36()*d.x62(),
+            e.x31()*d.x13() + e.x32()*d.x23() + e.x33()*d.x33() + e.x34()*d.x43() + e.x35()*d.x53() + e.x36()*d.x63(),
+            e.x31()*d.x14() + e.x32()*d.x24() + e.x33()*d.x34() + e.x34()*d.x44() + e.x35()*d.x54() + e.x36()*d.x64(),
+            e.x31()*d.x15() + e.x32()*d.x25() + e.x33()*d.x35() + e.x34()*d.x45() + e.x35()*d.x55() + e.x36()*d.x65(),
+            e.x31()*d.x16() + e.x32()*d.x26() + e.x33()*d.x36() + e.x34()*d.x46() + e.x35()*d.x56() + e.x36()*d.x66(),
+            e.x41()*d.x11() + e.x42()*d.x21() + e.x43()*d.x31() + e.x44()*d.x41() + e.x45()*d.x51() + e.x46()*d.x61(),
+            e.x41()*d.x12() + e.x42()*d.x22() + e.x43()*d.x32() + e.x44()*d.x42() + e.x45()*d.x52() + e.x46()*d.x62(),
+            e.x41()*d.x13() + e.x42()*d.x23() + e.x43()*d.x33() + e.x44()*d.x43() + e.x45()*d.x53() + e.x46()*d.x63(),
+            e.x41()*d.x14() + e.x42()*d.x24() + e.x43()*d.x34() + e.x44()*d.x44() + e.x45()*d.x54() + e.x46()*d.x64(),
+            e.x41()*d.x15() + e.x42()*d.x25() + e.x43()*d.x35() + e.x44()*d.x45() + e.x45()*d.x55() + e.x46()*d.x65(),
+            e.x41()*d.x16() + e.x42()*d.x26() + e.x43()*d.x36() + e.x44()*d.x46() + e.x45()*d.x56() + e.x46()*d.x66(),
+            e.x51()*d.x11() + e.x52()*d.x21() + e.x53()*d.x31() + e.x54()*d.x41() + e.x55()*d.x51() + e.x56()*d.x61(),
+            e.x51()*d.x12() + e.x52()*d.x22() + e.x53()*d.x32() + e.x54()*d.x42() + e.x55()*d.x52() + e.x56()*d.x62(),
+            e.x51()*d.x13() + e.x52()*d.x23() + e.x53()*d.x33() + e.x54()*d.x43() + e.x55()*d.x53() + e.x56()*d.x63(),
+            e.x51()*d.x14() + e.x52()*d.x24() + e.x53()*d.x34() + e.x54()*d.x44() + e.x55()*d.x54() + e.x56()*d.x64(),
+            e.x51()*d.x15() + e.x52()*d.x25() + e.x53()*d.x35() + e.x54()*d.x45() + e.x55()*d.x55() + e.x56()*d.x65(),
+            e.x51()*d.x16() + e.x52()*d.x26() + e.x53()*d.x36() + e.x54()*d.x46() + e.x55()*d.x56() + e.x56()*d.x66(),
+            e.x61()*d.x11() + e.x62()*d.x21() + e.x63()*d.x31() + e.x64()*d.x41() + e.x65()*d.x51() + e.x66()*d.x61(),
+            e.x61()*d.x12() + e.x62()*d.x22() + e.x63()*d.x32() + e.x64()*d.x42() + e.x65()*d.x52() + e.x66()*d.x62(),
+            e.x61()*d.x13() + e.x62()*d.x23() + e.x63()*d.x33() + e.x64()*d.x43() + e.x65()*d.x53() + e.x66()*d.x63(),
+            e.x61()*d.x14() + e.x62()*d.x24() + e.x63()*d.x34() + e.x64()*d.x44() + e.x65()*d.x54() + e.x66()*d.x64(),
+            e.x61()*d.x15() + e.x62()*d.x25() + e.x63()*d.x35() + e.x64()*d.x45() + e.x65()*d.x55() + e.x66()*d.x65(),
+            e.x61()*d.x16() + e.x62()*d.x26() + e.x63()*d.x36() + e.x64()*d.x46() + e.x65()*d.x56() + e.x66()*d.x66(),
+            false);//already transformed
+}
+
 /** Tensor multiply mandel6x6 (6x6) by mandel6x1 (6x1) **/
 template <class T, class U>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
@@ -852,7 +898,7 @@ auto operator*(
     mandel6x6<T> const &C,
     mandel6x1<U> const &v)
 {
-    return mandel6x1<decltype(C.x11*v.x1)>(
+    return mandel6x1<decltype(C.x11()*v.x1())>(
         (C.x11()*v.x1() + C.x12()*v.x2() + C.x13()*v.x3() + C.x14()*v.x4() + C.x15()*v.x5() + C.x16()*v.x6()),
         (C.x21()*v.x1() + C.x22()*v.x2() + C.x23()*v.x3() + C.x24()*v.x4() + C.x25()*v.x5() + C.x26()*v.x6()),
         (C.x31()*v.x1() + C.x32()*v.x2() + C.x33()*v.x3() + C.x34()*v.x4() + C.x35()*v.x5() + C.x36()*v.x6()),
@@ -870,6 +916,17 @@ auto operator*(
     symmetric3x3<U> const &s)
 {
     mandel6x1<T> v(s);
+    return C*v;
+}
+
+/** Tensor multiply Mandel6x6 (6x6) by symmetric3x3 (3x3) **/
+template <class T, class U>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto operator*(
+    mandel6x6<T> const &C, 
+    matrix3x3<U> const &s)
+{
+    mandel6x1<decltype(s.xx()*C.x11())> v(s);
     return C*v;
 }
 

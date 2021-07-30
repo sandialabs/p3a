@@ -37,13 +37,14 @@ class mandel3x6
    m_x31,m_x32,m_x33,m_x34,m_x35,m_x36;
  bool applyTransform;
 
- static const T r2 = square_root(T(2.0));
-
- static const T r2i = T(1.0)/square_root(T(2.0));
-
- static const T two  = T(2.0);
-
  public:
+
+  static constexpr T r2 = std::sqrt(T(2.0));
+
+  static constexpr T r2i = T(1.0)/std::sqrt(T(2.0));
+
+  static constexpr T two  = T(2.0);
+
   /**** constructors, destructors, and assigns ****/
   P3A_ALWAYS_INLINE constexpr
   mandel3x6() = default;
@@ -102,39 +103,39 @@ class mandel3x6
   //return by mandel index 1-6
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x11() const { return m_x11; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x12() const { return m_x12; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x13() const { return m_x13; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x14() const { return m_x14; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x15() const { return m_x15; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x16() const { return m_x16; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x21() const { return m_x21; }
-  [[nodisca]] P3A_HOST P3A_DEVICrdE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x22() const { return m_x22; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x23() const { return m_x23; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x24() const { return m_x24; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x25() const { return m_x25; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x26() const { return m_x26; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x31() const { return m_x31; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x32() const { return m_x32; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x33() const { return m_x33; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x34() const { return m_x34; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x35() const { return m_x35; }
-  [[nodisca]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x36() const { return m_x36; }
 
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
@@ -250,7 +251,7 @@ operator/(
         mandel3x6<A> const& a, 
         B const& c)
 {
-    return mandel6x6<decltype(A()*B())>(
+    return mandel3x6<decltype(A()*B())>(
             a.x11()/c, a.x12()/c, a.x13()/c, a.x14()/c, a.x15()/c, a.x16()/c,
             a.x21()/c, a.x22()/c, a.x23()/c, a.x24()/c, a.x25()/c, a.x26()/c,
             a.x31()/c, a.x32()/c, a.x33()/c, a.x34()/c, a.x35()/c, a.x36()/c,
@@ -464,69 +465,92 @@ auto operator*(
 template <class T, class U>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(
-    symmetric3x3<U> const &s,
-    mandel3x6<T> const &C, 
+    symmetric3x3<T> const &k,
+    mandel3x6<U> const &e)
 {
-    mandel6x1<T> v(s);
-    return C*v;
+    return mandel3x6<decltype(k.xx()*e.x11())>(
+            k.xx()*e.x11() + k.xy()*e.x21() + k.xz()*e.x31(),
+            k.xx()*e.x12() + k.xy()*e.x22() + k.xz()*e.x32(),
+            k.xx()*e.x13() + k.xy()*e.x23() + k.xz()*e.x33(),
+            k.xx()*e.x14() + k.xy()*e.x24() + k.xz()*e.x34(),
+            k.xx()*e.x15() + k.xy()*e.x25() + k.xz()*e.x35(),
+            k.xx()*e.x16() + k.xy()*e.x26() + k.xz()*e.x36(),
+            k.xy()*e.x11() + k.yy()*e.x21() + k.yz()*e.x31(),
+            k.xy()*e.x12() + k.yy()*e.x22() + k.yz()*e.x32(),
+            k.xy()*e.x13() + k.yy()*e.x23() + k.yz()*e.x33(),
+            k.xy()*e.x14() + k.yy()*e.x24() + k.yz()*e.x34(),
+            k.xy()*e.x15() + k.yy()*e.x25() + k.yz()*e.x35(),
+            k.xy()*e.x16() + k.yy()*e.x26() + k.yz()*e.x36(),
+            k.xz()*e.x11() + k.yz()*e.x21() + k.zz()*e.x31(),
+            k.xz()*e.x12() + k.yz()*e.x22() + k.zz()*e.x32(),
+            k.xz()*e.x13() + k.yz()*e.x23() + k.zz()*e.x33(),
+            k.xz()*e.x14() + k.yz()*e.x24() + k.zz()*e.x34(),
+            k.xz()*e.x15() + k.yz()*e.x25() + k.zz()*e.x35(),
+            k.xz()*e.x16() + k.yz()*e.x26() + k.zz()*e.x36(),
+            false);//already transformed
 }
 
-/** Tensor multiply symmetric3x3 by MandelVector (6x1) **/
+/** Tensor multiply matrix3x3 by mandel3x6 (3x6) **/
 template <class T, class U>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(
-    symmetric3x3<T> const &tt,
-    mandel3x6<U> const &v
-    )
+    matrix3x3<T> const &k,
+    mandel3x6<U> const &e)
 {
-    mandel6x1<U> vv = v;
-    vv.invMandelXform();
-
-    using result_type = decltype(tt.xx() * v.xx());
-    return mandel6x1<result_type>(
-          tt.xx()*vv.x1()+tt.xy()*vv.x6()+tt.xz()*vv.x5(),
-          tt.xy()*vv.x6()+tt.yy()*vv.x2()+tt.yz()*vv.x4(),
-          tt.xz()*vv.x5()+tt.yz()*vv.x4()+tt.zz()*vv.x3(),
-          tt.xy()*vv.x5()+tt.yy()*vv.x4()+tt.yz()*vv.x3(),
-          tt.xx()*vv.x5()+tt.xy()*vv.x4()+tt.xz()*vv.x3(),
-          tt.xx()*vv.x6()+tt.xy()*vv.x2()+tt.xz()*vv.x4(),
-          true);
+    return mandel3x6<decltype(k.xx()*e.x11())>(
+            k.xx()*e.x11() + k.xy()*e.x21() + k.xz()*e.x31(),
+            k.xx()*e.x12() + k.xy()*e.x22() + k.xz()*e.x32(),
+            k.xx()*e.x13() + k.xy()*e.x23() + k.xz()*e.x33(),
+            k.xx()*e.x14() + k.xy()*e.x24() + k.xz()*e.x34(),
+            k.xx()*e.x15() + k.xy()*e.x25() + k.xz()*e.x35(),
+            k.xx()*e.x16() + k.xy()*e.x26() + k.xz()*e.x36(),
+            k.yx()*e.x11() + k.yy()*e.x21() + k.yz()*e.x31(),
+            k.yx()*e.x12() + k.yy()*e.x22() + k.yz()*e.x32(),
+            k.yx()*e.x13() + k.yy()*e.x23() + k.yz()*e.x33(),
+            k.yx()*e.x14() + k.yy()*e.x24() + k.yz()*e.x34(),
+            k.yx()*e.x15() + k.yy()*e.x25() + k.yz()*e.x35(),
+            k.yx()*e.x16() + k.yy()*e.x26() + k.yz()*e.x36(),
+            k.zx()*e.x11() + k.zy()*e.x21() + k.zz()*e.x31(),
+            k.zx()*e.x12() + k.zy()*e.x22() + k.zz()*e.x32(),
+            k.zx()*e.x13() + k.zy()*e.x23() + k.zz()*e.x33(),
+            k.zx()*e.x14() + k.zy()*e.x24() + k.zz()*e.x34(),
+            k.zx()*e.x15() + k.zy()*e.x25() + k.zz()*e.x35(),
+            k.zx()*e.x16() + k.zy()*e.x26() + k.zz()*e.x36(),
+            false);//already transformed
 }
 
-/** Tensor multiply MandelVector (6x1) by diagonal3x3 (3x3) **/
+/** Tensor multiply mandel6x1 (as symmetric 3x3) by mandel3x6 (3x6) **/
 template <class T, class U>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto operator*(mandel6x1<T> const &v, diagonal3x3<U> const &tt)
+auto operator*(
+    mandel6x1<T> const &j,
+    mandel3x6<U> const &e)
 {
-    mandel6x1<T> vv = v;
-    vv.invMandelXform();
-
-    using result_type = decltype(tt.xx() * v.xx());
-    return mandel6x1<result_type>(
-          tt.xx()*vv.x1(),
-          tt.yy()*vv.x2(),
-          tt.zz()*vv.x3(),
-          tt.yy()*vv.x4(),
-          tt.xx()*vv.x5(),
-          tt.xx()*vv.x6(),
-          true);
-}
-
-/** Tensor multiply diagonal3x3 (3x3) by MandelVector (6x1) **/
-template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto operator*(diagonal3x3<T> const &tt, mandel6x1<U> const &vv)
-{
-    using result_type = decltype(tt.xx() * vv.xx());
-    return mandel6x1<result_type>(
-          tt.xx()*vv.x1(),
-          tt.yy()*vv.x2(),
-          tt.zz()*vv.x3(),
-          tt.yy()*vv.x4(),
-          tt.xx()*vv.x5(),
-          tt.xx()*vv.x6(),
-          false);
+    mandel6x1 k = j;
+    k.invMandelXform();
+    return mandel3x6<decltype(k.x1()*e.x11())>(
+            k.x1()*e.x11() + k.x6()*e.x21() + k.x5()*e.x31(),
+            k.x1()*e.x12() + k.x6()*e.x22() + k.x5()*e.x32(),
+            k.x1()*e.x13() + k.x6()*e.x23() + k.x5()*e.x33(),
+            k.x1()*e.x14() + k.x6()*e.x24() + k.x5()*e.x34(),
+            k.x1()*e.x15() + k.x6()*e.x25() + k.x5()*e.x35(),
+            k.x1()*e.x16() + k.x6()*e.x26() + k.x5()*e.x36(),
+            k.x6()*e.x11() + k.x2()*e.x21() + k.x4()*e.x31(),
+            k.x6()*e.x12() + k.x2()*e.x22() + k.x4()*e.x32(),
+            k.x6()*e.x13() + k.x2()*e.x23() + k.x4()*e.x33(),
+            k.x6()*e.x14() + k.x2()*e.x24() + k.x4()*e.x34(),
+            k.x6()*e.x15() + k.x2()*e.x25() + k.x4()*e.x35(),
+            k.x6()*e.x16() + k.x2()*e.x26() + k.x4()*e.x36(),
+            k.x5()*e.x11() + k.x4()*e.x21() + k.x3()*e.x31(),
+            k.x5()*e.x12() + k.x4()*e.x22() + k.x3()*e.x32(),
+            k.x5()*e.x13() + k.x4()*e.x23() + k.x3()*e.x33(),
+            k.x5()*e.x14() + k.x4()*e.x24() + k.x3()*e.x34(),
+            k.x5()*e.x15() + k.x4()*e.x25() + k.x3()*e.x35(),
+            k.x5()*e.x16() + k.x4()*e.x26() + k.x3()*e.x36(),
+            false);//already transformed
 }
 
 //misc
 inline int constexpr mandel3x6_component_count = 18;
+
+}

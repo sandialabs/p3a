@@ -41,19 +41,19 @@ class mandel6x3
    m_x61,m_x62,m_x63;
  bool applyTransform;
 
- static const T r2 = square_root(T(2.0));
-
- static const T r2i = T(1.0)/square_root(T(2.0));
-
- static const T two = T(2.0);
-
  public:
+  static constexpr T r2 = std::sqrt(T(2.0));
+
+  static constexpr T r2i = T(1.0)/std::sqrt(T(2.0));
+
+  static constexpr T two = T(2.0);
+
   /**** constructors, destructors, and assigns ****/
   P3A_ALWAYS_INLINE constexpr
   mandel6x3() = default;
 
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  mandel6x6(
+  mandel6x3(
       T const& X11, T const& X12, T const& X13,
       T const& X21, T const& X22, T const& X23,
       T const& X31, T const& X32, T const& X33,
@@ -241,13 +241,12 @@ class mandel6x3
 };
 
 /***************************************************************************** 
- * Operator overloads for mandel6x3 tensors (3rd order tensor)
  *****************************************************************************/
 //mandel6x3 binary operators with scalars
 //multiplication by constant
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-typename std::enable_if<is_scalar<B>, mandel6x6<decltype(A() * B())>>::type
+typename std::enable_if<is_scalar<B>, mandel6x3<decltype(A() * B())>>::type
 operator*(
         mandel6x3<A> const& a, 
         B const& c)
@@ -265,7 +264,7 @@ operator*(
 //multiplication by constant
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-typename std::enable_if<is_scalar<A>, mandel6x6<decltype(A() * B())>>::type 
+typename std::enable_if<is_scalar<A>, mandel6x3<decltype(A() * B())>>::type 
 operator*(
         A const& c, 
         mandel6x3<B> const& t)
@@ -276,7 +275,7 @@ operator*(
 //division by constant
 template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-typename std::enable_if<is_scalar<B>, mandel6x6<decltype(A() * B())>>::type
+typename std::enable_if<is_scalar<B>, mandel6x3<decltype(A() * B())>>::type
 operator/(
         mandel6x3<A> const& a, 
         B const& c)
@@ -345,12 +344,12 @@ void operator*=(
         a.x63()*=c;
 }
 
-//mandel6x6 += addition
+//mandel6x3 += addition
 template <class T>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator+=(
-    mandel6x6<T>& a, 
-    mandel6x6<T> const& b)
+    mandel6x3<T>& a, 
+    mandel6x3<T> const& b)
 {
     a.x11() += b.x11();
     a.x12() += b.x12();
@@ -490,6 +489,53 @@ mandel6x3<T> transpose(
         false); //already transformed
 }
 
+/** Tensor multiply mandel6x3 (6x3) by mandel3x6 (3x6) **/
+template <class T, class U>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto operator*(
+    mandel6x3<T> const &e,
+    mandel3x6<U> const &d)
+{
+    return mandel6x6<decltype(e.x11()*d.x11())>(
+        e.x11()*d.x11() + e.x12()*d.x21() + e.x13()*d.x31(),
+        e.x11()*d.x12() + e.x12()*d.x22() + e.x13()*d.x32(),
+        e.x11()*d.x13() + e.x12()*d.x23() + e.x13()*d.x33(),
+        e.x11()*d.x14() + e.x12()*d.x24() + e.x13()*d.x34(),
+        e.x11()*d.x15() + e.x12()*d.x25() + e.x13()*d.x35(),
+        e.x11()*d.x16() + e.x12()*d.x26() + e.x13()*d.x36(),
+        e.x21()*d.x11() + e.x22()*d.x21() + e.x23()*d.x31(),
+        e.x21()*d.x12() + e.x22()*d.x22() + e.x23()*d.x32(),
+        e.x21()*d.x13() + e.x22()*d.x23() + e.x23()*d.x33(),
+        e.x21()*d.x14() + e.x22()*d.x24() + e.x23()*d.x34(),
+        e.x21()*d.x15() + e.x22()*d.x25() + e.x23()*d.x35(),
+        e.x21()*d.x16() + e.x22()*d.x26() + e.x23()*d.x36(),
+        e.x31()*d.x11() + e.x32()*d.x21() + e.x33()*d.x31(),
+        e.x31()*d.x12() + e.x32()*d.x22() + e.x33()*d.x32(),
+        e.x31()*d.x13() + e.x32()*d.x23() + e.x33()*d.x33(),
+        e.x31()*d.x14() + e.x32()*d.x24() + e.x33()*d.x34(),
+        e.x31()*d.x15() + e.x32()*d.x25() + e.x33()*d.x35(),
+        e.x31()*d.x16() + e.x32()*d.x26() + e.x33()*d.x36(),
+        e.x41()*d.x11() + e.x42()*d.x21() + e.x43()*d.x31(),
+        e.x41()*d.x12() + e.x42()*d.x22() + e.x43()*d.x32(),
+        e.x41()*d.x13() + e.x42()*d.x23() + e.x43()*d.x33(),
+        e.x41()*d.x14() + e.x42()*d.x24() + e.x43()*d.x34(),
+        e.x41()*d.x15() + e.x42()*d.x25() + e.x43()*d.x35(),
+        e.x41()*d.x16() + e.x42()*d.x26() + e.x43()*d.x36(),
+        e.x51()*d.x11() + e.x52()*d.x21() + e.x53()*d.x31(),
+        e.x51()*d.x12() + e.x52()*d.x22() + e.x53()*d.x32(),
+        e.x51()*d.x13() + e.x52()*d.x23() + e.x53()*d.x33(),
+        e.x51()*d.x14() + e.x52()*d.x24() + e.x53()*d.x34(),
+        e.x51()*d.x15() + e.x52()*d.x25() + e.x53()*d.x35(),
+        e.x51()*d.x16() + e.x52()*d.x26() + e.x53()*d.x36(),
+        e.x61()*d.x11() + e.x62()*d.x21() + e.x63()*d.x31(),
+        e.x61()*d.x12() + e.x62()*d.x22() + e.x63()*d.x32(),
+        e.x61()*d.x13() + e.x62()*d.x23() + e.x63()*d.x33(),
+        e.x61()*d.x14() + e.x62()*d.x24() + e.x63()*d.x34(),
+        e.x61()*d.x15() + e.x62()*d.x25() + e.x63()*d.x35(),
+        e.x61()*d.x16() + e.x62()*d.x26() + e.x63()*d.x36(),
+        false);//already transformed
+}
+
 /** Tensor multiply mandel3x6 (3x6) by mandel6x3 (6x3) **/
 template <class T, class U>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
@@ -497,7 +543,7 @@ auto operator*(
     mandel3x6<T> const &e,
     mandel6x3<U> const &d)
 {
-    return matrix3x3<decltype(e.x11*d.x11)>(
+    return matrix3x3<decltype(e.x11()*d.x11())>(
             e.x11()*d.x11() + e.x12()*d.x21() + e.x13()*d.x31() + e.x14()*d.x41() + e.x15()*d.x51() + e.x16()*d.x61(),
             e.x11()*d.x12() + e.x12()*d.x22() + e.x13()*d.x32() + e.x14()*d.x42() + e.x15()*d.x52() + e.x16()*d.x62(),
             e.x11()*d.x13() + e.x12()*d.x23() + e.x13()*d.x33() + e.x14()*d.x43() + e.x15()*d.x53() + e.x16()*d.x63(),
@@ -533,8 +579,8 @@ auto operator*(
     mandel6x3<T> const &e, 
     mandel6x1<U> const &f)
 {
-    using result_type decltype(e.x11(),f.x11()) 
-    matrix3x3<result_type> d = f;
+    using result_type = decltype(e.x11()*f.x1());
+    matrix3x3<result_type> d = mandel6x1_to_matrix3x3(f);
     return mandel6x3<result_type>(
             e.x11()*d.xx() + e.x12()*d.yx() + e.x13()*d.zx(), e.x11()*d.xy() + e.x12()*d.yy() + e.x13()*d.zy(), e.x11()*d.xz() + e.x12()*d.yz() + e.x13()*d.zz(),
             e.x21()*d.xx() + e.x22()*d.yx() + e.x23()*d.zx(), e.x21()*d.xy() + e.x22()*d.yy() + e.x23()*d.zy(), e.x21()*d.xz() + e.x22()*d.yz() + e.x23()*d.zz(),
@@ -552,8 +598,8 @@ auto operator*(
     mandel6x3<T> const &e, 
     symmetric3x3<U> const &f)
 {
-    using result_type decltype(e.x11(),f.x11()) 
-    matrix3x3<result_type> d = f;
+    using result_type = decltype(e.x11()*f.x11());
+    mandel6x1<result_type> d(f);
     return mandel6x3<result_type>(
             e.x11()*d.xx() + e.x12()*d.yx() + e.x13()*d.zx(), e.x11()*d.xy() + e.x12()*d.yy() + e.x13()*d.zy(), e.x11()*d.xz() + e.x12()*d.yz() + e.x13()*d.zz(),
             e.x21()*d.xx() + e.x22()*d.yx() + e.x23()*d.zx(), e.x21()*d.xy() + e.x22()*d.yy() + e.x23()*d.zy(), e.x21()*d.xz() + e.x22()*d.yz() + e.x23()*d.zz(),
@@ -568,7 +614,7 @@ auto operator*(
 template <class T, class U>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(
-    mandel6x6<T> const &v, 
+    mandel6x3<T> const &e, 
     diagonal3x3<U> const &d)
 {
     return mandel6x3<decltype(e.x11(),d.xx())>(
@@ -598,6 +644,25 @@ auto operator*(
             false);//already transformed
 }
 
+/** Tensor Dot mandel6x6 (6x6) by mandel6x3 (6x3)*/
+template <class T, class U>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto operator*(
+    mandel6x6<T> const &e, 
+    mandel6x3<U> const &d)
+{
+    return mandel6x3<decltype(e.x11()*d.x11())>(
+            e.x11()*d.x11() + e.x12()*d.x21() + e.x13()*d.x31() + e.x14()*d.x41() + e.x15()*d.x51() + e.x16()*d.x61(), e.x11()*d.x12() + e.x12()*d.x22() + e.x13()*d.x32() + e.x14()*d.x42() + e.x15()*d.x52() + e.x16()*d.x62(), e.x11()*d.x13() + e.x12()*d.x23() + e.x13()*d.x33() + e.x14()*d.x43() + e.x15()*d.x53() + e.x16()*d.x63(), 
+            e.x21()*d.x11() + e.x22()*d.x21() + e.x23()*d.x31() + e.x24()*d.x41() + e.x25()*d.x51() + e.x26()*d.x61(), e.x21()*d.x12() + e.x22()*d.x22() + e.x23()*d.x32() + e.x24()*d.x42() + e.x25()*d.x52() + e.x26()*d.x62(), e.x21()*d.x13() + e.x22()*d.x23() + e.x23()*d.x33() + e.x24()*d.x43() + e.x25()*d.x53() + e.x26()*d.x63(), 
+            e.x31()*d.x11() + e.x32()*d.x21() + e.x33()*d.x31() + e.x34()*d.x41() + e.x35()*d.x51() + e.x36()*d.x61(), e.x31()*d.x12() + e.x32()*d.x22() + e.x33()*d.x32() + e.x34()*d.x42() + e.x35()*d.x52() + e.x36()*d.x62(), e.x31()*d.x13() + e.x32()*d.x23() + e.x33()*d.x33() + e.x34()*d.x43() + e.x35()*d.x53() + e.x36()*d.x63(), 
+            e.x41()*d.x11() + e.x42()*d.x21() + e.x43()*d.x31() + e.x44()*d.x41() + e.x45()*d.x51() + e.x46()*d.x61(), e.x41()*d.x12() + e.x42()*d.x22() + e.x43()*d.x32() + e.x44()*d.x42() + e.x45()*d.x52() + e.x46()*d.x62(), e.x41()*d.x13() + e.x42()*d.x23() + e.x43()*d.x33() + e.x44()*d.x43() + e.x45()*d.x53() + e.x46()*d.x63(),
+            e.x51()*d.x11() + e.x52()*d.x21() + e.x53()*d.x31() + e.x54()*d.x41() + e.x55()*d.x51() + e.x56()*d.x61(), e.x51()*d.x12() + e.x52()*d.x22() + e.x53()*d.x32() + e.x54()*d.x42() + e.x55()*d.x52() + e.x56()*d.x62(), e.x51()*d.x13() + e.x52()*d.x23() + e.x53()*d.x33() + e.x54()*d.x43() + e.x55()*d.x53() + e.x56()*d.x63(), 
+            e.x61()*d.x11() + e.x62()*d.x21() + e.x63()*d.x31() + e.x64()*d.x41() + e.x65()*d.x51() + e.x66()*d.x61(), e.x61()*d.x12() + e.x62()*d.x22() + e.x63()*d.x32() + e.x64()*d.x42() + e.x65()*d.x52() + e.x66()*d.x62(), e.x61()*d.x13() + e.x62()*d.x23() + e.x63()*d.x33() + e.x64()*d.x43() + e.x65()*d.x53() + e.x66()*d.x63(),
+            false); //already transformed
+}
+
+
 //misc
 inline int constexpr mandel6x3_component_count = 18;
 
+}

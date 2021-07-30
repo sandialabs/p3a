@@ -89,17 +89,17 @@ template <class T>
 class mandel6x1
 /** 
  * Represents a 2nd order tensor as a 6x1 Mandel array
- */
-/******************************************************************/
+ * 
+ ******************************************************************/
 {
  T m_x1,m_x2,m_x3,m_x4,m_x5,m_x6;
  bool applyTransform;
 
- static const T r2 = square_root(T(2.0));
-
- static const T two= T(2.0);
-
  public:
+  static constexpr T r2 = std::sqrt(T(2.0));
+
+  static constexpr T two= T(2.0);
+
   /**** constructors, destructors, and assigns ****/
   P3A_ALWAYS_INLINE constexpr
   mandel6x1() = default;
@@ -196,6 +196,22 @@ class mandel6x1
   }
 
   P3A_NEVER_INLINE
+  mandel6x1(static_matrix<T,3,3> const& a):
+    m_x1(a(0,0)),
+    m_x2(a(1,1)),
+    m_x3(a(2,2)),
+    m_x4(a(1,2)),
+    m_x5(a(0,2)),
+    m_x6(a(0,1)),
+    applyTransform(true)
+  {
+    if(compare(a(1,2),a(2,1)) && compare(a(0,2),a(2,0)) && compare(a(0,1),a(1,0)))
+        throw std::invalid_argument(
+                "Initialization ERROR of p3a::mandel6x1 from p3a::static_matrix<3,3>, static_matrix<3,3> not symmetric!");
+    this->MandelXform();
+  }
+
+  P3A_NEVER_INLINE
   mandel6x1(static_matrix<T,3,3> const& a, bool const& Xform):
     m_x1(a(0,0)),
     m_x2(a(1,1)),
@@ -239,6 +255,7 @@ class mandel6x1
       if(applyTransform)
           this->MandelXform();
   }
+
   //Return components by ij descriptor
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xx() const { return m_x1; }
@@ -293,7 +310,7 @@ class mandel6x1
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T& x6() { return m_x6; }
 
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
   mandel6x1<T> zero()
   {
     return mandel6x1<T>(
@@ -301,12 +318,12 @@ class mandel6x1
         T(0), T(0), T(0),false);
   }
 
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
   mandel6x1<T> identity()
   {
     return mandel6x1<T>(
         T(1), T(1), T(1),
-        T(0), T(0), T(0),true);
+        T(0), T(0), T(0));
   }
 
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
@@ -341,34 +358,19 @@ class mandel6x1
               true);
   }
 
-  //conversion of mandel6x1 to symmetric3x3 via assignment
+  //conversion of static_matrix<3,3> to mandel6x1 via assignment
   template <class U>
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  symmetric3x3<U> operator=(
-      mandel6x1<U> const& tt)
+  mandel6x1<U> operator=(
+      static_matrix<U,3,3> const& t)
   {
-      mandel6x1<T> t = tt;
-      t.invMandelXform();
-
-      return symmetric3x3<U>(
-              t.x1(), t.x6(), t.x5(),
-                      t.x2(), t.x4(),
-                              t.x3());
-  }
-
-  //conversion to matrix3x3 via assignment
-  template <class U>
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  matrix3x3<U> operator=(
-      mandel6x1<U> const& tt)
-  {
-      mandel6x1<U> t = tt;
-      t.invMandelXform();
-
-      return matrix3x3<U>(
-              t.x1(), t.x6(), t.x5(),
-              t.x6(), t.x2(), t.x4(),
-              t.x5(), t.x4(), t.x3());
+        /*mandel6x1<U>(t(0,0), t(1,1), t(2,2), t(1,2), t(0,2), t(0,1), true);
+    if(compare(a(1,2),a(2,1)) && compare(a(0,2),a(2,0)) && compare(a(0,1),a(1,0)))
+        throw std::invalid_argument(
+                "Initialization ERROR of p3a::mandel6x1 from p3a::static_matrix<3,3>, static_matrix<3,3> not symmetric!");
+        this->MandelXform();
+  }*/
+      return mandel6x1<U>(t , true);
   }
 
 };
@@ -376,7 +378,6 @@ class mandel6x1
 /***************************************************************************** 
  * Operators overloads for mandel6x1 tensors (2nd order tensor)
  *****************************************************************************/
-
 
 //mandel6x1 binary operators with scalars
 //multiplication by constant
@@ -399,7 +400,7 @@ operator*(
 
 //multiplication by constant
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexp, 
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<A>, mandel6x1<decltype(A() * B())>>::type 
 operator*(
     A const& c, 
@@ -479,7 +480,7 @@ mandel6x1<T> operator+(
     mandel6x1<T> const& a, 
     mandel6x1<U> const& b)
 {
-  return mandel6x1<decltype(a.x11*b.x12)>(
+  return mandel6x1<decltype(a.x1()*b.x1())>(
     a.x1() + b.x1(),
     a.x2() + b.x2(),
     a.x3() + b.x3(),
@@ -552,7 +553,7 @@ T trace(
 //determinate
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-T Det(
+T determinant(
     mandel6x1<T> const& t)
 {
       return t.x1()    * (t.x2()*t.x3()    - t.x4()*t.x4()/t.two) -
@@ -563,13 +564,14 @@ T Det(
 //inverse
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-mandel6x1<T> Inverse(
-    mandel6x1<T> const &V)
+mandel6x1<T> inverse(
+    mandel6x1<T> const& V)
 {
     //Direct calculation of inverse of (6x1) 2nd-order Mandel tensor 
-    mandel6x1<T> u;
+    mandel6x1 u(V);
+    u = u.zero();
     T inv_det = 0.0;
-    T det = Det(V);
+    T det = determinant(V);
 
     u.x1() = (V.x2()*V.x3()    - V.x4()*V.x4()/V.two)*inv_det;
     u.x2() = (V.x1()*V.x3()    - V.x5()*V.x5()/V.two)*inv_det;
@@ -811,6 +813,17 @@ symmetric3x3<T> mandel6x1_to_symmetric3x3(mandel6x1<T> const& v)
     return symmetric3x3<T>(v.x1(),v.x6()/v.r2,v.x5()/v.r2,
                                   v.x2()   ,v.x4()/v.r2,
                                             v.x3());
+}
+
+/** Convert MandelVector (6x1) to symmetric3x3 **/
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+matrix3x3<T> mandel6x1_to_matrix3x3(mandel6x1<T> const& v)
+{
+    //invert Mandel Tranformation of MandelVector 
+    return matrix3x3<T>(v.x1(),     v.x6()/v.r2,v.x5()/v.r2,
+                        v.x6()/v.r2,v.x2()     ,v.x4()/v.r2,
+                        v.x5()/v.r2,v.x4()/v.r2,v.x3());
 }
 
 //misc
