@@ -78,7 +78,7 @@ struct zero_value_helper<double> {
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-double pi_value() { return T(3.14159265358979323846264338327950288419716939937510l); }
+T pi_value() { return T(3.14159265358979323846264338327950288419716939937510l); }
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T maximum_value() { return constants::maximum<T>::value(); }
@@ -106,5 +106,8 @@ T boltzmann_value() { return T(1.380649e-23); }
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T inch_value() { return T(25.4e-3); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+T square_root_of_two_value() { return T(1.41421356237309504880); }
 
 }

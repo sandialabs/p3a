@@ -39,9 +39,9 @@ class mandel3x6
 
  public:
 
-  static constexpr T r2 = std::sqrt(T(2.0));
+  static constexpr T r2 = square_root_of_two_value<T>();
 
-  static constexpr T r2i = T(1.0)/std::sqrt(T(2.0));
+  static constexpr T r2i = T(1.0)/square_root_of_two_value<T>();
 
   static constexpr T two  = T(2.0);
 
