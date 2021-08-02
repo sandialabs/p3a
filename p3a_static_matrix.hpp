@@ -1,5 +1,5 @@
 #pragma once
-
+#include "p3a_scalar.hpp"
 #include "p3a_static_array.hpp"
 
 namespace p3a {
