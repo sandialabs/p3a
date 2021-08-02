@@ -98,6 +98,8 @@ class mandel6x1
  public:
   static constexpr T r2 = std::sqrt(T(2.0));
 
+  static constexpr T r2i = T(1.0)/std::sqrt(T(2.0));
+
   static constexpr T two= T(2.0);
 
   /**** constructors, destructors, and assigns ****/
@@ -172,7 +174,7 @@ class mandel6x1
     m_x6(a.xy()),
     applyTransform(true)
   {
-    if(compare(a.yz(),a.zy()) && compare(a.zx(),a.xz()) && compare(a.xy(),a.yx()))
+    if(!compare(a.yz(),a.zy()) && compare(a.zx(),a.xz()) && compare(a.xy(),a.yx()))
         throw std::invalid_argument(
                 "Initialization ERROR of p3a::mandel6x6 from p3a::matrix3x3, matrix3x3 not symmetric!");
     this->MandelXform();
@@ -188,7 +190,7 @@ class mandel6x1
     m_x6(a.xy()),
     applyTransform(Xform)
   {
-    if(compare(a.yz(),a.zy()) && compare(a.zx(),a.xz()) && compare(a.xy(),a.yx()))
+    if(!compare(a.yz(),a.zy()) && compare(a.zx(),a.xz()) && compare(a.xy(),a.yx()))
         throw std::invalid_argument(
                 "Initialization ERROR of p3a::mandel6x6 from p3a::matrix3x3, matrix3x3 not symmetric!");
     if (applyTransform)
@@ -205,7 +207,7 @@ class mandel6x1
     m_x6(a(0,1)),
     applyTransform(true)
   {
-    if(compare(a(1,2),a(2,1)) && compare(a(0,2),a(2,0)) && compare(a(0,1),a(1,0)))
+    if(!compare(a(1,2),a(2,1)) && compare(a(0,2),a(2,0)) && compare(a(0,1),a(1,0)))
         throw std::invalid_argument(
                 "Initialization ERROR of p3a::mandel6x1 from p3a::static_matrix<3,3>, static_matrix<3,3> not symmetric!");
     this->MandelXform();
@@ -221,7 +223,7 @@ class mandel6x1
     m_x6(a(0,1)),
     applyTransform(Xform)
   {
-    if(compare(a(1,2),a(2,1)) && compare(a(0,2),a(2,0)) && compare(a(0,1),a(1,0)))
+    if(!compare(a(1,2),a(2,1)) && compare(a(0,2),a(2,0)) && compare(a(0,1),a(1,0)))
         throw std::invalid_argument(
                 "Initialization ERROR of p3a::mandel6x1 from p3a::static_matrix<3,3>, static_matrix<3,3> not symmetric!");
     if (applyTransform)
@@ -476,7 +478,7 @@ void operator-=(
 //mandel6x1 addition
 template <class T, class U>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-mandel6x1<T> operator+(
+auto operator+(
     mandel6x1<T> const& a, 
     mandel6x1<U> const& b)
 {
@@ -506,19 +508,19 @@ void operator+=(
 }
 
 //mandel6x1 subtraction
-template <class T>
+template <class T, class U>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-mandel6x1<T> operator-(
+auto operator-(
     mandel6x1<T> const& a, 
-    mandel6x1<T> const& b)
+    mandel6x1<U> const& b)
 {
-  return mandel6x1<T>(
-    a.xx() - b.xx(),
-    a.xy() - b.xy(),
-    a.xz() - b.xz(),
-    a.yy() - b.yy(),
-    a.yz() - b.yz(),
-    a.zz() - b.zz(),
+  return mandel6x1<decltype(a.x1()+b.x1())>(
+    a.x1() - b.x1(),
+    a.x2() - b.x2(),
+    a.x3() - b.x3(),
+    a.x4() - b.x4(),
+    a.x5() - b.x5(),
+    a.x6() - b.x6(),
     false);
 }
 
@@ -568,21 +570,18 @@ mandel6x1<T> inverse(
     mandel6x1<T> const& V)
 {
     //Direct calculation of inverse of (6x1) 2nd-order Mandel tensor 
-    mandel6x1 u(V);
-    u = u.zero();
-    T inv_det = 0.0;
     T det = determinant(V);
 
-    u.x1() = (V.x2()*V.x3()    - V.x4()*V.x4()/V.two)*inv_det;
-    u.x2() = (V.x1()*V.x3()    - V.x5()*V.x5()/V.two)*inv_det;
-    u.x3() = (V.x1()*V.x2()    - V.x6()*V.x6()/V.two)*inv_det;
-    u.x4() = (V.x6()*V.x5()/V.two - V.x1()*V.x4()/V.r2)*inv_det;
-    u.x5() = (V.x6()*V.x4()/V.two - V.x2()*V.x5()/V.r2)*inv_det;
-    u.x6() = (V.x4()*V.x5()/V.two - V.x6()*V.x3()/V.r2)*inv_det;
+    return mandel6x1<T>(
+            (V.x2()*V.x3()    - V.x4()*V.x4()/V.two)/det,
+            (V.x1()*V.x3()    - V.x5()*V.x5()/V.two)/det,
+            (V.x1()*V.x2()    - V.x6()*V.x6()/V.two)/det,
+            (V.x6()*V.x5()/V.two - V.x1()*V.x4()/V.r2)/det,
+            (V.x6()*V.x4()/V.two - V.x2()*V.x5()/V.r2)/det,
+            (V.x4()*V.x5()/V.two - V.x6()*V.x3()/V.r2)/det,
+            true);
     //not in mandel form anymore; return to mandel form for consistency with 
     //other functions
-    u.MandelXform();
-    return u;
 }
 
 /** Tensor multiply MandelVector (6x1) by MandelVector (6x1) **/
@@ -828,5 +827,19 @@ matrix3x3<T> mandel6x1_to_matrix3x3(mandel6x1<T> const& v)
 
 //misc
 inline int constexpr mandel6x1_component_count = 6;
+
+//output print
+template <class U>
+P3A_ALWAYS_INLINE constexpr 
+std::ostream& operator<<(std::ostream& os, mandel6x1<U> const& a)
+{
+  os << std::cout.precision(4);
+  os << std::scientific;
+  os << "\t  | " << a.x1()       << " " << a.x6()*a.r2i << " " << a.x5()*a.r2i << " |" <<std::endl;
+  os << "\t  | " << a.x6()*a.r2i << " " << a.x2()       << " " << a.x4()*a.r2i << " |" <<std::endl;
+  os << "\t  | " << a.x5()*a.r2i << " " << a.x4()*a.r2i << " " << a.x3()       << " |" <<std::endl;
+
+  return os;
+}
 
 }

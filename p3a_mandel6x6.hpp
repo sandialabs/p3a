@@ -41,13 +41,14 @@ class mandel6x6
    m_x61,m_x62,m_x63,m_x64,m_x65,m_x66;
  bool applyTransform;
 
- static constexpr T r2 = std::sqrt(T(2.0));
-
- static constexpr T r2i = T(1.0)/std::sqrt(T(2.0));
-
- static constexpr T two = T(2.0);
-
  public:
+
+  static constexpr T r2 = std::sqrt(T(2.0));
+
+  static constexpr T r2i = T(1.0)/std::sqrt(T(2.0));
+
+  static constexpr T two = T(2.0);
+
   /**** constructors, destructors, and assigns ****/
   P3A_ALWAYS_INLINE constexpr
   mandel6x6() = default;
@@ -68,8 +69,7 @@ class mandel6x6
       m_x61(X61),m_x62(X62),m_x63(X63),m_x64(X64),m_x65(X65),m_x66(X66),
        applyTransform(true)
   {
-    if (applyTransform)
-        this->MandelXform();
+    this->MandelXform();
   }
 
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
@@ -95,6 +95,20 @@ class mandel6x6
 
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x6(
+      static_matrix<T,6,6> const& X):
+    m_x11(X(0,0)),m_x12(X(0,1)),m_x13(X(0,2)),m_x14(X(0,3)),m_x15(X(0,4)),m_x16(X(0,5)),
+    m_x21(X(1,0)),m_x22(X(1,1)),m_x23(X(1,2)),m_x24(X(1,3)),m_x25(X(1,4)),m_x26(X(1,5)),
+    m_x31(X(2,0)),m_x32(X(2,1)),m_x33(X(2,2)),m_x34(X(2,3)),m_x35(X(2,4)),m_x36(X(2,5)),
+    m_x41(X(3,0)),m_x42(X(3,1)),m_x43(X(3,2)),m_x44(X(3,3)),m_x45(X(3,4)),m_x46(X(3,5)),
+    m_x51(X(4,0)),m_x52(X(4,1)),m_x53(X(4,2)),m_x54(X(4,3)),m_x55(X(4,4)),m_x56(X(4,5)),
+    m_x61(X(5,0)),m_x62(X(5,1)),m_x63(X(5,2)),m_x64(X(5,3)),m_x65(X(5,4)),m_x66(X(5,5)),
+    applyTransform(true)
+  {
+    this->MandelXform();
+  }
+
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  mandel6x6(
       static_matrix<T,6,6> const& X, bool const& Xform):
     m_x11(X(0,0)),m_x12(X(0,1)),m_x13(X(0,2)),m_x14(X(0,3)),m_x15(X(0,4)),m_x16(X(0,5)),
     m_x21(X(1,0)),m_x22(X(1,1)),m_x23(X(1,2)),m_x24(X(1,3)),m_x25(X(1,4)),m_x26(X(1,5)),
@@ -106,20 +120,6 @@ class mandel6x6
   {
     if (applyTransform)
         this->MandelXform();
-  }
-
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-  mandel6x6(
-      static_matrix<T,6,6> const& X):
-    m_x11(X(0,0)),m_x12(X(0,1)),m_x13(X(0,2)),m_x14(X(0,3)),m_x15(X(0,4)),m_x16(X(0,5)),
-    m_x21(X(1,0)),m_x22(X(1,1)),m_x23(X(1,2)),m_x24(X(1,3)),m_x25(X(1,4)),m_x26(X(1,5)),
-    m_x31(X(2,0)),m_x32(X(2,1)),m_x33(X(2,2)),m_x34(X(2,3)),m_x35(X(2,4)),m_x36(X(2,5)),
-    m_x41(X(3,0)),m_x42(X(3,1)),m_x43(X(3,2)),m_x44(X(3,3)),m_x45(X(3,4)),m_x46(X(3,5)),
-    m_x51(X(4,0)),m_x52(X(4,1)),m_x53(X(4,2)),m_x54(X(4,3)),m_x55(X(4,4)),m_x56(X(4,5)),
-    m_x61(X(5,0)),m_x62(X(5,1)),m_x63(X(5,2)),m_x64(X(5,3)),m_x65(X(5,4)),m_x66(X(5,5)),
-    applyTransform(true)
-  {
-    this->MandelXform();
   }
 
   //return by mandel index 1-6,1-6
@@ -316,7 +316,6 @@ class mandel6x6
       m_x51/=r2,m_x52/=r2,m_x53/=r2,m_x54/=two,m_x55/=two,m_x56/=two;
       m_x61/=r2,m_x62/=r2,m_x63/=r2,m_x64/=two,m_x65/=two,m_x66/=two;
   }                        
-                             
 };
 
 /***************************************************************************** 
@@ -639,20 +638,9 @@ mandel6x6<U> inverse(
     U wmax =0;
     U fac =0; 
     U wcond = minimum_value<U>();
-    static_matrix<U,6,6> w;
-    static_matrix<U,6,6> ainv;
-    static_vector<U,6> dummy;
-
-     
-    dummy = dummy.zero();
-    ainv = ainv.identity();
-    w = w.zero();
-
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Initialize and allocate
-    //
-    // Make working tensor from input Mandel Tensor
-    // while converting input 6x6 tensor T from Mandel form to normal form
+    static_matrix<U,6,6> w = static_matrix<U,6,6>::zero();
+    static_matrix<U,6,6> ainv = static_matrix<U,6,6>::identity();
+    static_vector<U,6> dummy = static_vector<U,6>::zero();
     
     // Row 1
     w(0,0)=T.x11();
@@ -949,5 +937,23 @@ auto operator*(
 
 //misc
 inline int constexpr mandel6x6_component_count = 36;
+
+                             
+//output print
+template <class U>
+P3A_ALWAYS_INLINE constexpr 
+std::ostream& operator<<(std::ostream& os, mandel6x6<U> const& a)
+{
+  os << std::cout.precision(4);
+  os << std::scientific;
+  os << "\t  | " << a.x11() << " " << a.x12() << " " << a.x13() << " " << a.x14()*a.r2i << " " << a.x15()*a.r2i << " " << a.x16()*a.r2i << " |" <<std::endl;
+  os << "\t  | " << a.x21() << " " << a.x22() << " " << a.x23() << " " << a.x24()*a.r2i << " " << a.x25()*a.r2i << " " << a.x26()*a.r2i << " |" <<std::endl;
+  os << "\t  | " << a.x31() << " " << a.x32() << " " << a.x33() << " " << a.x34()*a.r2i << " " << a.x35()*a.r2i << " " << a.x36()*a.r2i << " |" <<std::endl;
+  os << "\t  | " << a.x41()*a.r2i << " " << a.x42()*a.r2i << " " << a.x43()*a.r2i << " " << a.x44()/a.two << " " << a.x45()/a.two << " " << a.x46()/a.two << " |" <<std::endl;
+  os << "\t  | " << a.x51()*a.r2i << " " << a.x52()*a.r2i << " " << a.x53()*a.r2i << " " << a.x54()/a.two << " " << a.x55()/a.two << " " << a.x56()/a.two << " |" <<std::endl;
+  os << "\t  | " << a.x61()*a.r2i << " " << a.x62()*a.r2i << " " << a.x63()*a.r2i << " " << a.x64()/a.two << " " << a.x65()/a.two << " " << a.x66()/a.two << " |" <<std::endl;
+
+  return os;
+}
 
 }

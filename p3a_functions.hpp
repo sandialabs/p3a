@@ -11,7 +11,7 @@ template <class T>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 bool compare(T a, T b)
 {
-   return std::abs(a-b) <= epsilon_value<T>();
+   return std::abs(a-b) <= T(2.0)*epsilon_value<T>();
 }
 
 template <class T>

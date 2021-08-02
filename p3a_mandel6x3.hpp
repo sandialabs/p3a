@@ -665,4 +665,20 @@ auto operator*(
 //misc
 inline int constexpr mandel6x3_component_count = 18;
 
+//output print
+template <class U>
+P3A_ALWAYS_INLINE constexpr 
+std::ostream& operator<<(std::ostream& os, mandel6x3<U> const& a)
+{
+
+    os << std::cout.precision(4);
+    os << std::scientific;
+    std::cout << "\t  | " << a.x1()       << " " << a.x6()*a.r2i << " " << a.x5()*a.r2i << " |" <<std::endl;
+    std::cout << "\t  | " << a.x6()*a.r2i << " " << a.x2()       << " " << a.x4()*a.r2i << " |" <<std::endl;
+    std::cout << "\t  | " << a.x5()*a.r2i << " " << a.x4()*a.r2i << " " << a.x3()       << " |" <<std::endl;
+
+    return os;
+
+}
+
 }

@@ -40,7 +40,7 @@ using namespace p3a;
 
 using Y = double;
 
-Y abs_err = epsilon_value<Y>();
+Y abs_err = Y(5.)*epsilon_value<Y>();
 
 struct TestData {
 
@@ -160,43 +160,43 @@ struct TestData {
         TVstatic(2,0)=0.0040298826046717; 
         TVstatic(2,1)=0.9667841040427785;
         TVstatic(2,2)=0.6018325296947370;
-
-        Cstatic(0,0)=0.4335153608215544; 
+        
+        Cstatic(0,0)=0.4335153608215544;
         Cstatic(0,1)=0.0856007508096491;
-        Cstatic(0,2)=0.6181864586228960, 
-        Cstatic(0,3)=1.0180326366236518, 
-        Cstatic(0,4)=0.9998149495390550, 
-        Cstatic(0,5)=1.3248978263217353,
+        Cstatic(0,2)=0.6181864586228960; 
+        Cstatic(0,3)=0.7198577808258045;
+        Cstatic(0,4)=0.7069759307507516; 
+        Cstatic(0,5)=0.9368442373714156; 
         Cstatic(1,0)=0.4327952022077987; 
-        Cstatic(1,1)=0.3742135173559312;
-        Cstatic(1,2)=0.1080020759711545;
-        Cstatic(1,3)=0.8147725263605445;
-        Cstatic(1,4)=0.9048931279343728;
-        Cstatic(1,5)=1.2476465544083184;
-        Cstatic(2,0)=0.1619267043337781; 
+        Cstatic(1,1)=0.3742135173559312; 
+        Cstatic(1,2)=0.1080020759711545; 
+        Cstatic(1,3)=0.5761311785140361; 
+        Cstatic(1,4)=0.6398560670115011; 
+        Cstatic(1,5)=0.8822193391461527;
+        Cstatic(2,0)=0.1619267043337781;
         Cstatic(2,1)=0.8255468602509465; 
         Cstatic(2,2)=0.4823784238849611; 
-        Cstatic(2,3)=0.6837503075397613; 
-        Cstatic(2,4)=0.0784973317433504; 
-        Cstatic(2,5)=0.8368479998334433;
-        Cstatic(3,0)=0.0112200396694362; 
-        Cstatic(3,1)=0.8194354458300377; 
-        Cstatic(3,2)=1.1074040005476036; 
-        Cstatic(3,3)=0.6118023983888154; 
-        Cstatic(3,4)=0.4369542629777867; 
-        Cstatic(3,5)=0.6474343145633832;
-        Cstatic(4,0)=0.0836906759361557; 
-        Cstatic(4,1)=0.9338502039452401; 
-        Cstatic(4,2)=0.9911298229891556; 
-        Cstatic(4,3)=1.6059479559586896; 
-        Cstatic(4,4)=1.9166663623233735; 
-        Cstatic(4,5)=0.8109702524757447;
-        Cstatic(5,0)=0.0501618784358511;
-        Cstatic(5,1)=0.9139519661627958; 
-        Cstatic(5,2)=0.4597365381087316;
-        Cstatic(5,3)=1.0569116390136390;
-        Cstatic(5,4)=0.6655431451182421;
-        Cstatic(5,5)=0.9678972164817718;
+        Cstatic(2,3)=0.4834844790997526; 
+        Cstatic(2,4)=0.0555059955807731; 
+        Cstatic(2,5)=0.5917408955046265;
+        Cstatic(3,0)=0.0079337661354404; 
+        Cstatic(3,1)=0.5794283604910414; 
+        Cstatic(3,2)=0.7830528783003216; 
+        Cstatic(3,3)=0.3059011991944077; 
+        Cstatic(3,4)=0.2184771314888934; 
+        Cstatic(3,5)=0.3237171572816916;
+        Cstatic(4,0)=0.0591782444765415; 
+        Cstatic(4,1)=0.6603318118221196; 
+        Cstatic(4,2)=0.7008346188718544; 
+        Cstatic(4,3)=0.8029739779793448; 
+        Cstatic(4,4)=0.9583331811616868; 
+        Cstatic(4,5)=0.4054851262378724;
+        Cstatic(5,0)=0.0354698043990456;
+        Cstatic(5,1)=0.6462616329524909; 
+        Cstatic(5,2)=0.3250828236559117; 
+        Cstatic(5,3)=0.5284558195068195; 
+        Cstatic(5,4)=0.3327715725591210; 
+        Cstatic(5,5)=0.4839486082408859;
     }
 };
 
@@ -210,11 +210,8 @@ TEST(mandel_tensors,LinAlg2ndOrderMandelVectorInverseV){
     const auto & V = td.V;
     const auto & ident = td.ident;
     mandel6x1 T = inverse(V);
-    //better comparison is to make sure it is identity tensor
-    mandel6x1 I = mandel6x1<Y>::identity();
-
-    I = V*T;
-
+    mandel6x1 I = T*V;
+    
     EXPECT_NEAR(ident.x1(),I.x1(),abs_err) << "I.x1";
     EXPECT_NEAR(ident.x2(),I.x2(),abs_err) << "I.x2";
     EXPECT_NEAR(ident.x3(),I.x3(),abs_err) << "I.x3";
@@ -232,6 +229,7 @@ TEST(mandel_tensors,LinAlg4thOrderMandelTensorInverseC){
 
     mandel6x6 Ct = C;
     Ct.MandelXform();
+
     mandel6x6 St = inverse(Ct);
     St.invMandelXform();
     mandel6x6 S = C*St;
@@ -297,7 +295,7 @@ TEST(mandel_tensors,Construct2ndOrderVfromMatrix3x3Vxform){
     TestData td;
     const auto & V = td.V;
     const auto & TV = td.TV;
-    mandel6x1 Vt= TV;
+    mandel6x1 Vt = TV;
 
     EXPECT_FLOAT_EQ(V.x1(),Vt.x1()) << "V.x1";
     EXPECT_FLOAT_EQ(V.x2(),Vt.x2()) << "V.x2";
@@ -2297,3 +2295,4 @@ TEST(mandel_tensors,LinAlg3rdOrder63e63xV6){
     EXPECT_FLOAT_EQ(0.4433849126439117,f.x62()) << "e.x62()";
     EXPECT_FLOAT_EQ(0.4539125712913405,f.x63()) << "e.x63()";
 }
+

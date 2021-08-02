@@ -553,4 +553,18 @@ auto operator*(
 //misc
 inline int constexpr mandel3x6_component_count = 18;
 
+//output print
+template <class U>
+P3A_ALWAYS_INLINE constexpr 
+std::ostream& operator<<(std::ostream& os, mandel3x6<U> const& a)
+{
+  os << std::cout.precision(4);
+  os << std::scientific;
+  os << "\t  | " << a.x11() << " " << a.x12() << " " << a.x13() << " " << a.x14()*a.r2 << " " << a.x15()*a.r2 << " " << a.x16*a.r2 << " |" <<std::endl;
+  os << "\t  | " << a.x21() << " " << a.x22() << " " << a.x23() << " " << a.x24()*a.r2 << " " << a.x25()*a.r2 << " " << a.x26*a.r2 << " |" <<std::endl;
+  os << "\t  | " << a.x31() << " " << a.x32() << " " << a.x33() << " " << a.x34()*a.r2 << " " << a.x35()*a.r2 << " " << a.x36*a.r2 << " |" <<std::endl;
+
+  return os;
+}
+
 }
