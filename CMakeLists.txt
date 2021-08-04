@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.12.0...3.21.0)
 
 project(p3a VERSION 1.0.0 LANGUAGES CXX)
 
+enable_testing()
+
 if(WIN32 AND NOT CYGWIN)
   set(INSTALL_CMAKE_DIR CMake)
 else()
@@ -10,7 +12,6 @@ endif()
 
 option(p3a_ENABLE_CUDA "Enable CUDA" OFF)
 option(p3a_ENABLE_HIP "Enable HIP" OFF)
-option(p3a_ENABLE_TESTS "Enable unit tests" OFF)
 
 if (p3a_ENABLE_CUDA)
   enable_language(CUDA)
@@ -20,7 +21,7 @@ if (p3a_ENABLE_HIP)
   find_package(hip REQUIRED)
 endif()
 
-if (p3a_ENABLE_TESTS)
+if (BUILD_TESTING)
   find_package(GTest REQUIRED)
 endif()
 
@@ -99,11 +100,12 @@ target_link_libraries(p3a PUBLIC MPI::MPI_CXX)
 
 install(TARGETS p3a EXPORT p3a-targets)
 
-if (p3a_ENABLE_TESTS)
+if (BUILD_TESTING)
   add_executable(p3a-unit-tests p3a_unit_tests.cpp)
   target_link_libraries(p3a-unit-tests PRIVATE p3a)
   target_link_libraries(p3a-unit-tests PRIVATE GTest::gtest_main)
   install(TARGETS p3a-unit-tests EXPORT p3a-targets)
+  add_test(NAME unit-tests COMMAND p3a-unit-tests)
 endif()
 
 configure_file(p3a-config.cmake.in
