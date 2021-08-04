@@ -10,6 +10,7 @@ class static_matrix {
  public:
   using reference = T&;
   using const_reference = T const&;
+  P3A_ALWAYS_INLINE static_matrix() = default;
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
   int row_count()
   {
@@ -48,14 +49,14 @@ class static_matrix {
       }
     }
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static
   static_matrix zero()
   {
     static_matrix result;
     result.assign_zero();
     return result;
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static
   static_matrix identity()
   {
     static_matrix result;

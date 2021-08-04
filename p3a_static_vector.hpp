@@ -32,7 +32,7 @@ class static_vector {
   {
     return m_data[i];
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static
   static_vector zero()
   {
     static_vector r;
