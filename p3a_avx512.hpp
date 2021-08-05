@@ -307,6 +307,16 @@ class simd_index<double, simd_abi::avx512> {
   }
 };
 
+P3A_ALWAYS_INLINE inline
+simd_index<double, simd_abi::avx512>
+condition(
+    simd_mask<double, simd_abi::avx512> const& a,
+    simd_index<double, simd_abi::avx512> const& b,
+    simd_index<double, simd_abi::avx512> const& c)
+{
+  return simd_index<double, simd_abi::avx512>(_mm256_mask_blend_epi32(a.get(), c.get(), b.get()));
+}
+
 template <>
 class simd<double, simd_abi::avx512> {
   __m512d m_value;
