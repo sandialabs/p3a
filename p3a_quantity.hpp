@@ -391,7 +391,7 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 quantity<simd<T, Abi>, Dimension> load_scalar(
     quantity<T, Dimension> const* ptr, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
 {
-  return load_scalar(&(ptr->value()), offset, mask);
+  return load(&(ptr->value()), offset, mask);
 }
 
 template <class T, class Dimension, class Abi>
@@ -403,6 +403,17 @@ vector3<quantity<simd<T, Abi>, Dimension>> load_vector3(
       simd<T, Abi>::masked_load(&(ptr->value()) + stride * 0 + offset, mask),
       simd<T, Abi>::masked_load(&(ptr->value()) + stride * 1 + offset, mask),
       simd<T, Abi>::masked_load(&(ptr->value()) + stride * 2 + offset, mask));
+}
+
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+vector3<quantity<simd<T, Abi>, Dimension>> load_vector3(
+    quantity<T, Dimension> const* ptr, int stride, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
+{
+  return vector3<quantity<simd<T, Abi>, Dimension>>(
+      load_scalar(ptr, offset + stride * 0, mask),
+      load_scalar(ptr, offset + stride * 1, mask),
+      load_scalar(ptr, offset + stride * 2, mask));
 }
 
 template <class T, class Dimension, class Abi>
@@ -450,6 +461,17 @@ void store(
 template <class T, class Dimension, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
+    quantity<simd<T, Abi>, Dimension> const& q,
+    quantity<T, Dimension>* ptr,
+    simd_index<T, Abi> const& offset,
+    simd_mask<T, Abi> const& mask)
+{
+  store(q.value(), &(ptr->value()), offset, mask);
+}
+
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
     vector3<quantity<simd<T, Abi>, Dimension>> const& q,
     quantity<T, Dimension>* ptr,
     int stride,
@@ -459,6 +481,20 @@ void store(
   q.x().value().masked_store(&(ptr->value()) + stride * 0 + offset, mask);
   q.y().value().masked_store(&(ptr->value()) + stride * 1 + offset, mask);
   q.z().value().masked_store(&(ptr->value()) + stride * 2 + offset, mask);
+}
+
+template <class T, class Dimension, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
+    vector3<quantity<simd<T, Abi>, Dimension>> const& q,
+    quantity<T, Dimension>* ptr,
+    int stride,
+    simd_index<T, Abi> const& offset,
+    simd_mask<T, Abi> const& mask)
+{
+  store(q.x(), ptr, offset + stride * 0, mask);
+  store(q.x(), ptr, offset + stride * 1, mask);
+  store(q.x(), ptr, offset + stride * 2, mask);
 }
 
 template <class T, class Dimension, class Abi>
