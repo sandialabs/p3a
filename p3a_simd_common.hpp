@@ -41,6 +41,12 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, Abi>& operator/=(simd<T, Ab
   return a;
 }
 
+template <class T, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_index<T, Abi>& operator+=(simd_index<T, Abi>& a, simd_index<T, Abi> const& b) {
+  a = a + b;
+  return a;
+}
+
 template <class U, class T, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 std::enable_if_t<std::is_arithmetic_v<U>, simd<T, Abi>>
