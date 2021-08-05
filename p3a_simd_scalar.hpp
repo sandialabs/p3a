@@ -109,6 +109,16 @@ class simd_index<T, simd_abi::scalar> {
 };
 
 template <class T>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_index<T, simd_abi::scalar>
+condition(
+    simd_mask<T, simd_abi::scalar> const& a,
+    simd_index<T, simd_abi::scalar> const& b,
+    simd_index<T, simd_abi::scalar> const& c)
+{
+  return simd_index<T, simd_abi::scalar>(condition(a.get(), b.get(), c.get()));
+}
+
+template <class T>
 class simd<T, simd_abi::scalar> {
   T m_value;
  public:
