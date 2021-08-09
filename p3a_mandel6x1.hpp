@@ -164,7 +164,7 @@ class mandel6x1
         this->MandelXform();
   }
 
-  P3A_NEVER_INLINE
+  P3A_HOST P3A_DEVICE P3A_NEVER_INLINE
   mandel6x1(matrix3x3<T> const& a):
     m_x1(a.xx()),
     m_x2(a.yy()),
@@ -174,9 +174,6 @@ class mandel6x1
     m_x6(a.xy()),
     applyTransform(true)
   {
-    if(!compare(a.yz(),a.zy()) && compare(a.zx(),a.xz()) && compare(a.xy(),a.yx()))
-        throw std::invalid_argument(
-                "Initialization ERROR of p3a::mandel6x6 from p3a::matrix3x3, matrix3x3 not symmetric!");
     this->MandelXform();
   }
 

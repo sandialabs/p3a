@@ -81,11 +81,12 @@ P3A_NEVER_INLINE void uninitialized_copy(
     InputIt last,
     ForwardIt d_first)
 {
-  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  using input_reference_type = typename std::iterator_traits<InputIt>::reference;
+  using output_value_type = typename std::iterator_traits<ForwardIt>::value_type;
   for_each(policy, first, last,
-  [=] P3A_DEVICE (value_type& src_value) P3A_ALWAYS_INLINE {
-    auto addr = &(d_first[&src_value - &(*first)]);
-    ::new (static_cast<void*>(addr)) value_type(src_value);
+  [=] P3A_DEVICE (input_reference_type input_reference) P3A_ALWAYS_INLINE {
+    auto addr = &(d_first[&input_reference - &(*first)]);
+    ::new (static_cast<void*>(addr)) output_value_type(input_reference);
   });
 }
 

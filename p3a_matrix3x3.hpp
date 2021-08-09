@@ -121,7 +121,7 @@ matrix3x3<T> operator+(matrix3x3<T> const& a, matrix3x3<T> const& b)
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-matrix3x3<T> operator+(identity3x3_type const&, matrix3x3<T> const& b)
+matrix3x3<T> operator+(identity3x3_type, matrix3x3<T> const& b)
 {
   return matrix3x3<T>(
       T(1) + b.xx(),

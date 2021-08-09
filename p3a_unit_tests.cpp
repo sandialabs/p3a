@@ -532,7 +532,6 @@ TEST(mandel_tensors,LinAlg2ndOrderDeterminantV){
 TEST(mandel_tensors,LinAlg2ndOrderCxV){
 
     TestData td;
-    const auto & ident = td.ident;
     mandel6x1 T = td.C * td.V;
 
     EXPECT_FLOAT_EQ(3.4635476194506110,T.x1()) << "T.x1";

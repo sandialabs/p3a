@@ -628,13 +628,8 @@ mandel6x6<U> inverse(
     //......................................................................local
     int row=0;
     int col=0;
-    int icond = 0;
     int startrow = -1;
-    int v = 0;
     int n = 6 ;
-    int span = 5;
-    int loc = 0;
-    U vval=0;
     U wmax =0;
     U fac =0; 
     U wcond = minimum_value<U>();
@@ -700,7 +695,6 @@ mandel6x6<U> inverse(
         //if the row is empty: error
         if(absolute_value(wmax) <= minimum_value<U>())
         {
-           icond = 1;
            throw std::invalid_argument(
                    "p3a_mandel6x6::Inverse: ERROR, row is zero during inversion of 4th order Mandel Tensor");
         }
@@ -740,7 +734,6 @@ mandel6x6<U> inverse(
         //check for ill conditioned tensor
         if(absolute_value(wmax) < wcond)
         {
-            icond = 1;
             throw std::invalid_argument(
                     "p3a_mandel6x6::Inverse: illconditioned 4th order Mandel Tensor");
         }

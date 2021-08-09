@@ -80,7 +80,7 @@ set(P3A_SOURCES
   p3a_opts.cpp
   )
 
-if (p3a_ENABLE_CUDA AND P3A_SOURCES)
+if (p3a_ENABLE_CUDA)
   set_source_files_properties(
     ${P3A_SOURCES} PROPERTIES LANGUAGE CUDA)
 endif()
@@ -92,6 +92,10 @@ set_target_properties(p3a PROPERTIES
 target_include_directories(p3a
   INTERFACE $<INSTALL_INTERFACE:include>)
 
+if (p3a_ENABLE_CUDA)
+  target_compile_options(p3a PUBLIC "--expt-extended-lambda")
+endif()
+
 if (p3a_ENABLE_HIP)
   target_link_libraries(p3a PUBLIC hip::device)
 endif()
@@ -101,6 +105,10 @@ target_link_libraries(p3a PUBLIC MPI::MPI_CXX)
 install(TARGETS p3a EXPORT p3a-targets)
 
 if (BUILD_TESTING)
+  if (p3a_ENABLE_CUDA)
+    set_source_files_properties(
+      p3a_unit_tests.cpp PROPERTIES LANGUAGE CUDA)
+  endif()
   add_executable(p3a-unit-tests p3a_unit_tests.cpp)
   target_link_libraries(p3a-unit-tests PRIVATE p3a)
   target_link_libraries(p3a-unit-tests PRIVATE GTest::gtest_main)
