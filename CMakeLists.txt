@@ -99,11 +99,11 @@ target_include_directories(p3a
   INTERFACE $<INSTALL_INTERFACE:include>)
 
 if (p3a_ENABLE_AVX512)
-  target_compile_options(p3a PUBLIC "-mavx512f -mavx512vl")
+  target_compile_options(p3a PUBLIC -mavx512f -mavx512vl)
 endif()
 
 if (p3a_ENABLE_CUDA)
-  target_compile_options(p3a PUBLIC "--expt-extended-lambda")
+  target_compile_options(p3a PUBLIC --expt-extended-lambda)
 endif()
 
 if (p3a_ENABLE_HIP)
