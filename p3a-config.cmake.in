@@ -5,6 +5,7 @@ set(p3a_ENABLE_AVX512 @p3a_ENABLE_AVX512@)
 set(p3a_ENABLE_CUDA @p3a_ENABLE_CUDA@)
 set(p3a_ENABLE_HIP @p3a_ENABLE_HIP@)
 set(p3a_LANGUAGE @p3a_LANGUAGE@)
+set(p3a_ARCHITECTURES @p3a_ARCHITECTURES@)
 
 # Our library dependencies (contains definitions for IMPORTED targets)
 if(NOT TARGET p3a AND NOT p3a_BINARY_DIR)

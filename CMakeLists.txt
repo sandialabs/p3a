@@ -13,17 +13,19 @@ endif()
 option(p3a_ENABLE_AVX512 "Enable AVX-512" OFF)
 option(p3a_ENABLE_CUDA "Enable CUDA" OFF)
 option(p3a_ENABLE_HIP "Enable HIP" OFF)
+set(p3a_ARCHITECTURES "" CACHE STRING "GPU architectures (either CUDA_ARCHITECTURES or HIP_ARCHITECTURES)")
 
 if (p3a_ENABLE_CUDA AND p3a_ENABLE_HIP)
   message(FATAL_ERROR "CUDA and HIP cannot be simultaneously enabled")
 endif()
 
-set(p3a_LANGUAGE CXX)
-
 if (p3a_ENABLE_CUDA)
-  enable_language(CUDA)
   set(p3a_LANGUAGE CUDA)
+else()
+  set(p3a_LANGUAGE CXX)
 endif()
+
+enable_language(${p3a_LANGUAGE})
 
 if (p3a_ENABLE_HIP)
   find_package(hip REQUIRED)
@@ -90,13 +92,13 @@ set(P3A_SOURCES
 
 set_source_files_properties(
   ${P3A_SOURCES} PROPERTIES LANGUAGE ${p3a_LANGUAGE})
-
 add_library(p3a ${P3A_SOURCES})
 target_compile_features(p3a PUBLIC cxx_std_17)
 set_target_properties(p3a PROPERTIES
   PUBLIC_HEADER "${P3A_HEADERS}")
 target_include_directories(p3a
   INTERFACE $<INSTALL_INTERFACE:include>)
+set_target_properties(p3a PROPERTIES ${p3a_LANGUAGE}_ARCHITECTURES "${p3a_ARCHITECTURES}")
 
 if (p3a_ENABLE_AVX512)
   target_compile_options(p3a PUBLIC -mavx512f -mavx512vl)
