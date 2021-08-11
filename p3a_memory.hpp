@@ -84,7 +84,27 @@ P3A_NEVER_INLINE void uninitialized_copy(
   using input_reference_type = typename std::iterator_traits<InputIt>::reference;
   using output_value_type = typename std::iterator_traits<ForwardIt>::value_type;
   for_each(policy, first, last,
-  [=] P3A_DEVICE (input_reference_type input_reference) P3A_ALWAYS_INLINE {
+  [=] __device__ (input_reference_type input_reference) P3A_ALWAYS_INLINE {
+    auto addr = &(d_first[&input_reference - &(*first)]);
+    ::new (static_cast<void*>(addr)) output_value_type(input_reference);
+  });
+}
+
+#endif
+
+#ifdef __HIPCC__
+
+template <class InputIt, class ForwardIt>
+P3A_NEVER_INLINE void uninitialized_copy(
+    hip_execution policy,
+    InputIt first,
+    InputIt last,
+    ForwardIt d_first)
+{
+  using input_reference_type = typename std::iterator_traits<InputIt>::reference;
+  using output_value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  for_each(policy, first, last,
+  [=] __device__ (input_reference_type input_reference) P3A_ALWAYS_INLINE {
     auto addr = &(d_first[&input_reference - &(*first)]);
     ::new (static_cast<void*>(addr)) output_value_type(input_reference);
   });
