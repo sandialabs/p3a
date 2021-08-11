@@ -13,3 +13,5 @@ P3A provides several "layers" of helpful tools:
 6. A set of SIMD scalar types `p3a::simd<T, Abi>` that directly call CPU vector intrinsics. Currently this is limited to one for Intel AVX-512 and one that is just a scalar.
 
 The ideal design for an application using P3A is to implement a physics code as a series of loops which perform outer loop vectorization, while keeping the C++ source code readable by using tensor types with overloaded mathematical operators.
+
+At Sandia, P3A is SCR 2619.0
