@@ -60,8 +60,8 @@ void svd_bidiagonal(
   T sv = 0.0;
   auto const swap_diag = (ha > fa);
   if (swap_diag == true) {
-    std::swap(fa, ha);
-    std::swap(f, h);
+    p3a::swap(fa, ha);
+    p3a::swap(f, h);
   }
   T constexpr epsilon = std::numeric_limits<T>::epsilon();
   // diagonal matrix
@@ -110,8 +110,8 @@ void svd_bidiagonal(
   s0 = std::copysign(s0, f);
   s1 = std::copysign(s1, h);
   if (swap_diag == true) {
-    std::swap(cu, sv);
-    std::swap(su, cv);
+    p3a::swap(cu, sv);
+    p3a::swap(su, cv);
   }
   U = matrix2x2<T>(cu, -su, su, cu);
   S = matrix2x2<T>(s0, 0.0, 0.0, s1);
