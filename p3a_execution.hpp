@@ -6,7 +6,10 @@
 #include <string>
 
 #ifdef __HIPCC__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-attributes"
 #include <hip/hip_runtime.h>
+#pragma clang diagnostic pop
 #endif
 
 namespace p3a {
