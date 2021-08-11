@@ -21,15 +21,13 @@ endif()
 
 if (p3a_ENABLE_CUDA)
   set(p3a_LANGUAGE CUDA)
+elseif(p3a_ENABLE_HIP)
+  set(p3a_LANGUAGE HIP)
 else()
   set(p3a_LANGUAGE CXX)
 endif()
 
 enable_language(${p3a_LANGUAGE})
-
-if (p3a_ENABLE_HIP)
-  find_package(hip REQUIRED)
-endif()
 
 if (BUILD_TESTING)
   find_package(GTest REQUIRED)
@@ -106,10 +104,6 @@ endif()
 
 if (p3a_ENABLE_CUDA)
   target_compile_options(p3a PUBLIC --expt-extended-lambda)
-endif()
-
-if (p3a_ENABLE_HIP)
-  target_link_libraries(p3a PUBLIC hip::device)
 endif()
 
 target_link_libraries(p3a PUBLIC MPI::MPI_CXX)
