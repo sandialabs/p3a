@@ -403,30 +403,34 @@ void comm::cart_coords(int rank, int maxdims, int coords[]) const
         coords));
 }
 
+void set_device()
+{
+#ifdef __CUDACC__
+  MPI_Comm node_comm;
+  details::handle_mpi_error(
+      MPI_Comm_split_type(
+        MPI_COMM_WORLD,
+        MPI_COMM_TYPE_SHARED,
+        0,
+        MPI_INFO_NULL,
+        &node_comm));
+  int node_rank;
+  details::handle_mpi_error(
+      MPI_Comm_rank(node_comm, &node_rank));
+  int device_count;
+  p3a::details::handle_cuda_error(
+      cudaGetDeviceCount(&device_count));
+  int const desired_device = node_rank % device_count;
+  p3a::details::handle_cuda_error(
+      cudaSetDevice(desired_device));
+#endif
+}
+
 library::library(int* argc, char*** argv) {
   int flag;
   details::handle_mpi_error(MPI_Initialized(&flag));
   if (!flag) {
     details::handle_mpi_error(MPI_Init(argc, argv));
-#ifdef __CUDACC__
-    MPI_Comm node_comm;
-    details::handle_mpi_error(
-        MPI_Comm_split_type(
-          MPI_COMM_WORLD,
-          MPI_COMM_TYPE_SHARED,
-          0,
-          MPI_INFO_NULL,
-          &node_comm));
-    int node_rank;
-    details::handle_mpi_error(
-        MPI_Comm_rank(node_comm, &node_rank));
-    int device_count;
-    p3a::details::handle_cuda_error(
-        cudaGetDeviceCount(&device_count));
-    int const desired_device = node_rank % device_count;
-    p3a::details::handle_cuda_error(
-        cudaSetDevice(desired_device));
-#endif
   }
 }
 

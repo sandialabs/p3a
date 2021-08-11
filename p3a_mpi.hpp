@@ -395,6 +395,8 @@ class library {
   library& operator=(library&&) = delete;
 };
 
+void set_device();
+
 }
 
 }
