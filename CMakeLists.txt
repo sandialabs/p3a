@@ -80,6 +80,7 @@ set(P3A_HEADERS
   p3a_mandel6x6.hpp
   p3a_mandel3x6.hpp
   p3a_mandel6x3.hpp
+  p3a_tuple.hpp
   )
 
 set(P3A_SOURCES

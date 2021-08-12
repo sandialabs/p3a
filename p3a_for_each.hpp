@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "p3a_execution.hpp"
 #include "p3a_functions.hpp"
 #include "p3a_grid3.hpp"
@@ -571,6 +573,101 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
       }
     }
   }
+}
+
+#endif
+
+template <class Functor, class Integral>
+void for_each(
+    serial_execution,
+    std::integer_sequence<Integral>,
+    Functor const&)
+{
+}
+
+template <class Functor, class Integral, Integral FirstIndex, Integral ... NextIndices>
+void for_each(
+    serial_execution policy,
+    std::integer_sequence<Integral, FirstIndex, NextIndices...>,
+    Functor const& functor)
+{
+  functor(std::integral_constant<Integral, FirstIndex>());
+  for_each(policy, std::integer_sequence<Integral, NextIndices...>(), functor);
+}
+
+template <class Functor, class Integral, Integral Size>
+void for_each(
+    serial_execution policy,
+    std::integral_constant<Integral, Size>,
+    Functor const& functor)
+{
+  for_each(policy, std::make_integer_sequence<Integral, Size>(), functor);
+}
+
+#ifdef __CUDACC__
+
+template <class Functor, class Integral>
+__device__ P3A_ALWAYS_INLINE
+void for_each(
+    cuda_local_execution,
+    std::integer_sequence<Integral>,
+    Functor const&)
+{
+}
+
+template <class Functor, class Integral, Integral FirstIndex, Integral ... NextIndices>
+__device__ P3A_ALWAYS_INLINE
+void for_each(
+    cuda_local_execution policy,
+    std::integer_sequence<Integral, FirstIndex, NextIndices...>,
+    Functor const& functor)
+{
+  functor(std::integral_constant<Integral, FirstIndex>());
+  for_each(policy, std::integer_sequence<Integral, NextIndices...>(), functor);
+}
+
+template <class Functor, class Integral, Integral Size>
+__device__ P3A_ALWAYS_INLINE
+void for_each(
+    cuda_local_execution policy,
+    std::integral_constant<Integral, Size>,
+    Functor const& functor)
+{
+  for_each(policy, std::make_integer_sequence<Integral, Size>(), functor);
+}
+
+#endif
+
+#ifdef __HIPCC__
+
+template <class Functor, class Integral>
+__device__ P3A_ALWAYS_INLINE
+void for_each(
+    hip_local_execution,
+    std::integer_sequence<Integral>,
+    Functor const&)
+{
+}
+
+template <class Functor, class Integral, Integral FirstIndex, Integral ... NextIndices>
+__device__ P3A_ALWAYS_INLINE
+void for_each(
+    hip_local_execution policy,
+    std::integer_sequence<Integral, FirstIndex, NextIndices...>,
+    Functor const& functor)
+{
+  functor(std::integral_constant<Integral, FirstIndex>());
+  for_each(policy, std::integer_sequence<Integral, NextIndices...>(), functor);
+}
+
+template <class Functor, class Integral, Integral Size>
+__device__ P3A_ALWAYS_INLINE
+void for_each(
+    hip_local_execution policy,
+    std::integral_constant<Integral, Size>,
+    Functor const& functor)
+{
+  for_each(policy, std::make_integer_sequence<Integral, Size>(), functor);
 }
 
 #endif
