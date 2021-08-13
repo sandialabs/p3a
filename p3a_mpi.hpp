@@ -366,6 +366,7 @@ class comm {
   static comm world();
   static comm self();
   comm dup() const;
+  comm split(int color, int key) const;
   comm cart_create(
       int ndims,
       int const* dims,

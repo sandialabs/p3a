@@ -339,6 +339,18 @@ comm comm::dup() const
   return comm(new_implementation, true);
 }
 
+comm comm::split(int color, int key) const
+{
+  MPI_Comm new_implementation;
+  details::handle_mpi_error(
+      MPI_Comm_split(
+        implementation,
+        color,
+        key,
+        &new_implementation));
+  return comm(new_implementation, true);
+}
+
 comm comm::cart_create(
     int ndims,
     int const* dims,
