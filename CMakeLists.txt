@@ -4,11 +4,8 @@ project(p3a VERSION 1.0.0 LANGUAGES CXX)
 
 enable_testing()
 
-if(WIN32 AND NOT CYGWIN)
-  set(INSTALL_CMAKE_DIR CMake)
-else()
-  set(INSTALL_CMAKE_DIR lib/cmake/${PROJECT_NAME})
-endif()
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 option(p3a_ENABLE_AVX512 "Enable AVX-512" OFF)
 option(p3a_ENABLE_CUDA "Enable CUDA" OFF)
@@ -96,7 +93,9 @@ target_compile_features(p3a PUBLIC cxx_std_17)
 set_target_properties(p3a PROPERTIES
   PUBLIC_HEADER "${P3A_HEADERS}")
 target_include_directories(p3a
-  INTERFACE $<INSTALL_INTERFACE:include>)
+  PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 set_target_properties(p3a PROPERTIES ${p3a_LANGUAGE}_ARCHITECTURES "${p3a_ARCHITECTURES}")
 
 if (p3a_ENABLE_AVX512)
@@ -109,7 +108,14 @@ endif()
 
 target_link_libraries(p3a PUBLIC MPI::MPI_CXX)
 
-install(TARGETS p3a EXPORT p3a-targets)
+install(
+  TARGETS p3a
+  EXPORT p3a-targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if (BUILD_TESTING)
   set_source_files_properties(
@@ -117,19 +123,24 @@ if (BUILD_TESTING)
   add_executable(p3a-unit-tests p3a_unit_tests.cpp)
   target_link_libraries(p3a-unit-tests PRIVATE p3a)
   target_link_libraries(p3a-unit-tests PRIVATE GTest::gtest_main)
-  install(TARGETS p3a-unit-tests EXPORT p3a-targets)
   add_test(NAME unit-tests COMMAND p3a-unit-tests)
 endif()
 
-configure_file(p3a-config.cmake.in
-  "${PROJECT_BINARY_DIR}/p3a-config.cmake" @ONLY)
-configure_file(p3a-config-version.cmake.in
-  "${PROJECT_BINARY_DIR}/p3a-config-version.cmake" @ONLY)
+configure_package_config_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/p3a-config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/p3a
+)
+write_basic_package_version_file(
+  "${PROJECT_BINARY_DIR}/p3a-config-version.cmake"
+  COMPATIBILITY AnyNewerVersion)
 
 install(FILES
   "${PROJECT_BINARY_DIR}/p3a-config.cmake"
   "${PROJECT_BINARY_DIR}/p3a-config-version.cmake"
-  DESTINATION "${INSTALL_CMAKE_DIR}")
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/p3a)
 
-install(EXPORT p3a-targets
-    DESTINATION "${INSTALL_CMAKE_DIR}")
+install(
+  EXPORT p3a-targets
+  NAMESPACE p3a::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/p3a)
