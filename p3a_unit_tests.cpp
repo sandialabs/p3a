@@ -787,7 +787,7 @@ TEST(mandel_tensors,Construct4thOrderCfromC){
 TEST(mandel_tensors,Construct4thOrderCfromstaticmatrixxform){
 
     TestData td;
-    const mandel6x6 C(td.Cstatic);
+    const mandel6x6<Y> C(td.Cstatic);
 
     EXPECT_FLOAT_EQ(0.4335153608215544,C.x11()) << "C.x11()";
     EXPECT_FLOAT_EQ(0.0856007508096491,C.x12()) << "C.x12()";
