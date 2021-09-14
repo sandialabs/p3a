@@ -10,6 +10,7 @@
 #include "p3a_mandel6x6.hpp"
 #include "p3a_mandel3x6.hpp"
 #include "p3a_mandel6x3.hpp"
+#include "p3a_lie.hpp"
 
 using namespace p3a; 
 
@@ -2295,3 +2296,160 @@ TEST(mandel_tensors,LinAlg3rdOrder63e63xV6){
     EXPECT_FLOAT_EQ(0.4539125712913405,f.x63()) << "e.x63()";
 }
 
+TEST(lie, expm_spd1){
+  using T = double;
+  constexpr T one = 1.0;
+  constexpr T zero = 0.0;
+  constexpr T e = 2.718281828459045;
+  symmetric3x3<T> a{one, zero, zero, one, zero, one};
+  auto exp_a = spd_exponential(a);
+  EXPECT_FLOAT_EQ(e, exp_a.xx()) << "exp_a.xx()";
+  EXPECT_FLOAT_EQ(e, exp_a.yy()) << "exp_a.yy()";
+  EXPECT_FLOAT_EQ(e, exp_a.zz()) << "exp_a.zz()";
+  EXPECT_FLOAT_EQ(zero, exp_a.xy()) << "exp_a.xy()";
+  EXPECT_FLOAT_EQ(zero, exp_a.xz()) << "exp_a.xz()";
+  EXPECT_FLOAT_EQ(zero, exp_a.yz()) << "exp_a.yz()";
+}
+
+TEST(lie, expm_spd2){
+  using T = double;
+  constexpr T one = 1.0;
+  constexpr T zero = 0.0;
+  symmetric3x3<T> a{zero, zero, zero, zero, zero, zero};
+  auto exp_a = spd_exponential(a);
+  EXPECT_FLOAT_EQ(one, exp_a.xx()) << "exp_a.xx()";
+  EXPECT_FLOAT_EQ(one, exp_a.yy()) << "exp_a.yy()";
+  EXPECT_FLOAT_EQ(one, exp_a.zz()) << "exp_a.zz()";
+  EXPECT_FLOAT_EQ(zero, exp_a.xy()) << "exp_a.xy()";
+  EXPECT_FLOAT_EQ(zero, exp_a.xz()) << "exp_a.xz()";
+  EXPECT_FLOAT_EQ(zero, exp_a.yz()) << "exp_a.yz()";
+}
+
+TEST(lie, expm_spd3){
+  using T = double;
+  symmetric3x3<T> a{T(3.0), T(1.0), T(0.0), T(2.0), T(1.0), T(1.0)};
+  auto exp_a = spd_exponential(a);
+  EXPECT_FLOAT_EQ(28.49937896, exp_a.xx()) << "exp_a.xx()";
+  EXPECT_FLOAT_EQ(16.82033617, exp_a.yy()) << "exp_a.yy()";
+  EXPECT_FLOAT_EQ(5.14129339, exp_a.zz()) << "exp_a.zz()";
+  EXPECT_FLOAT_EQ(16.39468282, exp_a.xy()) << "exp_a.xy()";
+  EXPECT_FLOAT_EQ(4.71564004, exp_a.xz()) << "exp_a.xz()";
+  EXPECT_FLOAT_EQ(6.96340275, exp_a.yz()) << "exp_a.yz()";
+  auto log_exp_a = spd_logarithm(exp_a);
+  EXPECT_FLOAT_EQ(log_exp_a.xx(), a.xx()) << "exp_a.xx()";
+  EXPECT_FLOAT_EQ(log_exp_a.yy(), a.yy()) << "exp_a.yy()";
+  EXPECT_FLOAT_EQ(log_exp_a.zz(), a.zz()) << "exp_a.zz()";
+  constexpr T tol = 8.0e-15;
+  EXPECT_NEAR(log_exp_a.xy(), a.xy(), tol) << "exp_a.xy()";
+  EXPECT_NEAR(log_exp_a.xz(), a.xz(), tol) << "exp_a.xz()";
+  EXPECT_NEAR(log_exp_a.yz(), a.yz(), tol) << "exp_a.yz()";
+}
+
+TEST(lie, logm){
+  using T = double;
+  constexpr T one = 1.0;
+  constexpr T zero = 0.0;
+  constexpr T e = 2.718281828459045;
+  symmetric3x3<T> a{e, zero, zero, e, zero, e};
+  auto log_a = spd_logarithm(a);
+  EXPECT_FLOAT_EQ(one, log_a.xx()) << "log_a.xx()";
+  EXPECT_FLOAT_EQ(one, log_a.yy()) << "log_a.yy()";
+  EXPECT_FLOAT_EQ(one, log_a.zz()) << "log_a.zz()";
+  EXPECT_FLOAT_EQ(zero, log_a.xy()) << "log_a.xy()";
+  EXPECT_FLOAT_EQ(zero, log_a.xz()) << "log_a.xz()";
+  EXPECT_FLOAT_EQ(zero, log_a.yz()) << "log_a.yz()";
+}
+
+TEST(polar_decomp, stretch){
+  using T = double;
+  T const l = std::sqrt(T(2.));
+  matrix3x3<T> F{l, 0.0, 0.0, 0.0, 2 * l, 0.0, 0.0, 0.0, 1.0};
+  matrix3x3<T> R;
+  symmetric3x3<T> U;
+
+  polar_decomp(F, R, U);
+
+  EXPECT_FLOAT_EQ(l, U.xx()) << "U.xx()";
+  EXPECT_FLOAT_EQ(2 * l, U.yy()) << "U.yy()";
+  EXPECT_FLOAT_EQ(1.0, U.zz()) << "U.zz()";
+  EXPECT_FLOAT_EQ(0.0, U.xy()) << "U.xy()";
+  EXPECT_FLOAT_EQ(0.0, U.xz()) << "U.xz()";
+  EXPECT_FLOAT_EQ(0.0, U.yz()) << "U.yz()";
+
+  EXPECT_FLOAT_EQ(1.0, R.xx()) << "R.xx()";
+  EXPECT_FLOAT_EQ(1.0, R.yy()) << "R.yy()";
+  EXPECT_FLOAT_EQ(1.0, R.zz()) << "R.zz()";
+  EXPECT_FLOAT_EQ(0.0, R.xy()) << "R.xy()";
+  EXPECT_FLOAT_EQ(0.0, R.xz()) << "R.xz()";
+  EXPECT_FLOAT_EQ(0.0, R.yx()) << "R.yx()";
+  EXPECT_FLOAT_EQ(0.0, R.yz()) << "R.yz()";
+  EXPECT_FLOAT_EQ(0.0, R.zx()) << "R.zx()";
+  EXPECT_FLOAT_EQ(0.0, R.zy()) << "R.zy()";
+
+}
+
+TEST(polar_decomp, pure_shear){
+  using T = double;
+  T const l = std::sqrt(T(2.));
+  matrix3x3<T> F{l, 0.0, 0.0, 0.0, 1. / l, 0.0, 0.0, 0.0, T(1.0)};
+  matrix3x3<T> R;
+  symmetric3x3<T> U;
+
+  polar_decomp(F, R, U);
+
+  EXPECT_FLOAT_EQ(l, U.xx()) << "U.xx()";
+  EXPECT_FLOAT_EQ(1./l, U.yy()) << "U.yy()";
+  EXPECT_FLOAT_EQ(1., U.zz()) << "U.zz()";
+  EXPECT_FLOAT_EQ(0.0, U.xy()) << "U.xy()";
+  EXPECT_FLOAT_EQ(0.0, U.xz()) << "U.xz()";
+  EXPECT_FLOAT_EQ(0.0, U.yz()) << "U.yz()";
+
+  EXPECT_FLOAT_EQ(1.0, R.xx()) << "R.xx()";
+  EXPECT_FLOAT_EQ(0.0, R.xy()) << "R.xy()";
+  EXPECT_FLOAT_EQ(0.0, R.xz()) << "R.xz()";
+
+  EXPECT_FLOAT_EQ(0.0, R.yx()) << "R.yx()";
+  EXPECT_FLOAT_EQ(1.0, R.yy()) << "R.yy()";
+  EXPECT_FLOAT_EQ(0.0, R.yz()) << "R.yz()";
+
+  EXPECT_FLOAT_EQ(0.0, R.zx()) << "R.zx()";
+  EXPECT_FLOAT_EQ(0.0, R.zy()) << "R.zy()";
+  EXPECT_FLOAT_EQ(1.0, R.zz()) << "R.zz()";
+}
+
+
+TEST(polar_decomp, simple_shear){
+  using T = double;
+  T const zero = T(0.);
+  T const one = T(1.);
+  T const two = T(2.);
+  T const root2 = std::sqrt(T(2.));
+  T const root3 = std::sqrt(T(3.));
+  T const toor3 = one / root3;
+  T const root23 = root2 / root3;
+
+  matrix3x3<T> F{one, root2, zero, zero, one, zero, zero, zero, one};
+  matrix3x3<T> R;
+  symmetric3x3<T> U;
+
+  polar_decomp(F, R, U);
+
+  EXPECT_FLOAT_EQ(root23, U.xx()) << "U.xx()";
+  EXPECT_FLOAT_EQ(two * root23, U.yy()) << "U.yy()";
+  EXPECT_FLOAT_EQ(one, U.zz()) << "U.zz()";
+  EXPECT_FLOAT_EQ(toor3, U.xy()) << "U.xy()";
+  EXPECT_FLOAT_EQ(zero, U.xz()) << "U.xz()";
+  EXPECT_FLOAT_EQ(zero, U.yz()) << "U.yz()";
+
+  EXPECT_FLOAT_EQ(root23, R.xx()) << "R.xx()";
+  EXPECT_FLOAT_EQ(toor3, U.xy()) << "R.xy()";
+  EXPECT_FLOAT_EQ(zero, R.xz()) << "R.xz()";
+
+  EXPECT_FLOAT_EQ(-toor3, R.yx()) << "R.yx()";
+  EXPECT_FLOAT_EQ(root23, R.yy()) << "R.yy()";
+  EXPECT_FLOAT_EQ(zero, R.yz()) << "R.yz()";
+
+  EXPECT_FLOAT_EQ(zero, R.zx()) << "R.zx()";
+  EXPECT_FLOAT_EQ(zero, R.zy()) << "R.zy()";
+  EXPECT_FLOAT_EQ(one, R.zz()) << "R.zz()";
+}

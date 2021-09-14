@@ -6,6 +6,7 @@
 #include "p3a_eigen.hpp"
 #include "p3a_svd.hpp"
 #include "p3a_skew3x3.hpp"
+#include "p3a_scaled_identity3x3.hpp"
 
 namespace p3a {
 
@@ -196,6 +197,20 @@ symmetric3x3<T> spd_exponential(symmetric3x3<T> const& log_m)
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE inline
+symmetric3x3<T> spd_logarithm(symmetric3x3<T> const& exp_m)
+{
+  diagonal3x3<T> l;
+  matrix3x3<T> q;
+  eigendecompose(exp_m, l, q);
+  diagonal3x3<T> const log_l(
+      std::log(l.xx()),
+      std::log(l.yy()),
+      std::log(l.zz()));
+  return multiply_a_b_at(q, log_l);
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE inline
 matrix3x3<T> polar_exponential(matrix3x3<T> const& packed)
 {
   auto const log_u = unpack_polar_axis_angle(packed);
@@ -205,5 +220,116 @@ matrix3x3<T> polar_exponential(matrix3x3<T> const& packed)
   auto const a = u * p;
   return a;
 }
+
+
+template <class T>
+P3A_HOST P3A_DEVICE inline
+void polar_rotation(matrix3x3<T> const& F, matrix3x3<T>& R, const int maxit=200)
+{
+  // Computes the tensor [R] from the polar decompositon (a special case of
+  // singular value decomposition),
+  //
+  //            F = RU = VR
+  //
+  // for a 3x3 invertible matrix F. Here, R is an orthogonal matrix and U and V
+  // are symmetric positive definite matrices.
+  //
+  // This routine determines only [R].
+  //
+  // After calling this routine, you can obtain [U] or [V] by
+  //       [U] = [R]^T [F]          and        [V] = [F] [R]^T
+  //
+  // Returns a proper rotation if det[F]>0, or an improper orthogonal tensor if
+  // det[F]<0.
+  //
+  // This routine uses an iterative algorithm, but the iterations are continued
+  // until the error is minimized relative to machine precision.  Therefore,
+  // this algorithm should be as accurate as any purely analytical method. In
+  // fact, this algorithm has been demonstrated to be MORE accurate than
+  // analytical solutions because it is less vulnerable to round-off errors.
+  //
+  // Reference for scaling method:
+  // Brannon, R M (2018) "Rotation, Reflection, and Frame Changes"
+  // http://dx.doi.org/10.1088/978-0-7503-1454-1
+  //
+  // Reference for fixed point iterator:
+  // Bjorck, A. and Bowie, C. (1971) "An iterative algorithm for computing the
+  // best estimate of an orthogonal matrix." SIAM J.  Numer. Anal., vol 8, pp.
+  // 358-364.
+  //
+  // Implementation inspired by the routine polarDecompositionRMB in the Uintah
+  // MPM framework.  There, it was found this that algorithm was faster and more
+  // robust than other analytic or iterative methods.
+
+  matrix3x3<T> const identity{
+    T(1.0), T(0.0), T(0.0),
+    T(0.0), T(1.0), T(0.0),
+    T(0.0), T(0.0), T(1.0)
+  };
+  auto const det = determinant(F);
+  if (det <= T(0.0)) {
+    throw std::logic_error("Matrix F is singular");
+  }
+
+  auto E = transpose(F) * F;
+
+  // To guarantee convergence, scale [F] by multiplying it by
+  // Sqrt[3]/magnitude[F]. The rotation for any positive multiple of [F] is the
+  // same as the rotation for [F]. Scaling [F] by a factor sqrt(3)/mag[F]
+  // requires replacing the previously computed [C] matrix by a factor
+  // 3/squareMag[F], where squareMag[F] is most efficiently computed by
+  // trace[C].  Complete computation of [E]=(1/2)([C]-[I]) with [C] now being
+  // scaled.
+  T scale = T(3.0) / trace(E);
+  E = (E * scale - identity) * T(0.5);
+
+  // First guess for [R] equal to the scaled [F] matrix,
+  // [A]=Sqrt[3]F/magnitude[F]
+  scale = std::sqrt(scale);
+  auto A = scale * F;
+
+  // The matrix [A] equals the rotation if and only if [E] equals [0]
+  T err1 = E.xx() * E.xx() + E.yy() * E.yy() + E.zz() * E.zz()
+         + T(2.0) * (E.xy() * E.xy() + E.yz() * E.yz() + E.zx() * E.zx());
+
+  // Whenever the stretch tensor is isotropic the scaling alone is sufficient to
+  // get rotation.
+  if (err1 + T(1.0) == T(1.0)) {
+    R = A;
+    return;
+  }
+
+  matrix3x3<T> X;
+  for (int it=0; it<maxit; it++)
+  {
+    X = A * (identity - E);
+    A = X;
+
+    E = (transpose(A) * A - identity) * T(0.5);
+    T err2 = E.xx() * E.xx() + E.yy() * E.yy() + E.zz() * E.zz()
+           + T(2.0) * (E.xy() * E.xy() + E.yz() * E.yz() + E.zx() * E.zx());
+
+    // If new error is smaller than old error, then keep on iterating.  If new
+    // error equals or exceeds old error, we have reached machine precision
+    // accuracy.
+    if (err2 >= err1 || err2 + T(1.0) == T(1.0))
+    {
+      R = A;
+      return;
+    }
+    err1 = err2;
+  }
+  throw std::logic_error("polar_rotation did not converge");
+}
+
+
+template <class T>
+P3A_HOST P3A_DEVICE inline
+void polar_decomp(matrix3x3<T> const& F, matrix3x3<T>& R, symmetric3x3<T>& U, const int maxit=200)
+{
+  polar_rotation(F, R, maxit);
+  U = symmetric(transpose(R) * F);
+}
+
 
 }

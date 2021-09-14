@@ -1,5 +1,5 @@
 #pragma once
-
+#include <algorithm>
 #include "p3a_identity3x3.hpp"
 #include "p3a_symmetric3x3.hpp"
 #include "p3a_diagonal3x3.hpp"
@@ -121,6 +121,22 @@ matrix3x3<T> operator+(matrix3x3<T> const& a, matrix3x3<T> const& b)
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+matrix3x3<T> operator-(matrix3x3<T> const& a, matrix3x3<T> const& b)
+{
+  return matrix3x3<T>(
+      a.xx() - b.xx(),
+      a.xy() - b.xy(),
+      a.xz() - b.xz(),
+      a.yx() - b.yx(),
+      a.yy() - b.yy(),
+      a.yz() - b.yz(),
+      a.zx() - b.zx(),
+      a.zy() - b.zy(),
+      a.zz() - b.zz());
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 matrix3x3<T> operator+(identity3x3_type, matrix3x3<T> const& b)
 {
   return matrix3x3<T>(
@@ -232,6 +248,39 @@ auto inverse(matrix3x3<T> const& m)
       A, D, G,
       B, E, H,
       C, F, I) / determinant(m);
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+matrix3x3<T> transpose(matrix3x3<T> const& m)
+{
+  return matrix3x3<T>(
+    m.xx(), m.yx(), m.zx(), m.xy(), m.yy(), m.zy(), m.xz(), m.yz(), m.zz()
+  );
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+typename std::enable_if<is_scalar<T>, T>::type
+max(matrix3x3<T> const& m)
+{
+  const T a = std::max(
+    std::max(std::max(m.xx(), m.yx()), std::max(m.zx(), m.xy())),
+    std::max(std::max(m.yy(), m.zy()), std::max(m.xz(), m.yz()))
+  );
+  return std::max(a, m.zz());
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+typename std::enable_if<is_scalar<T>, matrix3x3<T>>::type
+abs(matrix3x3<T> const& m)
+{
+  return matrix3x3<T>(
+    std::abs(m.xx()), std::abs(m.xy()), std::abs(m.xz()),
+    std::abs(m.yx()), std::abs(m.yy()), std::abs(m.yz()),
+    std::abs(m.zx()), std::abs(m.zy()), std::abs(m.zz())
+  );
 }
 
 template <class T>
@@ -417,6 +466,38 @@ template <class T>
 matrix3x3<T> operator+(scaled_identity3x3<T> const& a, matrix3x3<T> const& b)
 {
   return b + a;
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+matrix3x3<T> operator-(matrix3x3<T> const& a, scaled_identity3x3<T> const& b)
+{
+  return matrix3x3<T>(
+      a.xx() - b.xx(),
+      a.xy(),
+      a.xz(),
+      a.yx(),
+      a.yy() - b.yy(),
+      a.yz(),
+      a.zx(),
+      a.zy(),
+      a.zz() - b.zz());
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+matrix3x3<T> operator-(scaled_identity3x3<T> const& a, matrix3x3<T> const& b)
+{
+  return matrix3x3<T>(
+      a.xx() - b.xx(),
+      a.xy(),
+      a.xz(),
+      a.yx(),
+      a.yy() - b.yy(),
+      a.yz(),
+      a.zx(),
+      a.zy(),
+      a.zz() - b.zz());
 }
 
 }
