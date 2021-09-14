@@ -266,6 +266,9 @@ void polar_rotation(matrix3x3<T> const& F, matrix3x3<T>& R, const int maxit=200)
     T(0.0), T(1.0), T(0.0),
     T(0.0), T(0.0), T(1.0)
   };
+  // @daibane: interestingly, tests fail if I use the following instead of the
+  // identity matrix defined above.
+  //auto const identity = scaled_identity3x3(T(1.0));
   auto const det = determinant(F);
   if (det <= T(0.0)) {
     throw std::logic_error("Matrix F is singular");
