@@ -221,10 +221,18 @@ matrix3x3<T> polar_exponential(matrix3x3<T> const& packed)
   return a;
 }
 
+enum class polar_errc {
+  success,
+  singular,
+  no_converge
+};
 
 template <class T>
-P3A_HOST P3A_DEVICE inline
-void polar_rotation(matrix3x3<T> const& F, matrix3x3<T>& R, const int maxit=200)
+[[nodiscard]] P3A_HOST P3A_DEVICE inline
+polar_errc polar_rotation(
+    matrix3x3<T> const& F,
+    matrix3x3<T>& R,
+    const int maxit=200)
 {
   // Computes the tensor [R] from the polar decompositon (a special case of
   // singular value decomposition),
@@ -260,7 +268,6 @@ void polar_rotation(matrix3x3<T> const& F, matrix3x3<T>& R, const int maxit=200)
   // Implementation inspired by the routine polarDecompositionRMB in the Uintah
   // MPM framework.  There, it was found this that algorithm was faster and more
   // robust than other analytic or iterative methods.
-
   matrix3x3<T> const identity{
     T(1.0), T(0.0), T(0.0),
     T(0.0), T(1.0), T(0.0),
@@ -271,11 +278,9 @@ void polar_rotation(matrix3x3<T> const& F, matrix3x3<T>& R, const int maxit=200)
   //auto const identity = scaled_identity3x3(T(1.0));
   auto const det = determinant(F);
   if (det <= T(0.0)) {
-    throw std::logic_error("Matrix F is singular");
+    return polar_errc::singular;
   }
-
   auto E = transpose(F) * F;
-
   // To guarantee convergence, scale [F] by multiplying it by
   // Sqrt[3]/magnitude[F]. The rotation for any positive multiple of [F] is the
   // same as the rotation for [F]. Scaling [F] by a factor sqrt(3)/mag[F]
@@ -285,53 +290,52 @@ void polar_rotation(matrix3x3<T> const& F, matrix3x3<T>& R, const int maxit=200)
   // scaled.
   T scale = T(3.0) / trace(E);
   E = (E * scale - identity) * T(0.5);
-
   // First guess for [R] equal to the scaled [F] matrix,
   // [A]=Sqrt[3]F/magnitude[F]
   scale = std::sqrt(scale);
   auto A = scale * F;
-
   // The matrix [A] equals the rotation if and only if [E] equals [0]
   T err1 = E.xx() * E.xx() + E.yy() * E.yy() + E.zz() * E.zz()
          + T(2.0) * (E.xy() * E.xy() + E.yz() * E.yz() + E.zx() * E.zx());
-
   // Whenever the stretch tensor is isotropic the scaling alone is sufficient to
   // get rotation.
   if (err1 + T(1.0) == T(1.0)) {
     R = A;
-    return;
+    return polar_errc::success;
   }
-
   matrix3x3<T> X;
   for (int it=0; it<maxit; it++)
   {
     X = A * (identity - E);
     A = X;
-
     E = (transpose(A) * A - identity) * T(0.5);
     T err2 = E.xx() * E.xx() + E.yy() * E.yy() + E.zz() * E.zz()
            + T(2.0) * (E.xy() * E.xy() + E.yz() * E.yz() + E.zx() * E.zx());
-
     // If new error is smaller than old error, then keep on iterating.  If new
     // error equals or exceeds old error, we have reached machine precision
     // accuracy.
     if (err2 >= err1 || err2 + T(1.0) == T(1.0))
     {
       R = A;
-      return;
+      return polar_errc::success;
     }
     err1 = err2;
   }
-  throw std::logic_error("polar_rotation did not converge");
+  return polar_errc::no_converge;
 }
 
-
 template <class T>
-P3A_HOST P3A_DEVICE inline
-void polar_decomp(matrix3x3<T> const& F, matrix3x3<T>& R, symmetric3x3<T>& U, const int maxit=200)
+[[nodiscard]] P3A_HOST P3A_DEVICE inline
+polar_errc decompose_polar(
+    matrix3x3<T> const& F,
+    matrix3x3<T>& R,
+    symmetric3x3<T>& U,
+    const int maxit=200)
 {
-  polar_rotation(F, R, maxit);
+  polar_errc const e = polar_rotation(F, R, maxit);
+  if (e != polar_errc::success) return e;
   U = symmetric(transpose(R) * F);
+  return polar_errc::success;
 }
 
 
