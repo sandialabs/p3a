@@ -160,4 +160,13 @@ void store(
   return value.masked_scatter(ptr, offset, mask);
 }
 
+template <class T, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+T get(simd<T, Abi> const& value, int i)
+{
+  T storage[simd<T, Abi>::size()];
+  value.store(storage);
+  return storage[i];
+}
+
 }
