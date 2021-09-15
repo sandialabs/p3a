@@ -26,7 +26,8 @@ endif()
 
 enable_language(${p3a_LANGUAGE})
 
-if (BUILD_TESTING)
+option(p3a_ENABLE_TESTS "Build tests" OFF)
+if (p3a_ENABLE_TESTS)
   find_package(GTest REQUIRED)
 endif()
 
@@ -117,7 +118,7 @@ install(
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-if (BUILD_TESTING)
+if (p3a_ENABLE_TESTS)
   set_source_files_properties(
     p3a_unit_tests.cpp PROPERTIES LANGUAGE ${p3a_LANGUAGE})
   add_executable(p3a-unit-tests p3a_unit_tests.cpp)
