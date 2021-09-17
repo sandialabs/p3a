@@ -116,7 +116,7 @@ axis_angle<T> load_axis_angle(
 }
 
 template <class T>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
     axis_angle<T> const& aa,
     T* ptr,

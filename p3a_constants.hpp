@@ -35,7 +35,7 @@ struct minimum<double> {
 template <class T>
 struct epsilon {
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline static constexpr
-  T value() { return T(0); }
+  T value() { return T::epsilon(); }
 };
 
 template <>

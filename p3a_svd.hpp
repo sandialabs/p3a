@@ -5,6 +5,7 @@
 #include "p3a_matrix3x3.hpp"
 #include "p3a_diagonal3x3.hpp"
 #include "p3a_static_matrix.hpp"
+#include "p3a_quantity.hpp"
 
 namespace p3a {
 

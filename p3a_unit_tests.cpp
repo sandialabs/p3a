@@ -11,6 +11,7 @@
 #include "p3a_mandel3x6.hpp"
 #include "p3a_mandel6x3.hpp"
 #include "p3a_lie.hpp"
+#include "p3a_axis_angle.hpp"
 
 using namespace p3a; 
 
@@ -200,6 +201,16 @@ struct TestData {
         Cstatic(5,5)=0.4839486082408859;
     }
 };
+
+TEST(axis_angle, identity)
+{
+  matrix3x3<adimensional_quantity<double>> const r =
+    matrix3x3<adimensional_quantity<double>>::identity();
+  axis_angle<adimensional_quantity<double>> const aa(r);
+  EXPECT_FLOAT_EQ(aa.vector().x().value(), 0.0);
+  EXPECT_FLOAT_EQ(aa.vector().y().value(), 0.0);
+  EXPECT_FLOAT_EQ(aa.vector().z().value(), 0.0);
+}
 
 /**************************************************************************
  * Test Mandel Inverses:

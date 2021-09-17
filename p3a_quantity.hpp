@@ -51,6 +51,11 @@ class quantity {
   {
     return quantity(minimum_value<T>());
   }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  quantity epsilon()
+  {
+    return quantity(epsilon_value<T>());
+  }
 };
 
 template <class T>
