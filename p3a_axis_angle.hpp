@@ -81,7 +81,7 @@ class axis_angle {
     // convert quaternion to axis-angle
     auto const divisor = square_root(T(1.0) - square(q0));
     auto constexpr epsilon = epsilon_value<T>();
-    if (divisor < epsilon) {
+    if (divisor <= epsilon) {
       m_vector = vector3<T>::zero();
     } else {
       auto const factor = T(2.0) * arccos(q0) / divisor;
