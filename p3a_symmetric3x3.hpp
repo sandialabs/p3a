@@ -76,6 +76,13 @@ class symmetric3x3 {
         T(0), T(0), T(0),
         T(0), T(0), T(0));
   }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  symmetric3x3 identity()
+  {
+    return symmetric3x3<T>(
+        T(1), T(0), T(0),
+        T(1), T(0), T(1));
+  }
 };
 
 template <class T>
@@ -269,5 +276,32 @@ auto outer_product(vector3<T> const& a)
 }
 
 inline int constexpr symmetric3x3_component_count = 6;
+
+template <class T>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+symmetric3x3<T> load_symmetric3x3(T const* ptr, int stride, int offset)
+{
+  return symmetric3x3<T>(
+      load(ptr, 0 * stride + offset),
+      load(ptr, 1 * stride + offset),
+      load(ptr, 2 * stride + offset),
+      load(ptr, 3 * stride + offset),
+      load(ptr, 4 * stride + offset),
+      load(ptr, 5 * stride + offset));
+}
+
+template <class T>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
+    symmetric3x3<T> const& value,
+    T* ptr, int stride, int offset)
+{
+  store(value.xx(), ptr, 0 * stride + offset);
+  store(value.xy(), ptr, 1 * stride + offset);
+  store(value.xz(), ptr, 2 * stride + offset);
+  store(value.yy(), ptr, 3 * stride + offset);
+  store(value.yz(), ptr, 4 * stride + offset);
+  store(value.zz(), ptr, 5 * stride + offset);
+}
 
 }

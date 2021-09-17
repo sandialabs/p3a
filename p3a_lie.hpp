@@ -10,94 +10,6 @@
 
 namespace p3a {
 
-/* Markley, F. Landis.
-   "Unit quaternion from rotation matrix."
-   Journal of guidance, control, and dynamics 31.2 (2008): 440-442.
-
-   Modified Shepperd's algorithm to handle input
-   tensors that may not be exactly orthogonal */
-
-// logarithm of a rotation tensor in Special Orthogonal Group(3), as the
-// the axis of rotation times the angle of rotation.
-
-template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
-vector3<T> axis_angle_from_tensor(matrix3x3<T> const& R)
-{
-  T const trR = trace(R);
-  T maxm = trR;
-  int maxi = 3;
-  if (R.xx() > maxm) {
-    maxm = R.xx();
-    maxi = 0;
-  }
-  if (R.yy() > maxm) {
-    maxm = R.yy();
-    maxi = 1;
-  }
-  if (R.zz() > maxm) {
-    maxm = R.zz();
-    maxi = 2;
-  }
-  T q0, q1, q2, q3; // quaternion components
-  if (maxi == 0) {
-    q1 = T(1.0) + R.xx() - R.yy() - R.zz();
-    q2 = R.xy() + R.yx();
-    q3 = R.xz() + R.zx();
-    q0 = R.zy() - R.yz();
-  } else if (maxi == 1) {
-    q1 = R.yx() + R.xy();
-    q2 = T(1.0) + R.yy() - R.zz() - R.xx();
-    q3 = R.yz() + R.zy();
-    q0 = R.xz() - R.zx();
-  } else if (maxi == 2) {
-    q1 = R.zx() + R.xz();
-    q2 = R.zy() + R.yz();
-    q3 = T(1.0) + R.zz() - R.xx() - R.yy();
-    q0 = R.yx() - R.xy();
-  } else if (maxi == 3) {
-    q1 = R.zy() - R.yz();
-    q2 = R.xz() - R.zx();
-    q3 = R.yx() - R.xy();
-    q0 = T(1.0) + trR;
-  }
-  auto const qnorm =
-    square_root(
-        square(q0) +
-        square(q1) +
-        square(q2) +
-        square(q3));
-  q0 /= qnorm;
-  q1 /= qnorm;
-  q2 /= qnorm;
-  q3 /= qnorm;
-  // convert quaternion to axis-angle
-  auto const divisor = square_root(T(1.0) - square(q0));
-  auto constexpr epsilon = epsilon_value<T>();
-  if (divisor < epsilon) {
-    return vector3<T>::zero();
-  } else {
-    auto const factor = T(2.0) * arccos(q0) / divisor;
-    return vector3<T>(
-        q1 * factor,
-        q2 * factor,
-        q3 * factor);
-  }
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
-matrix3x3<T> tensor_from_axis_angle(vector3<T> const& aa)
-{
-  auto const halfnorm = T(0.5) * length(aa);
-  auto const temp = T(0.5) * sin_x_over_x(halfnorm);
-  auto const qv = temp * aa;
-  auto const qs = std::cos(halfnorm);
-  return T(2.0) * outer_product(qv) +
-         T(2.0) * qs * cross_product_matrix(qv) +
-         (T(2.0) * square(qs) - T(1.0)) * identity3x3;
-}
-
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 matrix3x3<T> pack_polar(
@@ -337,6 +249,5 @@ polar_errc decompose_polar(
   U = symmetric(transpose(R) * F);
   return polar_errc::success;
 }
-
 
 }

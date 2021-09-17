@@ -142,6 +142,18 @@ double arccos(double a)
   return std::acos(a);
 }
 
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+double sin(double a)
+{
+  return std::sin(a);
+}
+
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+double cos(double a)
+{
+  return std::cos(a);
+}
+
 template <typename T>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
 void swap(T& t1, T& t2) {
@@ -171,11 +183,11 @@ T sin_x_over_x(T const& x) {
   auto const e2 = square_root(epsilon);
   auto const e4 = square_root(e2);
   if (y > e4) {
-    return std::sin(y) / y;
+    return sin(y) / y;
   } else if (y > e2) {
-    return 1.0 - y * y / 6.0;
+    return T(1.0) - (y * y) / T(6.0);
   } else {
-    return 1.0;
+    return T(1.0);
   }
 }
 

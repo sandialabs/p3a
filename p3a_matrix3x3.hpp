@@ -387,6 +387,38 @@ auto operator*(
 }
 
 template <class A, class B>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+auto operator*(
+    symmetric3x3<A> const& a,
+    matrix3x3<B> const& b)
+{
+  using C = decltype(a.xx() * b.xx());
+  return matrix3x3<C>(
+      a.xx() * b.xx() + a.xy() * b.yx() + a.xz() * b.zx(),
+      a.xx() * b.xy() + a.xy() * b.yy() + a.xz() * b.zy(),
+      a.xx() * b.xz() + a.xy() * b.yz() + a.xz() * b.zz(),
+      a.yx() * b.xx() + a.yy() * b.yx() + a.yz() * b.zx(),
+      a.yx() * b.xy() + a.yy() * b.yy() + a.yz() * b.zy(),
+      a.yx() * b.xz() + a.yy() * b.yz() + a.yz() * b.zz(),
+      a.zx() * b.xx() + a.zy() * b.yx() + a.zz() * b.zx(),
+      a.zx() * b.xy() + a.zy() * b.yy() + a.zz() * b.zy(),
+      a.zx() * b.xz() + a.zy() * b.yz() + a.zz() * b.zz());
+}
+
+template <class A, class B>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+auto operator*(
+    matrix3x3<A> const& a,
+    diagonal3x3<B> const& b)
+{
+  using C = decltype(a.xx() * b.xx());
+  return matrix3x3<C>(
+      a.xx() * b.xx(), a.xy() * b.yy(), a.xz() * b.zz(),
+      a.yx() * b.xx(), a.yy() * b.yy(), a.yz() * b.zz(),
+      a.zx() * b.xx(), a.zy() * b.yy(), a.zz() * b.zz());
+}
+
+template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<B>, matrix3x3<decltype(A() * B())>>::type
 operator*(
