@@ -68,6 +68,13 @@ class vector3 {
   {
     return vector3(T(1), T(1), T(1));
   }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  vector3 axis(int i)
+  {
+    if (i == 0) return vector3(T(1), T(0), T(0));
+    if (i == 1) return vector3(T(0), T(1), T(0));
+    return vector3(T(0), T(0), T(1));
+  }
   template <class U>
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
   vector3& operator=(vector3<U> const& other)
