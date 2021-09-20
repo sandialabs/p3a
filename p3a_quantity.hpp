@@ -609,16 +609,16 @@ adimensional_quantity<T> arccos(adimensional_quantity<T> const& a)
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
-adimensional_quantity<T> sin(adimensional_quantity<T> const& a)
+adimensional_quantity<T> sine(adimensional_quantity<T> const& a)
 {
-  return adimensional_quantity<T>(p3a::sin(a.value()));
+  return adimensional_quantity<T>(p3a::sine(a.value()));
 }
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
-adimensional_quantity<T> cos(adimensional_quantity<T> const& a)
+adimensional_quantity<T> cosine(adimensional_quantity<T> const& a)
 {
-  return adimensional_quantity<T>(p3a::cos(a.value()));
+  return adimensional_quantity<T>(p3a::cosine(a.value()));
 }
 
 template <class T>

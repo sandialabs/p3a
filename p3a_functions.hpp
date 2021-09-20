@@ -143,13 +143,13 @@ double arccos(double a)
 }
 
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
-double sin(double a)
+double sine(double a)
 {
   return std::sin(a);
 }
 
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
-double cos(double a)
+double cosine(double a)
 {
   return std::cos(a);
 }
@@ -183,7 +183,7 @@ T sin_x_over_x(T const& x) {
   auto const e2 = square_root(epsilon);
   auto const e4 = square_root(e2);
   if (y > e4) {
-    return sin(y) / y;
+    return sine(y) / y;
   } else if (y > e2) {
     return T(1.0) - (y * y) / T(6.0);
   } else {
