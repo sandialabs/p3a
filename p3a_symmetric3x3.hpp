@@ -1,5 +1,8 @@
 #pragma once
 
+#ifdef P3A_DEBUG
+#include <stdexcept>
+#endif
 #include "p3a_macros.hpp"
 #include "p3a_scaled_identity3x3.hpp"
 #include "p3a_diagonal3x3.hpp"
@@ -268,10 +271,10 @@ auto operator*(symmetric3x3<A> const& a, symmetric3x3<B> const& b)
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-symmetric3x3<T> isotropic_part(symmetric3x3<T> const& a)
+scaled_identity3x3<T> isotropic_part(symmetric3x3<T> const& a)
 {
   auto const d = trace(a) / T(3.);
-  return symmetric3x3<T>(d, T(0.0), T(0.0), d, T(0.0), d);
+  return scaled_identity3x3<T>(d);
 }
 
 template <class T>
@@ -313,10 +316,10 @@ auto inverse(symmetric3x3<T> const& a)
 {
   auto const det = determinant(a);
   T constexpr epsilon = std::numeric_limits<T>::epsilon();
+#ifdef P3A_DEBUG
   if (std::abs(det) <= epsilon)
-  {
     throw std::logic_error("non-invertible matrix");
-  }
+#endif
   auto const xx = +(a.yy() * a.zz() - a.yz() * a.yz());
   auto const xy = -(a.xy() * a.zz() - a.yz() * a.xz());
   auto const xz = +(a.xy() * a.yz() - a.yy() * a.xz());
