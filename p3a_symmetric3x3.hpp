@@ -315,8 +315,8 @@ template <class T>
 auto inverse(symmetric3x3<T> const& a)
 {
   auto const det = determinant(a);
-  T constexpr epsilon = std::numeric_limits<T>::epsilon();
 #ifdef P3A_DEBUG
+  T constexpr epsilon = std::numeric_limits<T>::epsilon();
   if (std::abs(det) <= epsilon)
     throw std::logic_error("non-invertible matrix");
 #endif
