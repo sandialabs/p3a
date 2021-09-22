@@ -12,3 +12,4 @@ set(p3a_ARCHITECTURES @p3a_ARCHITECTURES@)
 
 include(CMakeFindDependencyMacro)
 find_dependency(MPI)
+find_dependency(Kokkos)
