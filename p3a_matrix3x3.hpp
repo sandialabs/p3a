@@ -223,7 +223,7 @@ auto determinant(matrix3x3<T> const& m)
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto inverse(matrix3x3<T> const& m)
+auto adjugate(matrix3x3<T> const& m)
 {
   T const& a = m.xx();
   T const& b = m.xy();
@@ -247,7 +247,14 @@ auto inverse(matrix3x3<T> const& m)
   return matrix3x3<result_type>(
       A, D, G,
       B, E, H,
-      C, F, I) / determinant(m);
+      C, F, I);
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto inverse(matrix3x3<T> const& m)
+{
+  return adjugate(m) / determinant(m);
 }
 
 template <class T>

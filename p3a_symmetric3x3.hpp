@@ -312,14 +312,8 @@ T determinant(symmetric3x3<T> const& a)
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
-auto inverse(symmetric3x3<T> const& a)
+auto adjugate(symmetric3x3<T> const& a)
 {
-  auto const det = determinant(a);
-#ifdef P3A_DEBUG
-  T constexpr epsilon = std::numeric_limits<T>::epsilon();
-  if (std::abs(det) <= epsilon)
-    throw std::logic_error("non-invertible matrix");
-#endif
   auto const xx = +(a.yy() * a.zz() - a.yz() * a.yz());
   auto const xy = -(a.xy() * a.zz() - a.yz() * a.xz());
   auto const xz = +(a.xy() * a.yz() - a.yy() * a.xz());
@@ -327,7 +321,14 @@ auto inverse(symmetric3x3<T> const& a)
   auto const yz = -(a.xx() * a.yz() - a.xy() * a.xz());
   auto const zz = +(a.xx() * a.yy() - a.xy() * a.xy());
   using result_type = std::remove_const_t<decltype(xx)>;
-  return symmetric3x3<result_type>(xx, xy, xz, yy, yz, zz) / det;
+  return symmetric3x3<result_type>(xx, xy, xz, yy, yz, zz);
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto inverse(symmetric3x3<T> const& a)
+{
+  return adjugate(a) / determinant(a);
 }
 
 template <class T>
