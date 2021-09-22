@@ -215,7 +215,7 @@ auto normalize(vector2<T> const& a) {
 }
 
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 vector2<T> load_vector2(
     T const* ptr, int stride, int offset)
 {
@@ -225,7 +225,7 @@ vector2<T> load_vector2(
 }
 
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
     vector2<T> const& value,
     T* ptr, int stride, int offset)
