@@ -1,8 +1,12 @@
 #pragma once
 
+#ifdef P3A_DEBUG
+#include <stdexcept>
+#endif
 #include "p3a_macros.hpp"
 #include "p3a_scaled_identity3x3.hpp"
 #include "p3a_diagonal3x3.hpp"
+#include "p3a_vector3.hpp"
 
 namespace p3a {
 
@@ -251,6 +255,36 @@ auto operator*(symmetric3x3<A> const& a, vector3<B> const& b)
 }
 
 template <class A, class B>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto operator*(symmetric3x3<A> const& a, symmetric3x3<B> const& b)
+{
+  using C = decltype(a.xx() * b.xx());
+  return symmetric3x3<C>(
+    a.xx() * b.xx() + a.xy() * b.xy() + a.xz() * b.xz(),
+    a.xx() * b.xy() + a.xy() * b.yy() + a.xz() * b.yz(),
+    a.xx() * b.xz() + a.xy() * b.yz() + a.xz() * b.zz(),
+    a.xy() * b.xy() + a.yy() * b.yy() + a.yz() * b.yz(),
+    a.xy() * b.xz() + a.yy() * b.yz() + a.yz() * b.zz(),
+    a.xz() * b.xz() + a.yz() * b.yz() + a.zz() * b.zz()
+  );
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+scaled_identity3x3<T> isotropic_part(symmetric3x3<T> const& a)
+{
+  auto const d = trace(a) / T(3.);
+  return scaled_identity3x3<T>(d);
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+symmetric3x3<T> deviatoric_part(symmetric3x3<T> const& a)
+{
+  return a - isotropic_part(a);
+}
+
+template <class A, class B>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto frobenius_inner_product(
     symmetric3x3<A> const& a, symmetric3x3<B> const& b)
@@ -262,6 +296,38 @@ auto frobenius_inner_product(
        a.yy() * b.yy() +
        2 * a.yz() * b.yz() +
        a.zz() * b.zz();
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+T determinant(symmetric3x3<T> const& a)
+{
+  return
+    a.xx() * a.yy() * a.zz() -
+    a.xx() * a.yz() * a.yz() -
+    a.xy() * a.xy() * a.zz() +
+    T(2.0) * a.xy() * a.xz() * a.yz() -
+    a.xz() * a.xz() * a.yy();
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto inverse(symmetric3x3<T> const& a)
+{
+  auto const det = determinant(a);
+#ifdef P3A_DEBUG
+  T constexpr epsilon = std::numeric_limits<T>::epsilon();
+  if (std::abs(det) <= epsilon)
+    throw std::logic_error("non-invertible matrix");
+#endif
+  auto const xx = +(a.yy() * a.zz() - a.yz() * a.yz());
+  auto const xy = -(a.xy() * a.zz() - a.yz() * a.xz());
+  auto const xz = +(a.xy() * a.yz() - a.yy() * a.xz());
+  auto const yy = +(a.xx() * a.zz() - a.xz() * a.xz());
+  auto const yz = -(a.xx() * a.yz() - a.xy() * a.xz());
+  auto const zz = +(a.xx() * a.yy() - a.xy() * a.xy());
+  using result_type = std::remove_const_t<decltype(xx)>;
+  return symmetric3x3<result_type>(xx, xy, xz, yy, yz, zz) / det;
 }
 
 template <class T>
