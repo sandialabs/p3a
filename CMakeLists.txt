@@ -11,7 +11,7 @@ option(p3a_ENABLE_AVX512 "Enable AVX-512" OFF)
 set(p3a_ARCHITECTURES "" CACHE STRING "GPU architectures (either CUDA_ARCHITECTURES or HIP_ARCHITECTURES)")
 
 find_package(MPI REQUIRED)
-find_package(Kokkos REQUIRED)
+find_package(Kokkos REQUIRED COMPONENTS separable_compilation)
 
 set(p3a_ENABLE_CUDA "${Kokkos_ENABLE_CUDA}")
 set(p3a_ENABLE_HIP "${Kokkos_ENABLE_HIP}")
