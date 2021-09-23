@@ -191,6 +191,7 @@ __device__ P3A_ALWAYS_INLINE T cuda_shuffle_down(T element, unsigned int delta)
     memcpy(&element, &helper, sizeof(T));
     return element;
   }
+  return element;
 }
 
 template <class ForwardIt, class T, class BinaryOp, class UnaryOp>
