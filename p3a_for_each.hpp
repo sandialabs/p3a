@@ -6,6 +6,7 @@
 #include "p3a_functions.hpp"
 #include "p3a_grid3.hpp"
 #include "p3a_simd.hpp"
+#include "p3a_counting_iterator.hpp"
 
 namespace p3a {
 
@@ -22,12 +23,12 @@ void for_each(
   }
 }
 
-template <class ForwardIt, class UnaryFunction>
+template <class Integral, class UnaryFunction>
 P3A_NEVER_INLINE
 void for_each(
     serial_execution,
-    ForwardIt first,
-    ForwardIt last,
+    counting_iterator<Integral> first,
+    counting_iterator<Integral> last,
     UnaryFunction f)
 {
   for (; first != last; ++first) {
@@ -35,20 +36,57 @@ void for_each(
   }
 }
 
+template <class ForwardIt, class UnaryFunction>
+P3A_NEVER_INLINE
+void for_each(
+    serial_execution policy,
+    ForwardIt first,
+    ForwardIt last,
+    UnaryFunction f)
+{
+  auto const n = 
+  using integral_type = std::remove_const_t<decltype(n)>;
+  for_each(policy,
+      counting_iterator<integral_type>(0),
+      counting_iterator<integral_type>(n),
+      [=] (integral_type i) P3A_ALWAYS_INLINE {
+        f(first[i]);
+      });
+}
+
 #ifdef __CUDACC__
 
 namespace details {
 
-template <class F, class ForwardIt>
+template <class F, class Integral>
 __global__
-void cuda_for_each(F f, ForwardIt first, ForwardIt last) {
-  using difference_type = typename std::iterator_traits<ForwardIt>::difference_type;
-  auto const i = static_cast<difference_type>(
+void cuda_for_each(F f, Integral first, Integral last) {
+  auto const i = first + static_cast<Integral>(
           threadIdx.x + blockIdx.x * blockDim.x);
-  ForwardIt const it = first + i;
-  if (it < last) f(*it);
+  if (i < last) f(i);
 }
 
+}
+
+template <class Integral, class UnaryFunction>
+P3A_NEVER_INLINE
+void for_each(
+    cuda_execution policy,
+    counting_iterator<Integral> first,
+    counting_iterator<Integral> last,
+    UnaryFunction f)
+{
+  Integral const n = last - first;
+  if (n == 0) return;
+  dim3 const cuda_block(32, 1, 1);
+  dim3 const cuda_grid(ceildiv(unsigned(n), cuda_block.x), 1, 1);
+  std::size_t const shared_memory_bytes = 0;
+  cudaStream_t const cuda_stream = nullptr;
+  details::cuda_for_each<<<
+    cuda_grid,
+    cuda_block,
+    shared_memory_bytes,
+    cuda_stream>>>(f, *first, *last);
 }
 
 template <class ForwardIt, class UnaryFunction>
@@ -60,23 +98,20 @@ void for_each(
     UnaryFunction f)
 {
   auto const n = last - first;
-  if (n == 0) return;
-  dim3 const cuda_block(32, 1, 1);
-  dim3 const cuda_grid(ceildiv(unsigned(n), cuda_block.x), 1, 1);
-  std::size_t const shared_memory_bytes = 0;
-  cudaStream_t const cuda_stream = nullptr;
-  details::cuda_for_each<<<
-    cuda_grid,
-    cuda_block,
-    shared_memory_bytes,
-    cuda_stream>>>(f, first, last);
+  using integral_type = std::remove_const_t<decltype(n)>;
+  for_each(policy,
+      counting_iterator<integral_type>(0),
+      counting_iterator<integral_type>(n),
+  [=] __device__ (integral_type i) P3A_ALWAYS_INLINE {
+    f(first[i]);
+  });
 }
 
 template <class ForwardIt, class UnaryFunction>
 P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 void for_each(
     cuda_local_execution,
-    ForwardIt first,
+    ForwardIt const& first,
     ForwardIt const& last,
     UnaryFunction const& f)
 {
@@ -91,24 +126,22 @@ void for_each(
 
 namespace details {
 
-template <class F, class ForwardIt>
+template <class F, class Integral>
 __global__
-void hip_for_each(F f, ForwardIt first, ForwardIt last) {
-  using difference_type = typename std::iterator_traits<ForwardIt>::difference_type;
-  auto const i = static_cast<difference_type>(
+void hip_for_each(F f, Integral first, Integral last) {
+  auto const i = first + static_cast<Integral>(
           hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x);
-  ForwardIt const it = first + i;
-  if (it < last) f(*it);
+  if (i < last) f(i);
 }
 
 }
 
-template <class ForwardIt, class UnaryFunction>
+template <class Integral, class UnaryFunction>
 P3A_NEVER_INLINE
 void for_each(
     hip_execution policy,
-    ForwardIt first,
-    ForwardIt last,
+    counting_iterator<Integral> first,
+    counting_iterator<Integral> last,
     UnaryFunction f)
 {
   auto const n = last - first;
@@ -124,8 +157,26 @@ void for_each(
       shared_memory_bytes,
       hip_stream,
       f,
-      first,
-      last);
+      *first,
+      *last);
+}
+
+template <class ForwardIt, class UnaryFunction>
+P3A_NEVER_INLINE
+void for_each(
+    hip_execution policy,
+    ForwardIt first,
+    ForwardIt last,
+    UnaryFunction f)
+{
+  auto const n = last - first;
+  using integral_type = std::remove_const_t<decltype(n)>;
+  for_each(policy,
+      counting_iterator<integral_type>(0),
+      counting_iterator<integral_type>(n),
+  [=] __device__ (integral_type i) P3A_ALWAYS_INLINE {
+    f(first[i]);
+  });
 }
 
 template <class ForwardIt, class UnaryFunction>
@@ -143,6 +194,12 @@ void for_each(
 
 #endif
 
+template <class Integral>
+class counting_iterator3 {
+ public:
+  vector3<Integral> vector;
+};
+
 template <class Functor>
 P3A_ALWAYS_INLINE constexpr void for_each(
     serial_local_execution,
@@ -158,41 +215,98 @@ P3A_ALWAYS_INLINE constexpr void for_each(
   }
 }
 
-template <class Functor>
+template <class Functor, class Integral>
 P3A_NEVER_INLINE void for_each(
     serial_execution,
+    counting_iterator3<Integral> first,
+    counting_iterator3<Integral> last,
+    Functor functor)
+{
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
+        functor(vector3<Integral>(i, j, k));
+      }
+    }
+  }
+}
+
+template <class Functor>
+P3A_NEVER_INLINE void for_each(
+    serial_execution policy,
+    subgrid3 subgrid,
+    Functor functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
+}
+
+template <class Functor>
+P3A_NEVER_INLINE void for_each(
+    serial_execution policy,
     grid3 grid,
     Functor functor)
 {
-  for (int k = 0; k < grid.extents().z(); ++k) {
-    for (int j = 0; j < grid.extents().y(); ++j) {
-      for (int i = 0; i < grid.extents().x(); ++i) {
-        functor(vector3<int>(i, j, k));
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
+}
+
+template <class T, class Integral>
+P3A_NEVER_INLINE void simd_for_each(
+    serial_execution,
+    counting_iterator3<Integral> first,
+    counting_iterator3<Integral> last,
+    Functor functor)
+{
+  using mask_type = host_simd_mask<T>;
+  Integral constexpr width = Integral(mask_type::size());
+  vector3<Integral> const extents = last.vector - first.vector;
+  Integral const quotient = extents.x() / width;
+  Integral const remainder = extents.x() % width;
+  mask_type const all_mask(true);
+  mask_type const remainder_mask = mask_type::first_n(remainder);
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = 0; i < quotient; ++i) {
+        functor(
+            vector3<Integral>(
+              first.vector.x() + i * width, j, k),
+            all_mask);
       }
+      functor(
+          vector3<Integral>(
+            first.vector.x() + quotient * width, j, k),
+          remainder_mask);
     }
   }
 }
 
 template <class T, class Functor>
 P3A_NEVER_INLINE void simd_for_each(
-    serial_execution,
+    serial_execution policy,
+    subgrid3 subgrid,
+    Functor functor)
+{
+  simd_for_each<T>(policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
+}
+
+template <class T, class Functor>
+P3A_NEVER_INLINE void simd_for_each(
+    serial_execution policy,
     grid3 grid,
     Functor functor)
 {
-  using mask_type = host_simd_mask<T>;
-  constexpr int width = mask_type::size();
-  int const quotient = grid.extents().x() / width;
-  int const remainder = grid.extents().x() % width;
-  mask_type const all_mask(true);
-  mask_type const remainder_mask = mask_type::first_n(remainder);
-  for (int k = 0; k < grid.extents().z(); ++k) {
-    for (int j = 0; j < grid.extents().y(); ++j) {
-      for (int i = 0; i < quotient; ++i) {
-        functor(vector3<int>(i * width, j, k), all_mask);
-      }
-      functor(vector3<int>(quotient * width, j, k), remainder_mask);
-    }
-  }
+  simd_for_each<T>(policy,
+      counting_iterator3<int>{vector<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
 }
 
 #ifdef __CUDACC__
@@ -440,49 +554,6 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
 }
 
 #endif
-
-template <class Functor>
-P3A_NEVER_INLINE void for_each(
-    serial_execution,
-    subgrid3 subgrid,
-    Functor functor)
-{
-  for (int k = subgrid.lower().z(); k < subgrid.upper().z(); ++k) {
-    for (int j = subgrid.lower().y(); j < subgrid.upper().y(); ++j) {
-      for (int i = subgrid.lower().x(); i < subgrid.upper().x(); ++i) {
-        functor(vector3<int>(i, j, k));
-      }
-    }
-  }
-}
-
-template <class T, class Functor>
-P3A_NEVER_INLINE void simd_for_each(
-    serial_execution,
-    subgrid3 subgrid,
-    Functor functor)
-{
-  using mask_type = host_simd_mask<T>;
-  constexpr int width = mask_type::size();
-  int const quotient = subgrid.extents().x() / width;
-  int const remainder = subgrid.extents().x() % width;
-  mask_type const all_mask(true);
-  mask_type const remainder_mask = mask_type::first_n(remainder);
-  for (int k = subgrid.lower().z(); k < subgrid.upper().z(); ++k) {
-    for (int j = subgrid.lower().y(); j < subgrid.upper().y(); ++j) {
-      for (int i = 0; i < quotient; ++i) {
-        functor(
-            vector3<int>(
-              subgrid.lower().x() + i * width, j, k),
-            all_mask);
-      }
-      functor(
-          vector3<int>(
-            subgrid.lower().x() + quotient * width, j, k),
-          remainder_mask);
-    }
-  }
-}
 
 template <class Functor>
 P3A_ALWAYS_INLINE constexpr void for_each(
