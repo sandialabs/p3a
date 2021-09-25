@@ -95,7 +95,7 @@ class axis_angle {
     auto const halfnorm = T(0.5) * length(m_vector);
     auto const temp = T(0.5) * sin_x_over_x(halfnorm);
     auto const qv = temp * m_vector;
-    auto const qs = p3a::cosine(halfnorm);
+    auto const qs = cosine(halfnorm);
     return T(2.0) * outer_product(qv) +
            T(2.0) * qs * cross_product_matrix(qv) +
            (T(2.0) * square(qs) - T(1.0)) * identity3x3;
@@ -103,6 +103,12 @@ class axis_angle {
 
   [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   vector3<T> const& vector() const { return m_vector; }
+
+  [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static constexpr
+  axis_angle zero()
+  {
+    return axis_angle(vector3<T>::zero());
+  }
 };
 
 template <class T>
@@ -124,6 +130,16 @@ void store(
     int offset)
 {
   store(aa.vector(), ptr, stride, offset);
+}
+
+template <class T, class Mask>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+axis_angle<T> condition(
+    Mask const& a,
+    axis_angle<T> const& b,
+    axis_angle<T> const& c)
+{
+  return axis_angle<T>(condition(a, b.vector(), c.vector()));
 }
 
 }

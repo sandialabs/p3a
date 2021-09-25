@@ -371,4 +371,21 @@ void store(
   store(value.zz(), ptr, 5 * stride + offset);
 }
 
+template <class T, class Mask>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+symmetric3x3<T>
+condition(
+    Mask const& a,
+    symmetric3x3<T> const& b,
+    symmetric3x3<T> const& c)
+{
+  return symmetric3x3<T>(
+      condition(a, b.xx(), c.xx()),
+      condition(a, b.xy(), c.xy()),
+      condition(a, b.xz(), c.xz()),
+      condition(a, b.yy(), c.yy()),
+      condition(a, b.yz(), c.yz()),
+      condition(a, b.zz(), c.zz()));
+}
+
 }

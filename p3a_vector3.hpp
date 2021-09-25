@@ -303,4 +303,17 @@ void store(
   store(value.z(), ptr, 2 * stride + offset, mask);
 }
 
+template <class T, class Mask>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+vector3<T> condition(
+    Mask const& a,
+    vector3<T> const& b,
+    vector3<T> const& c)
+{
+  return vector3<T>(
+      condition(a, b.x(), c.x()),
+      condition(a, b.y(), c.y()),
+      condition(a, b.z(), c.z()));
+}
+
 }

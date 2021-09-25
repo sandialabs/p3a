@@ -60,4 +60,12 @@ operator*(
   return scaled_identity3x3<decltype(a * b.scale())>(a * b.scale());
 }
 
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+scaled_identity3x3<T>
+operator-(scaled_identity3x3<T> const& a)
+{
+  return scaled_identity3x3<T>(-a.scale());
+}
+
 }

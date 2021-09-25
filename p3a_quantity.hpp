@@ -4,6 +4,7 @@
 #include "p3a_vector3.hpp"
 #include "p3a_symmetric3x3.hpp"
 #include "p3a_matrix3x3.hpp"
+#include "p3a_axis_angle.hpp"
 #include "p3a_simd.hpp"
 
 namespace p3a {
@@ -362,6 +363,14 @@ auto square_root(quantity<T, Dimension> const& a)
 
 template <class T, class Dimension>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+auto cube_root(quantity<T, Dimension> const& a)
+{
+  using result_dimension = dimension_root<Dimension, 3>;
+  return quantity<T, result_dimension>(cube_root(a.value()));
+}
+
+template <class T, class Dimension>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
 quantity<T, Dimension> absolute_value(quantity<T, Dimension> const& a)
 {
   return quantity<T, Dimension>(absolute_value(a.value()));
@@ -537,6 +546,30 @@ void store(
   q.zx().value().masked_store(&(ptr->value()) + stride * 6 + offset, mask);
   q.zy().value().masked_store(&(ptr->value()) + stride * 7 + offset, mask);
   q.zz().value().masked_store(&(ptr->value()) + stride * 8 + offset, mask);
+}
+
+template <class T, class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+axis_angle<adimensional_quantity<simd<T, Abi>>> load_axis_angle(
+    adimensional_quantity<T> const* ptr,
+    int stride,
+    int offset,
+    simd_mask<T, Abi> const& mask)
+{
+  return axis_angle<adimensional_quantity<simd<T, Abi>>>(
+      load_vector3(ptr, stride, offset, mask));
+}
+
+template <class T, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
+    axis_angle<adimensional_quantity<simd<T, Abi>>> const& aa,
+    adimensional_quantity<T>* ptr,
+    int stride,
+    int offset,
+    simd_mask<T, Abi> const& mask)
+{
+  store(aa.vector(), ptr, stride, offset, mask);
 }
 
 template <class T, class Dimension, class Abi>
