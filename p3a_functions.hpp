@@ -54,6 +54,12 @@ double square_root(double a)
 }
 
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+double cube_root(double a)
+{
+  return std::cbrt(a);
+}
+
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
 double natural_exponential(double a)
 {
   return std::exp(a);
