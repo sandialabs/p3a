@@ -44,7 +44,7 @@ void for_each(
     ForwardIt last,
     UnaryFunction f)
 {
-  auto const n = 
+  auto const n = last - first;
   using integral_type = std::remove_const_t<decltype(n)>;
   for_each(policy,
       counting_iterator<integral_type>(0),
@@ -280,7 +280,7 @@ P3A_NEVER_INLINE void for_each(
       functor);
 }
 
-template <class T, class Integral>
+template <class T, class Functor, class Integral>
 P3A_NEVER_INLINE void simd_for_each(
     serial_execution,
     counting_iterator3<Integral> first,
@@ -329,7 +329,7 @@ P3A_NEVER_INLINE void simd_for_each(
     Functor functor)
 {
   simd_for_each<T>(policy,
-      counting_iterator3<int>{vector<int>::zero()},
+      counting_iterator3<int>{vector3<int>::zero()},
       counting_iterator3<int>{grid.extents()},
       functor);
 }
@@ -449,7 +449,10 @@ void for_each(
     subgrid3 grid,
     F f)
 {
-  details::grid_for_each(policy, grid.lower(), grid.upper(), f);
+  details::grid_for_each(policy,
+      counting_iterator3<int>{grid.lower()},
+      counting_iterator3<int>{grid.upper()},
+      f);
 }
 
 template <class T, class F>
@@ -459,7 +462,10 @@ void simd_for_each(
     subgrid3 grid,
     F f)
 {
-  details::simd_grid_for_each<T>(policy, grid.lower(), grid.upper(), f);
+  details::simd_grid_for_each<T>(policy,
+      counting_iterator3<int>{grid.lower()},
+      counting_iterator3<int>{grid.upper()},
+      f);
 }
 
 template <class Functor, class Integral>
@@ -469,9 +475,9 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
     counting_iterator3<Integral> const& last,
     Functor const& functor)
 {
-  for (Integral k = first.z(); k < last.z(); ++k) {
-    for (Integral j = first.y(); j < last.y(); ++j) {
-      for (Integral i = first.x(); i < last.x(); ++i) {
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
         functor(vector3<Integral>(i, j, k));
       }
     }
@@ -492,7 +498,7 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
 
 template <class Functor>
 __device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    cuda_local_execution,
+    cuda_local_execution policy,
     grid3 const& grid,
     Functor const& functor)
 {
@@ -601,7 +607,10 @@ void for_each(
     grid3 grid,
     F f)
 {
-  details::grid_for_each(policy, vector3<int>::zero(), grid.extents(), f);
+  details::grid_for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      f);
 }
 
 template <class T, class F>
@@ -611,7 +620,10 @@ void simd_for_each(
     grid3 grid,
     F f)
 {
-  details::simd_grid_for_each<T>(policy, vector3<int>::zero(), grid.extents(), f);
+  details::simd_grid_for_each<T>(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      f);
 }
 
 template <class F>
@@ -621,7 +633,10 @@ void for_each(
     subgrid3 grid,
     F f)
 {
-  details::grid_for_each(policy, grid.lower(), grid.upper(), f);
+  details::grid_for_each(policy,
+      counting_iterator3<int>{grid.lower()},
+      counting_iterator3<int>{grid.upper()},
+      f);
 }
 
 template <class T, class F>
@@ -631,7 +646,10 @@ void simd_for_each(
     subgrid3 grid,
     F f)
 {
-  details::simd_grid_for_each<T>(policy, grid.lower(), grid.upper(), f);
+  details::simd_grid_for_each<T>(policy,
+      counting_iterator3<int>{grid.lower()},
+      counting_iterator3<int>{grid.upper()},
+      f);
 }
 
 template <class Functor, class Integral>
@@ -641,9 +659,9 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
     counting_iterator3<Integral> const& last,
     Functor const& functor)
 {
-  for (Integral k = first.z(); k < last.z(); ++k) {
-    for (Integral j = first.y(); j < last.y(); ++j) {
-      for (Integral i = first.x(); i < last.x(); ++i) {
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
         functor(vector3<Integral>(i, j, k));
       }
     }
@@ -664,7 +682,7 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
 
 template <class Functor>
 __device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    hip_local_execution,
+    hip_local_execution policy,
     grid3 const& grid,
     Functor const& functor)
 {
@@ -672,101 +690,6 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
       counting_iterator3<int>{vector3<int>::zero()},
       counting_iterator3<int>{grid.extents()},
       functor);
-}
-
-#endif
-
-template <class Functor, class Integral>
-void for_each(
-    serial_execution,
-    std::integer_sequence<Integral>,
-    Functor const&)
-{
-}
-
-template <class Functor, class Integral, Integral FirstIndex, Integral ... NextIndices>
-void for_each(
-    serial_execution policy,
-    std::integer_sequence<Integral, FirstIndex, NextIndices...>,
-    Functor const& functor)
-{
-  functor(std::integral_constant<Integral, FirstIndex>());
-  for_each(policy, std::integer_sequence<Integral, NextIndices...>(), functor);
-}
-
-template <class Functor, class Integral, Integral Size>
-void for_each(
-    serial_execution policy,
-    std::integral_constant<Integral, Size>,
-    Functor const& functor)
-{
-  for_each(policy, std::make_integer_sequence<Integral, Size>(), functor);
-}
-
-#ifdef __CUDACC__
-
-template <class Functor, class Integral>
-__device__ P3A_ALWAYS_INLINE
-void for_each(
-    cuda_local_execution,
-    std::integer_sequence<Integral>,
-    Functor const&)
-{
-}
-
-template <class Functor, class Integral, Integral FirstIndex, Integral ... NextIndices>
-__device__ P3A_ALWAYS_INLINE
-void for_each(
-    cuda_local_execution policy,
-    std::integer_sequence<Integral, FirstIndex, NextIndices...>,
-    Functor const& functor)
-{
-  functor(std::integral_constant<Integral, FirstIndex>());
-  for_each(policy, std::integer_sequence<Integral, NextIndices...>(), functor);
-}
-
-template <class Functor, class Integral, Integral Size>
-__device__ P3A_ALWAYS_INLINE
-void for_each(
-    cuda_local_execution policy,
-    std::integral_constant<Integral, Size>,
-    Functor const& functor)
-{
-  for_each(policy, std::make_integer_sequence<Integral, Size>(), functor);
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class Functor, class Integral>
-__device__ P3A_ALWAYS_INLINE
-void for_each(
-    hip_local_execution,
-    std::integer_sequence<Integral>,
-    Functor const&)
-{
-}
-
-template <class Functor, class Integral, Integral FirstIndex, Integral ... NextIndices>
-__device__ P3A_ALWAYS_INLINE
-void for_each(
-    hip_local_execution policy,
-    std::integer_sequence<Integral, FirstIndex, NextIndices...>,
-    Functor const& functor)
-{
-  functor(std::integral_constant<Integral, FirstIndex>());
-  for_each(policy, std::integer_sequence<Integral, NextIndices...>(), functor);
-}
-
-template <class Functor, class Integral, Integral Size>
-__device__ P3A_ALWAYS_INLINE
-void for_each(
-    hip_local_execution policy,
-    std::integral_constant<Integral, Size>,
-    Functor const& functor)
-{
-  for_each(policy, std::make_integer_sequence<Integral, Size>(), functor);
 }
 
 #endif
