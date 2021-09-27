@@ -108,7 +108,7 @@ void for_each(
 }
 
 template <class ForwardIt, class UnaryFunction>
-P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+__device__ P3A_ALWAYS_INLINE inline constexpr
 void for_each(
     cuda_local_execution,
     ForwardIt const& first,
@@ -200,19 +200,44 @@ class counting_iterator3 {
   vector3<Integral> vector;
 };
 
-template <class Functor>
+template <class Functor, class Integral>
 P3A_ALWAYS_INLINE constexpr void for_each(
     serial_local_execution,
-    grid3 const& grid,
+    counting_iterator3<Integral> const& first,
+    counting_iterator3<Integral> const& last,
     Functor const& functor)
 {
-  for (int k = 0; k < grid.extents().z(); ++k) {
-    for (int j = 0; j < grid.extents().y(); ++j) {
-      for (int i = 0; i < grid.extents().x(); ++i) {
-        functor(vector3<int>(i, j, k));
+  for (Integral k = first.z(); k < last.z(); ++k) {
+    for (Integral j = first.y(); j < last.y(); ++j) {
+      for (Integral i = first.x(); i < last.x(); ++i) {
+        functor(vector3<Integral>(i, j, k));
       }
     }
   }
+}
+
+template <class Functor>
+P3A_ALWAYS_INLINE constexpr void for_each(
+    serial_local_execution policy,
+    subgrid3 const& subgrid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
+}
+
+template <class Functor>
+P3A_ALWAYS_INLINE constexpr void for_each(
+    serial_local_execution policy,
+    grid3 const& grid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
 }
 
 template <class Functor, class Integral>
@@ -313,43 +338,43 @@ P3A_NEVER_INLINE void simd_for_each(
 
 namespace details {
 
-template <class F>
+template <class F, class Integral>
 __global__ void cuda_grid_for_each(
     F const f,
-    vector3<int> const first,
-    vector3<int> const last)
+    counting_iterator3<Integral> const first,
+    counting_iterator3<Integral> const last)
 {
-  vector3<int> index;
-  index.x() = first.x() + threadIdx.x + blockIdx.x * blockDim.x;
-  if (index.x() >= last.x()) return;
-  index.y() = first.y() + blockIdx.y;
-  index.z() = first.z() + blockIdx.z;
+  vector3<Integral> index;
+  index.x() = first.vector.x() + threadIdx.x + blockIdx.x * blockDim.x;
+  if (index.x() >= last.vector.x()) return;
+  index.y() = first.vector.y() + blockIdx.y;
+  index.z() = first.vector.z() + blockIdx.z;
   f(index);
 }
 
-template <class T, class F>
+template <class T, class F, class Integral>
 __global__ void cuda_simd_grid_for_each(
     F const f,
-    vector3<int> const first,
-    vector3<int> const last)
+    counting_iterator3<Integral> const first,
+    counting_iterator3<Integral> const last)
 {
-  vector3<int> index;
-  index.x() = first.x() + threadIdx.x + blockIdx.x * blockDim.x;
-  index.y() = first.y() + blockIdx.y;
-  index.z() = first.z() + blockIdx.z;
-  f(index, device_simd_mask<T>(index.x() < last.x()));
+  vector3<Integral> index;
+  index.x() = first.vector.x() + threadIdx.x + blockIdx.x * blockDim.x;
+  index.y() = first.vector.y() + blockIdx.y;
+  index.z() = first.vector.z() + blockIdx.z;
+  f(index, device_simd_mask<T>(index.x() < last.vector.x()));
 }
 
-template <class F>
+template <class F, class Integral>
 P3A_NEVER_INLINE
 void grid_for_each(
     cuda_execution policy,
-    vector3<int> first,
-    vector3<int> last,
+    counting_iterator3<Integral> first,
+    counting_iterator3<Integral> last,
     F f)
 {
   dim3 const cuda_block(32, 1, 1);
-  auto const limits = last - first;
+  auto const limits = last.vector - first.vector;
   if (limits.volume() == 0) return;
   dim3 const cuda_grid(
       ceildiv(unsigned(limits.x()), cuda_block.x),
@@ -365,16 +390,16 @@ void grid_for_each(
 }
 
 
-template <class T, class F>
+template <class T, class F, class Integral>
 P3A_NEVER_INLINE
 void simd_grid_for_each(
     cuda_execution policy,
-    vector3<int> first,
-    vector3<int> last,
+    counting_iterator3<Integral> first,
+    counting_iterator3<Integral> last,
     F f)
 {
   dim3 const cuda_block(32, 1, 1);
-  auto const limits = last - first;
+  auto const limits = last.vector - first.vector;
   if (limits.volume() == 0) return;
   dim3 const cuda_grid(
       ceildiv(unsigned(limits.x()), cuda_block.x),
@@ -398,7 +423,10 @@ void for_each(
     grid3 grid,
     F f)
 {
-  details::grid_for_each(policy, vector3<int>::zero(), grid.extents(), f);
+  details::grid_for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      f);
 }
 
 template <class T, class F>
@@ -408,7 +436,58 @@ void simd_for_each(
     grid3 grid,
     F f)
 {
-  details::simd_grid_for_each<T>(policy, vector3<int>::zero(), grid.extents(), f);
+  details::simd_grid_for_each<T>(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      f);
+}
+
+template <class F>
+P3A_NEVER_INLINE
+void for_each(
+    cuda_execution policy,
+    subgrid3 grid,
+    F f)
+{
+  details::grid_for_each(policy, grid.lower(), grid.upper(), f);
+}
+
+template <class T, class F>
+P3A_NEVER_INLINE
+void simd_for_each(
+    cuda_execution policy,
+    subgrid3 grid,
+    F f)
+{
+  details::simd_grid_for_each<T>(policy, grid.lower(), grid.upper(), f);
+}
+
+template <class Functor, class Integral>
+__device__ P3A_ALWAYS_INLINE constexpr void for_each(
+    cuda_local_execution,
+    counting_iterator3<Integral> const& first,
+    counting_iterator3<Integral> const& last,
+    Functor const& functor)
+{
+  for (Integral k = first.z(); k < last.z(); ++k) {
+    for (Integral j = first.y(); j < last.y(); ++j) {
+      for (Integral i = first.x(); i < last.x(); ++i) {
+        functor(vector3<Integral>(i, j, k));
+      }
+    }
+  }
+}
+
+template <class Functor>
+__device__ P3A_ALWAYS_INLINE constexpr void for_each(
+    cuda_local_execution policy,
+    subgrid3 const& subgrid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
 }
 
 template <class Functor>
@@ -417,13 +496,10 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
     grid3 const& grid,
     Functor const& functor)
 {
-  for (int k = 0; k < grid.extents().z(); ++k) {
-    for (int j = 0; j < grid.extents().y(); ++j) {
-      for (int i = 0; i < grid.extents().x(); ++i) {
-        functor(vector3<int>(i, j, k));
-      }
-    }
-  }
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
 }
 
 #endif
@@ -538,112 +614,64 @@ void simd_for_each(
   details::simd_grid_for_each<T>(policy, vector3<int>::zero(), grid.extents(), f);
 }
 
+template <class F>
+P3A_NEVER_INLINE
+void for_each(
+    hip_execution policy,
+    subgrid3 grid,
+    F f)
+{
+  details::grid_for_each(policy, grid.lower(), grid.upper(), f);
+}
+
+template <class T, class F>
+P3A_NEVER_INLINE
+void simd_for_each(
+    hip_execution policy,
+    subgrid3 grid,
+    F f)
+{
+  details::simd_grid_for_each<T>(policy, grid.lower(), grid.upper(), f);
+}
+
+template <class Functor, class Integral>
+__device__ P3A_ALWAYS_INLINE constexpr void for_each(
+    hip_local_execution,
+    counting_iterator3<Integral> const& first,
+    counting_iterator3<Integral> const& last,
+    Functor const& functor)
+{
+  for (Integral k = first.z(); k < last.z(); ++k) {
+    for (Integral j = first.y(); j < last.y(); ++j) {
+      for (Integral i = first.x(); i < last.x(); ++i) {
+        functor(vector3<Integral>(i, j, k));
+      }
+    }
+  }
+}
+
+template <class Functor>
+__device__ P3A_ALWAYS_INLINE constexpr void for_each(
+    hip_local_execution policy,
+    subgrid3 const& subgrid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
+}
+
 template <class Functor>
 __device__ P3A_ALWAYS_INLINE constexpr void for_each(
     hip_local_execution,
     grid3 const& grid,
     Functor const& functor)
 {
-  for (int k = 0; k < grid.extents().z(); ++k) {
-    for (int j = 0; j < grid.extents().y(); ++j) {
-      for (int i = 0; i < grid.extents().x(); ++i) {
-        functor(vector3<int>(i, j, k));
-      }
-    }
-  }
-}
-
-#endif
-
-template <class Functor>
-P3A_ALWAYS_INLINE constexpr void for_each(
-    serial_local_execution,
-    subgrid3 const& subgrid,
-    Functor const& functor)
-{
-  for (int k = subgrid.lower().z(); k < subgrid.upper().z(); ++k) {
-    for (int j = subgrid.lower().y(); j < subgrid.upper().y(); ++j) {
-      for (int i = subgrid.lower().x(); i < subgrid.upper().x(); ++i) {
-        functor(vector3<int>(i, j, k));
-      }
-    }
-  }
-}
-
-#ifdef __CUDACC__
-
-template <class F>
-P3A_NEVER_INLINE
-void for_each(
-    cuda_execution policy,
-    subgrid3 grid,
-    F f)
-{
-  details::grid_for_each(policy, grid.lower(), grid.upper(), f);
-}
-
-template <class T, class F>
-P3A_NEVER_INLINE
-void simd_for_each(
-    cuda_execution policy,
-    subgrid3 grid,
-    F f)
-{
-  details::simd_grid_for_each<T>(policy, grid.lower(), grid.upper(), f);
-}
-
-template <class Functor>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    cuda_local_execution,
-    subgrid3 const& subgrid,
-    Functor const& functor)
-{
-  for (int k = subgrid.lower().z(); k < subgrid.upper().z(); ++k) {
-    for (int j = subgrid.lower().y(); j < subgrid.upper().y(); ++j) {
-      for (int i = subgrid.lower().x(); i < subgrid.upper().x(); ++i) {
-        functor(vector3<int>(i, j, k));
-      }
-    }
-  }
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class F>
-P3A_NEVER_INLINE
-void for_each(
-    hip_execution policy,
-    subgrid3 grid,
-    F f)
-{
-  details::grid_for_each(policy, grid.lower(), grid.upper(), f);
-}
-
-template <class T, class F>
-P3A_NEVER_INLINE
-void simd_for_each(
-    hip_execution policy,
-    subgrid3 grid,
-    F f)
-{
-  details::simd_grid_for_each<T>(policy, grid.lower(), grid.upper(), f);
-}
-
-template <class Functor>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    hip_local_execution,
-    subgrid3 const& subgrid,
-    Functor const& functor)
-{
-  for (int k = subgrid.lower().z(); k < subgrid.upper().z(); ++k) {
-    for (int j = subgrid.lower().y(); j < subgrid.upper().y(); ++j) {
-      for (int i = subgrid.lower().x(); i < subgrid.upper().x(); ++i) {
-        functor(vector3<int>(i, j, k));
-      }
-    }
-  }
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
 }
 
 #endif
