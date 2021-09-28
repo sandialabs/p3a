@@ -322,20 +322,6 @@ P3A_NEVER_INLINE void simd_for_each(
 
 namespace details {
 
-template <class F, class Integral>
-__global__ void cuda_grid_for_each(
-    F const f,
-    counting_iterator3<Integral> const first,
-    counting_iterator3<Integral> const last)
-{
-  vector3<Integral> index;
-  index.x() = first.vector.x() + threadIdx.x + blockIdx.x * blockDim.x;
-  if (index.x() >= last.vector.x()) return;
-  index.y() = first.vector.y() + blockIdx.y;
-  index.z() = first.vector.z() + blockIdx.z;
-  f(index);
-}
-
 template <class T, class F, class Integral>
 __global__ void cuda_simd_grid_for_each(
     F const f,
@@ -357,20 +343,21 @@ void grid_for_each(
     counting_iterator3<Integral> last,
     F f)
 {
-  dim3 const cuda_block(32, 1, 1);
   auto const limits = last.vector - first.vector;
   if (limits.volume() == 0) return;
-  dim3 const cuda_grid(
-      ceildiv(unsigned(limits.x()), cuda_block.x),
-      limits.y(),
-      limits.z());
-  std::size_t const shared_memory_bytes = 0;
-  cudaStream_t const cuda_stream = nullptr;
-  details::cuda_grid_for_each<<<
-    cuda_grid,
-    cuda_block,
-    shared_memory_bytes,
-    cuda_stream>>>(f, first, last);
+  using kokkos_policy_type =
+    Kokkos::MDRangePolicy<
+      Kokkos::Cuda,
+      Kokkos::IndexType<Integral>,
+      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
+  Kokkos::parallel_for("p3a_cuda_3d",
+      kokkos_policy_type(
+        {first.vector.x(), first.vector.y(), first.vector.z()},
+        {last.vector.x(), last.vector.y(), last.vector.z()},
+        {32, 1, 1}),
+  [=] __device__ (Integral i, Integral j, Integral k) P3A_ALWAYS_INLINE {
+    f(vector3<Integral>(i, j, k));
+  });
 }
 
 
