@@ -191,9 +191,9 @@ P3A_ALWAYS_INLINE constexpr void for_each(
     counting_iterator3<Integral> const& last,
     Functor const& functor)
 {
-  for (Integral k = first.z(); k < last.z(); ++k) {
-    for (Integral j = first.y(); j < last.y(); ++j) {
-      for (Integral i = first.x(); i < last.x(); ++i) {
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
         functor(vector3<Integral>(i, j, k));
       }
     }
@@ -281,20 +281,15 @@ P3A_NEVER_INLINE void simd_for_each(
   vector3<Integral> const extents = last.vector - first.vector;
   Integral const quotient = extents.x() / width;
   Integral const remainder = extents.x() % width;
-  mask_type const all_mask(true);
-  mask_type const remainder_mask = mask_type::first_n(remainder);
+  Integral const batch_count = condition(remainder == 0, quotient, quotient + 1);
   for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
     for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = 0; i < quotient; ++i) {
-        functor(
-            vector3<Integral>(
-              first.vector.x() + i * width, j, k),
-            all_mask);
+      for (Integral batch = 0; batch < batch_count; ++batch) {
+        Integral const i_start = first.vector.x() + batch * width;
+        Integral const lane_count = minimum(last.vector.x() - i_start, width);
+        mask_type const mask = mask_type::first_n(int(lane_count));
+        functor(vector3<Integral>(i_start, j, k), mask);
       }
-      functor(
-          vector3<Integral>(
-            first.vector.x() + quotient * width, j, k),
-          remainder_mask);
     }
   }
 }
