@@ -8,6 +8,8 @@
 #include "p3a_simd.hpp"
 #include "p3a_counting_iterator.hpp"
 
+#include <Kokkos_Core.hpp>
+
 namespace p3a {
 
 template <class ForwardIt, class UnaryFunction>
@@ -31,9 +33,9 @@ void for_each(
     counting_iterator<Integral> last,
     UnaryFunction f)
 {
-  for (; first != last; ++first) {
-    f(*first);
-  }
+  Kokkos::parallel_for("p3a_serial",
+      Kokkos::RangePolicy<Kokkos::Serial, Kokkos::IndexType<Integral>>(*first, *last),
+      f);
 }
 
 template <class ForwardIt, class UnaryFunction>
