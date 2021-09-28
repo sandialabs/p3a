@@ -231,13 +231,18 @@ P3A_NEVER_INLINE void for_each(
     counting_iterator3<Integral> last,
     Functor functor)
 {
-  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
-    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
-        functor(vector3<Integral>(i, j, k));
-      }
-    }
-  }
+  using kokkos_policy_type =
+    Kokkos::MDRangePolicy<
+      Kokkos::Serial,
+      Kokkos::IndexType<Integral>,
+      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
+  Kokkos::parallel_for("p3a_serial_3d",
+      kokkos_policy_type(
+        {first.vector.x(), first.vector.y(), first.vector.z()},
+        {last.vector.x(), last.vector.y(), last.vector.z()}),
+  [=] (Integral i, Integral j, Integral k) P3A_ALWAYS_INLINE {
+    functor(vector3<Integral>(i, j, k));
+  });
 }
 
 template <class Functor>
