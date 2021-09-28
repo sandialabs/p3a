@@ -58,18 +58,6 @@ void for_each(
 
 #ifdef __CUDACC__
 
-namespace details {
-
-template <class F, class Integral>
-__global__
-void cuda_for_each(F f, Integral first, Integral last) {
-  auto const i = first + static_cast<Integral>(
-          threadIdx.x + blockIdx.x * blockDim.x);
-  if (i < last) f(i);
-}
-
-}
-
 template <class Integral, class UnaryFunction>
 P3A_NEVER_INLINE
 void for_each(
@@ -80,15 +68,9 @@ void for_each(
 {
   Integral const n = last - first;
   if (n == 0) return;
-  dim3 const cuda_block(32, 1, 1);
-  dim3 const cuda_grid(ceildiv(unsigned(n), cuda_block.x), 1, 1);
-  std::size_t const shared_memory_bytes = 0;
-  cudaStream_t const cuda_stream = nullptr;
-  details::cuda_for_each<<<
-    cuda_grid,
-    cuda_block,
-    shared_memory_bytes,
-    cuda_stream>>>(f, *first, *last);
+  Kokkos::parallel_for("p3a_cuda",
+      Kokkos::RangePolicy<Kokkos::Cuda, Kokkos::IndexType<Integral>>(*first, *last),
+      f);
 }
 
 template <class ForwardIt, class UnaryFunction>
