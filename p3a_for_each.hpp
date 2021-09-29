@@ -187,9 +187,9 @@ P3A_ALWAYS_INLINE constexpr void for_each(
     counting_iterator3<Integral> const& last,
     Functor const& functor)
 {
-  for (Integral k = first.z(); k < last.z(); ++k) {
-    for (Integral j = first.y(); j < last.y(); ++j) {
-      for (Integral i = first.x(); i < last.x(); ++i) {
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
         functor(vector3<Integral>(i, j, k));
       }
     }
