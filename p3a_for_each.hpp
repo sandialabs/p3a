@@ -504,16 +504,16 @@ __global__ void hip_simd_grid_for_each(
   f(index, device_simd_mask<T>(index.x() < last.x()));
 }
 
-template <class F>
+template <class F, class Integral>
 P3A_NEVER_INLINE
 void grid_for_each(
     hip_execution policy,
-    vector3<int> first,
-    vector3<int> last,
+    counting_iterator3<Integral> first,
+    counting_iterator3<Integral> last,
     F f)
 {
   dim3 const hip_block(64, 1, 1);
-  auto const limits = last - first;
+  auto const limits = last.vector - first.vector;
   if (limits.volume() == 0) return;
   dim3 const hip_grid(
       ceildiv(unsigned(limits.x()), hip_block.x),
@@ -528,21 +528,20 @@ void grid_for_each(
     shared_memory_bytes,
     hip_stream,
     f,
-    first,
-    last);
+    first.vector,
+    last.vector);
 }
 
-
-template <class T, class F>
+template <class T, class F, class Integral>
 P3A_NEVER_INLINE
 void simd_grid_for_each(
     hip_execution policy,
-    vector3<int> first,
-    vector3<int> last,
+    counting_iterator3<Integral> first,
+    counting_iterator3<Integral> last,
     F f)
 {
   dim3 const hip_block(64, 1, 1);
-  auto const limits = last - first;
+  auto const limits = last.vector - first.vector;
   if (limits.volume() == 0) return;
   dim3 const hip_grid(
       ceildiv(unsigned(limits.x()), hip_block.x),
@@ -557,8 +556,8 @@ void simd_grid_for_each(
     shared_memory_bytes,
     hip_stream,
     f,
-    first,
-    last);
+    first.vector,
+    last.vector);
 }
 
 }
