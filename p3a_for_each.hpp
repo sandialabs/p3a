@@ -473,33 +473,6 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
 
 namespace details {
 
-template <class F>
-__global__ void hip_grid_for_each(
-    F const f,
-    vector3<int> const first,
-    vector3<int> const last)
-{
-  vector3<int> index;
-  index.x() = first.x() + hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
-  if (index.x() >= last.x()) return;
-  index.y() = first.y() + hipBlockIdx_y;
-  index.z() = first.z() + hipBlockIdx_z;
-  f(index);
-}
-
-template <class T, class F>
-__global__ void hip_simd_grid_for_each(
-    F const f,
-    vector3<int> const first,
-    vector3<int> const last)
-{
-  vector3<int> index;
-  index.x() = first.x() + hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
-  index.y() = first.y() + hipBlockIdx_y;
-  index.z() = first.z() + hipBlockIdx_z;
-  f(index, device_simd_mask<T>(index.x() < last.x()));
-}
-
 template <class F, class Integral>
 P3A_NEVER_INLINE
 void grid_for_each(
@@ -533,24 +506,21 @@ void simd_grid_for_each(
     counting_iterator3<Integral> last,
     F f)
 {
-  dim3 const hip_block(64, 1, 1);
   auto const limits = last.vector - first.vector;
   if (limits.volume() == 0) return;
-  dim3 const hip_grid(
-      ceildiv(unsigned(limits.x()), hip_block.x),
-      limits.y(),
-      limits.z());
-  std::size_t const shared_memory_bytes = 0;
-  hipStream_t const hip_stream = nullptr;
-  hipLaunchKernelGGL(
-    details::hip_simd_grid_for_each<T>,
-    hip_grid,
-    hip_block,
-    shared_memory_bytes,
-    hip_stream,
-    f,
-    first.vector,
-    last.vector);
+  using kokkos_policy_type =
+    Kokkos::MDRangePolicy<
+      Kokkos::Experimental::HIP,
+      Kokkos::IndexType<Integral>,
+      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
+  Kokkos::parallel_for("p3a_hip_3d_simd",
+      kokkos_policy_type(
+        {first.vector.x(), first.vector.y(), first.vector.z()},
+        {last.vector.x(), last.vector.y(), last.vector.z()},
+        {64, 1, 1}),
+  [=] __device__ (Integral i, Integral j, Integral k) P3A_ALWAYS_INLINE {
+    f(vector3<Integral>(i, j, k), device_simd_mask<T>(true));
+  });
 }
 
 }
