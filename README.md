@@ -14,4 +14,6 @@ P3A provides several "layers" of helpful tools:
 
 The ideal design for an application using P3A is to implement a physics code as a series of loops which perform outer loop vectorization, while keeping the C++ source code readable by using tensor types with overloaded mathematical operators.
 
+P3A depends on [Kokkos](https://github.com/kokkos/kokkos) for its parallel algorithms.
+
 At Sandia, P3A is SCR 2619.0
