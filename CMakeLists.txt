@@ -8,29 +8,25 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 option(p3a_ENABLE_AVX512 "Enable AVX-512" OFF)
-option(p3a_ENABLE_CUDA "Enable CUDA" OFF)
-option(p3a_ENABLE_HIP "Enable HIP" OFF)
 set(p3a_ARCHITECTURES "" CACHE STRING "GPU architectures (either CUDA_ARCHITECTURES or HIP_ARCHITECTURES)")
+
+find_package(MPI REQUIRED)
+find_package(Kokkos REQUIRED COMPONENTS separable_compilation)
+
+set(p3a_ENABLE_CUDA "${Kokkos_ENABLE_CUDA}")
+set(p3a_ENABLE_HIP "${Kokkos_ENABLE_HIP}")
 
 if (p3a_ENABLE_CUDA AND p3a_ENABLE_HIP)
   message(FATAL_ERROR "CUDA and HIP cannot be simultaneously enabled")
 endif()
 
-if (p3a_ENABLE_CUDA)
-  set(p3a_LANGUAGE CUDA)
-elseif(p3a_ENABLE_HIP)
-  set(p3a_LANGUAGE HIP)
-else()
-  set(p3a_LANGUAGE CXX)
-endif()
+set(p3a_LANGUAGE "${Kokkos_COMPILE_LANGUAGE}")
 
 enable_language(${p3a_LANGUAGE})
 
 if (BUILD_TESTING)
   find_package(GTest REQUIRED)
 endif()
-
-find_package(MPI REQUIRED)
 
 set(P3A_HEADERS
   p3a_macros.hpp
@@ -103,11 +99,8 @@ if (p3a_ENABLE_AVX512)
   target_compile_options(p3a PUBLIC -mavx512f -mavx512vl)
 endif()
 
-if (p3a_ENABLE_CUDA)
-  target_compile_options(p3a PUBLIC --expt-extended-lambda)
-endif()
-
 target_link_libraries(p3a PUBLIC MPI::MPI_CXX)
+target_link_libraries(p3a PUBLIC Kokkos::kokkoscore)
 
 install(
   TARGETS p3a
