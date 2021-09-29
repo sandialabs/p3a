@@ -508,24 +508,21 @@ void grid_for_each(
     counting_iterator3<Integral> last,
     F f)
 {
-  dim3 const hip_block(64, 1, 1);
   auto const limits = last.vector - first.vector;
   if (limits.volume() == 0) return;
-  dim3 const hip_grid(
-      ceildiv(unsigned(limits.x()), hip_block.x),
-      limits.y(),
-      limits.z());
-  std::size_t const shared_memory_bytes = 0;
-  hipStream_t const hip_stream = nullptr;
-  hipLaunchKernelGGL(
-    details::hip_grid_for_each,
-    hip_grid,
-    hip_block,
-    shared_memory_bytes,
-    hip_stream,
-    f,
-    first.vector,
-    last.vector);
+  using kokkos_policy_type =
+    Kokkos::MDRangePolicy<
+      Kokkos::Experimental::HIP,
+      Kokkos::IndexType<Integral>,
+      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
+  Kokkos::parallel_for("p3a_hip_3d",
+      kokkos_policy_type(
+        {first.vector.x(), first.vector.y(), first.vector.z()},
+        {last.vector.x(), last.vector.y(), last.vector.z()},
+        {64, 1, 1}),
+  [=] __device__ (Integral i, Integral j, Integral k) P3A_ALWAYS_INLINE {
+    f(vector3<Integral>(i, j, k));
+  });
 }
 
 template <class T, class F, class Integral>
