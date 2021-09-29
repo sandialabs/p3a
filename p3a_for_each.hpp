@@ -69,7 +69,10 @@ void for_each(
   Integral const n = last - first;
   if (n == 0) return;
   Kokkos::parallel_for("p3a_cuda",
-      Kokkos::RangePolicy<Kokkos::Cuda, Kokkos::IndexType<Integral>>(*first, *last),
+      Kokkos::RangePolicy<
+        Kokkos::Cuda,
+        Kokkos::IndexType<Integral>>(
+          *first, *last),
       f);
 }
 
@@ -130,19 +133,12 @@ void for_each(
 {
   auto const n = last - first;
   if (n == 0) return;
-  dim3 const hip_block(64, 1, 1);
-  dim3 const hip_grid(ceildiv(unsigned(n), hip_block.x), 1, 1);
-  std::size_t const shared_memory_bytes = 0;
-  hipStream_t const hip_stream = nullptr;
-  hipLaunchKernelGGL(
-      details::hip_for_each,
-      hip_grid,
-      hip_block,
-      shared_memory_bytes,
-      hip_stream,
-      f,
-      *first,
-      *last);
+  Kokkos::parallel_for("p3a_hip",
+      Kokkos::RangePolicy<
+        Kokkos::Experimental::HIP, 
+        Kokkos::IndexType<Integral>>(
+          *first, *last),
+      f);
 }
 
 template <class ForwardIt, class UnaryFunction>
