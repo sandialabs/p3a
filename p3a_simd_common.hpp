@@ -161,12 +161,65 @@ void store(
 }
 
 template <class T, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 T get(simd<T, Abi> const& value, int i)
 {
   T storage[simd<T, Abi>::size()];
   value.store(storage);
   return storage[i];
+}
+
+// fallback implementations of transcendental functions.
+// individual Abi types may provide overloads with more efficient implementations.
+
+template <class T, class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<T, Abi> natural_exponential(simd<T, Abi> const& a)
+{
+  T a_array[simd<T, Abi>::size()];
+  a.store(a_array);
+  for (int i = 0; i < simd<T, Abi>::size(); ++i) {
+    a_array[i] = natural_exponential(a_array[i]);
+  }
+  return simd<T, Abi>::load(a_array);
+}
+
+template <class T, class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<T, Abi> exponentiate(simd<T, Abi> const& a, simd<T, Abi> const& b)
+{
+  T a_array[simd<T, Abi>::size()];
+  T b_array[simd<T, Abi>::size()];
+  a.store(a_array);
+  b.store(b_array);
+  for (int i = 0; i < simd<T, Abi>::size(); ++i) {
+    a_array[i] = exponentiate(a_array[i], b_array[i]);
+  }
+  return simd<T, Abi>::load(a_array);
+}
+
+template <class T, class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<T, Abi> sine(simd<T, Abi> const& a)
+{
+  T a_array[simd<T, Abi>::size()];
+  a.store(a_array);
+  for (int i = 0; i < simd<T, Abi>::size(); ++i) {
+    a_array[i] = sine(a_array[i]);
+  }
+  return simd<T, Abi>::load(a_array);
+}
+
+template <class T, class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<T, Abi> cosine(simd<T, Abi> const& a)
+{
+  T a_array[simd<T, Abi>::size()];
+  a.store(a_array);
+  for (int i = 0; i < simd<T, Abi>::size(); ++i) {
+    a_array[i] = cosine(a_array[i]);
+  }
+  return simd<T, Abi>::load(a_array);
 }
 
 }
