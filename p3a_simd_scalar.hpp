@@ -173,7 +173,7 @@ class simd<T, simd_abi::scalar> {
     return simd(*ptr);
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void store(T* ptr) const {
-    return *ptr = m_value;
+    *ptr = m_value;
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline simd masked_load(T const* ptr, mask_type const& mask) {
     return simd(mask.get() ? *ptr : T(0));
