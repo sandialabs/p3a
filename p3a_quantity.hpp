@@ -668,4 +668,12 @@ adimensional_quantity<T> exponentiate(adimensional_quantity<T> const& a, adimens
   return exponentiate(a.value(), b.value());
 }
 
+template <class T>
+adimensional_quantity<T> operator-(
+    T const& a,
+    adimensional_quantity<T> const& b)
+{
+  return adimensional_quantity<T>(a - b.value());
+}
+
 }
