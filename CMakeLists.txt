@@ -75,6 +75,7 @@ set(P3A_HEADERS
   p3a_mandel6x3.hpp
   p3a_tuple.hpp
   p3a_axis_angle.hpp
+  p3a_search.hpp
   )
 
 set(P3A_SOURCES
