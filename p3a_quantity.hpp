@@ -289,6 +289,30 @@ operator-(adimensional_quantity<T> const& a, B const& b)
   return a - adimensional_quantity<T>(T(b));
 }
 
+template <class T, class A>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+std::enable_if_t<std::is_arithmetic_v<A>, adimensional_quantity<T>>
+operator-(A const& a, adimensional_quantity<T> const& b)
+{
+  return adimensional_quantity<T>(T(a)) - b;
+}
+
+template <class T, class B>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+std::enable_if_t<std::is_arithmetic_v<B>, adimensional_quantity<T>>
+operator+(adimensional_quantity<T> const& a, B const& b)
+{
+  return a + adimensional_quantity<T>(T(b));
+}
+
+template <class T, class A>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+std::enable_if_t<std::is_arithmetic_v<A>, adimensional_quantity<T>>
+operator+(A const& a, adimensional_quantity<T> const& b)
+{
+  return adimensional_quantity<T>(T(a)) + b;
+}
+
 template <class T, class Dimension>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator==(

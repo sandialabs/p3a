@@ -1,5 +1,6 @@
 #pragma once
 
+#include "p3a_scalar.hpp"
 #include "p3a_macros.hpp"
 #include "p3a_identity3x3.hpp"
 #include "p3a_constants.hpp"
