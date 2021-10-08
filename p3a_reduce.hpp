@@ -904,4 +904,114 @@ using host_reproducible_adder =
   reproducible_adder<
     T, allocator<T>, serial_execution>;
 
+template <class T, class ExecutionPolicy>
+class local_reducer {
+ public:
+  template <class BinaryOp, class UnaryOp>
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE
+  T transform_reduce(
+      subgrid3 const& grid,
+      T init,
+      BinaryOp const& binary_op,
+      UnaryOp const& unary_op)
+  {
+    for_each(ExecutionPolicy(), grid,
+    [&] (vector3<int> const& item) P3A_ALWAYS_INLINE {
+      init = binary_op(init, unary_op(item));
+    });
+    return init;
+  }
+  template <class Iterator, class BinaryOp, class UnaryOp>
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE
+  T transform_reduce(
+      Iterator first,
+      Iterator const& last,
+      T init,
+      BinaryOp const& binary_op,
+      UnaryOp const& unary_op)
+  {
+    for (; first != last; ++first) {
+      init = binary_op(init, unary_op(*first));
+    }
+    return init;
+  }
+};
+
+template <int N, class ExecutionPolicy>
+class local_reproducible_adder {
+  static_array<double, N> m_values;
+  local_reducer<int, ExecutionPolicy> m_exponent_reducer;
+  local_reducer<int128, ExecutionPolicy> m_int128_reducer;
+ public:
+  P3A_ALWAYS_INLINE local_reproducible_adder() = default;
+  P3A_ALWAYS_INLINE local_reproducible_adder(local_reproducible_adder&&) = default;
+  P3A_ALWAYS_INLINE local_reproducible_adder& operator=(local_reproducible_adder&&) = default;
+ private:
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_NEVER_INLINE
+  double reduce_stored_values()
+  {
+    int constexpr minimum_exponent =
+      std::numeric_limits<int>::lowest();
+    int const local_max_exponent =
+      m_exponent_reducer.transform_reduce(
+          m_values.cbegin(), m_values.cend(),
+          minimum_exponent,
+          maximizes<int>,
+    [=] (double const& value) P3A_ALWAYS_INLINE {
+      if (value == 0.0) return minimum_exponent;
+      int exponent;
+      std::frexp(value, &exponent);
+      return exponent;
+    });
+    int global_max_exponent = local_max_exponent;
+    constexpr int mantissa_bits = 52;
+    double const unit = std::exp2(
+        double(global_max_exponent - mantissa_bits));
+    int128 const local_sum =
+      m_int128_reducer.transform_reduce(
+          m_values.cbegin(), m_values.cend(),
+          int128(0),
+          adds<int128>,
+    [=] (double const& value) P3A_ALWAYS_INLINE {
+      return int128::from_double(value, unit);
+    });
+    int128 const global_sum = local_sum;
+    return global_sum.to_double(unit);
+  }
+ public:
+  template <class Iterator, class UnaryOp>
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE
+  double transform_reduce(
+      Iterator const& first,
+      Iterator const& last,
+      UnaryOp const& unary_op)
+  {
+    auto const values = m_values.begin();
+    auto const n = (last - first);
+    using size_type = std::remove_const_t<decltype(n)>;
+    for_each(ExecutionPolicy(),
+        counting_iterator<size_type>(0),
+        counting_iterator<size_type>(n),
+    [&] (size_type i) P3A_ALWAYS_INLINE {
+      values[i] = unary_op(first[i]);
+    });
+    return reduce_stored_values();
+  }
+  template <class UnaryOp>
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE
+  double transform_reduce(
+      subgrid3 const& grid,
+      UnaryOp const& unary_op)
+  {
+    m_values.resize(grid.size());
+    auto const values = m_values.begin();
+    for_each(ExecutionPolicy(), grid,
+    [&] (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
+      int const index = grid.index(grid_point);
+      values[index] = unary_op(grid_point);
+    });
+    return reduce_stored_values();
+  }
+};
+
 }
