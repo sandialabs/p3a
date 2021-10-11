@@ -273,7 +273,7 @@ template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 scaled_identity3x3<T> isotropic_part(symmetric3x3<T> const& a)
 {
-  auto const d = trace(a) / T(3.);
+  auto const d = trace(a) / 3.0;
   return scaled_identity3x3<T>(d);
 }
 
