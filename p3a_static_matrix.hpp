@@ -66,7 +66,7 @@ class static_matrix {
 };
 
 template <class A, int M, int N, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
 typename std::enable_if<is_scalar<B>, static_matrix<decltype(A() / B()), M, N>>::type
 operator/(static_matrix<A, M, N> const& a, B const& b)
 {
@@ -81,7 +81,7 @@ operator/(static_matrix<A, M, N> const& a, B const& b)
 }
 
 template <class A, int M, int N, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
 typename std::enable_if<is_scalar<B>, void>::type
 operator*=(static_matrix<A, M, N>& a, B const& b)
 {
