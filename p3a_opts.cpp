@@ -139,7 +139,7 @@ opt& opts::add_positional(std::string const& name)
   return m_positional_options.back();
 }
 
-void opts::parse(int& argc, char** argv)
+void opts::parse(int& argc, char** argv, bool allow_unrecognized)
 {
   std::queue<char*> arguments;
   for (int i = 1; i < argc; ++i) {
@@ -195,9 +195,11 @@ void opts::parse(int& argc, char** argv)
             }
           }
           if (!was_given_to_positional) {
-            throw opt_error(
-                "unrecognized command line argument " +
-                argument);
+            if (!allow_unrecognized) {
+              throw opt_error(
+                  "unrecognized command line argument " +
+                  argument);
+            }
           }
         }
       }

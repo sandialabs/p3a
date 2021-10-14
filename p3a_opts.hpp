@@ -53,7 +53,7 @@ class opts {
  public:
   opt& add(std::string const& name);
   opt& add_positional(std::string const& name);
-  void parse(int& argc, char** argv);
+  void parse(int& argc, char** argv, bool allow_unrecognized = false);
   bool has(std::string const& name) const;
   int argument_count(std::string const& name) const;
   std::string const& argument(std::string const& name, int i = 0) const;
