@@ -27,7 +27,8 @@ void for_each(
 
 template <class Integral, class UnaryFunction>
 P3A_NEVER_INLINE
-void for_each(
+std::enable_if_t<std::is_integral_v<Integral>>
+for_each(
     serial_execution,
     counting_iterator<Integral> first,
     counting_iterator<Integral> last,
@@ -60,7 +61,8 @@ void for_each(
 
 template <class Integral, class UnaryFunction>
 P3A_NEVER_INLINE
-void for_each(
+std::enable_if_t<std::is_integral_v<Integral>>
+for_each(
     cuda_execution policy,
     counting_iterator<Integral> first,
     counting_iterator<Integral> last,
@@ -79,7 +81,7 @@ void for_each(
 template <class ForwardIt, class UnaryFunction>
 P3A_NEVER_INLINE
 void for_each(
-    cuda_execution policy,
+    cuda_execution policy,  
     ForwardIt first,
     ForwardIt last,
     UnaryFunction f)
