@@ -161,7 +161,7 @@ void decompose_singular_values(
   U = static_matrix<T, N, N>::identity();
   V = static_matrix<T, N, N>::identity();
   auto off = off_diagonal_norm(S);
-  T constexpr tol = std::numeric_limits<T>::epsilon();
+  T constexpr tol = epsilon_value<T>();
   int const max_iter = 2048;
   int num_iter = 0;
   while (off > tol && num_iter < max_iter) {

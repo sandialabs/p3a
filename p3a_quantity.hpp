@@ -693,7 +693,9 @@ adimensional_quantity<T> exponentiate(adimensional_quantity<T> const& a, adimens
 }
 
 template <class T>
-adimensional_quantity<T> operator-(
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+adimensional_quantity<T>
+operator-(
     T const& a,
     adimensional_quantity<T> const& b)
 {
