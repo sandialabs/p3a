@@ -64,7 +64,7 @@ void svd_bidiagonal(
     p3a::swap(fa, ha);
     p3a::swap(f, h);
   }
-  T constexpr epsilon = std::numeric_limits<T>::epsilon();
+  T constexpr epsilon = epsilon_value<T>();
   // diagonal matrix
   if (ga == 0.0) {
     s1 = ha;
