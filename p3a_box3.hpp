@@ -23,7 +23,7 @@ class box3 {
     :m_lower(vector3<T>::zero())
     ,m_upper(upper_in)
   {}
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr explicit
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   box3(vector3<T> const& lower_in, vector3<T> const& upper_in)
     :m_lower(lower_in)
     ,m_upper(upper_in)
