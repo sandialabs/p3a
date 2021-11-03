@@ -160,6 +160,19 @@ double cosine(double a)
   return std::cos(a);
 }
 
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+double tangent(double a)
+{
+  return std::tan(a);
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+T cotangent(T const& a)
+{
+  return T(1.0) / tangent(a);
+}
+
 template <typename T>
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
 void swap(T& t1, T& t2) {
