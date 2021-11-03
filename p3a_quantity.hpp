@@ -649,6 +649,10 @@ template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 quantity<T, dimension_quotient<energy_dimension, temperature_dimension>>
 boltzmann_quantity() { return boltzmann_value<T>(); }
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+adimensional_quantity<T>
+pi_quantity() { return pi_value<T>(); }
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
@@ -676,6 +680,13 @@ template <class T>
 adimensional_quantity<T> cosine(adimensional_quantity<T> const& a)
 {
   return adimensional_quantity<T>(p3a::cosine(a.value()));
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+adimensional_quantity<T> tangent(adimensional_quantity<T> const& a)
+{
+  return adimensional_quantity<T>(p3a::tangent(a.value()));
 }
 
 template <class T>
