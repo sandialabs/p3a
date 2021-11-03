@@ -85,6 +85,12 @@ class dynamic_array {
   {
     resize(size_in);
   }
+  dynamic_array(std::initializer_list<T> init)
+  {
+    reserve(size_type(init.size()));
+    m_size = size_type(init.size());
+    uninitialized_copy(m_execution_policy, init.begin(), init.end(), m_begin);
+  }
  private:
   P3A_NEVER_INLINE void increase_capacity(size_type new_capacity)
   {
