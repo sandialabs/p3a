@@ -141,15 +141,16 @@ opt& opts::add_positional(std::string const& name)
 
 void opts::parse(int& argc, char** argv, bool allow_unrecognized)
 {
-  std::queue<char*> arguments;
-  for (int i = 1; i < argc; ++i) {
-    arguments.push(argv[i]);
-  }
-  opt* option_receiving_arguments = nullptr;
   try {
-    while (!arguments.empty()) {
-      char* c_argument = arguments.front();
-      arguments.pop();
+    std::queue<char*> input_arguments;
+    for (int i = 1; i < argc; ++i) {
+      input_arguments.push(argv[i]);
+    }
+    std::queue<char*> output_arguments;
+    opt* option_receiving_arguments = nullptr;
+    while (!input_arguments.empty()) {
+      char* c_argument = input_arguments.front();
+      input_arguments.pop();
       std::string const argument(c_argument);
       if (option_receiving_arguments &&
           (option_receiving_arguments->argument_count() ==
@@ -195,7 +196,9 @@ void opts::parse(int& argc, char** argv, bool allow_unrecognized)
             }
           }
           if (!was_given_to_positional) {
-            if (!allow_unrecognized) {
+            if (allow_unrecognized) {
+              output_arguments.push(c_argument);
+            } else {
               throw opt_error(
                   "unrecognized command line argument " +
                   argument);
@@ -229,6 +232,18 @@ void opts::parse(int& argc, char** argv, bool allow_unrecognized)
             " arguments but received " +
             std::to_string(o.argument_count()));
       }
+    }
+    // rewrite argc and argv to remove the things this opts object has parsed
+    fprintf(stderr, "before argc/argv rewrite, output_arguments.size()=%d and old argc=%d\n",
+        int(output_arguments.size()),
+        argc);
+    argc = 1;
+    while (!output_arguments.empty()) {
+      fprintf(stderr, "setting argv[%d] to \"%s\"\n",
+          argc, output_arguments.front());
+      argv[argc] = output_arguments.front();
+      output_arguments.pop();
+      ++argc;
     }
   } catch (opt_error const& e) {
     throw opt_error(std::string(e.what()) + "\n" + help_text());
