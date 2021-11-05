@@ -234,13 +234,8 @@ void opts::parse(int& argc, char** argv, bool allow_unrecognized)
       }
     }
     // rewrite argc and argv to remove the things this opts object has parsed
-    fprintf(stderr, "before argc/argv rewrite, output_arguments.size()=%d and old argc=%d\n",
-        int(output_arguments.size()),
-        argc);
     argc = 1;
     while (!output_arguments.empty()) {
-      fprintf(stderr, "setting argv[%d] to \"%s\"\n",
-          argc, output_arguments.front());
       argv[argc] = output_arguments.front();
       output_arguments.pop();
       ++argc;
