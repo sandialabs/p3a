@@ -835,6 +835,7 @@ class reproducible_adder<double, Allocator, ExecutionPolicy> {
     int global_max_exponent = local_max_exponent;
     m_comm.iallreduce(
         &global_max_exponent, 1, mpi::op::max());
+    if (global_max_exponent == minimum_exponent) return 0.0;
     constexpr int mantissa_bits = 52;
     double const unit = std::exp2(
         double(global_max_exponent - mantissa_bits));
