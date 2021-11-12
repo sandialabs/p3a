@@ -204,7 +204,7 @@ polar_errc polar_rotation(
   E = (E * scale - identity) * T(0.5);
   // First guess for [R] equal to the scaled [F] matrix,
   // [A]=Sqrt[3]F/magnitude[F]
-  scale = std::sqrt(scale);
+  scale = square_root(scale);
   auto A = scale * F;
   // The matrix [A] equals the rotation if and only if [E] equals [0]
   T err1 = E.xx() * E.xx() + E.yy() * E.yy() + E.zz() * E.zz()
@@ -238,15 +238,29 @@ polar_errc polar_rotation(
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE inline
-polar_errc decompose_polar(
-    matrix3x3<T> const& F,
-    matrix3x3<T>& R,
-    symmetric3x3<T>& U,
+polar_errc decompose_polar_right(
+    matrix3x3<T> const& input,
+    matrix3x3<T>& rotation,
+    symmetric3x3<T>& right_stretch,
     const int maxit=200)
 {
-  polar_errc const e = polar_rotation(F, R, maxit);
+  polar_errc const e = polar_rotation(input, rotation, maxit);
   if (e != polar_errc::success) return e;
-  U = symmetric(transpose(R) * F);
+  right_stretch = symmetric(transpose(rotation) * input);
+  return polar_errc::success;
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE inline
+polar_errc decompose_polar_left(
+    matrix3x3<T> const& input,
+    symmetric3x3<T>& left_stretch,
+    matrix3x3<T>& rotation,
+    const int maxit=200)
+{
+  polar_errc const e = polar_rotation(input, rotation, maxit);
+  if (e != polar_errc::success) return e;
+  left_stretch = symmetric(input * transpose(rotation));
   return polar_errc::success;
 }
 
