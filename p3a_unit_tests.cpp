@@ -2378,7 +2378,7 @@ TEST(polar_decomp, stretch){
   matrix3x3<T> R;
   symmetric3x3<T> U;
 
-  auto const e = decompose_polar(F, R, U);
+  auto const e = decompose_polar_right(F, R, U);
   EXPECT_EQ(e, polar_errc::success);
 
   EXPECT_FLOAT_EQ(l, U.xx()) << "U.xx()";
@@ -2407,7 +2407,7 @@ TEST(polar_decomp, pure_shear){
   matrix3x3<T> R;
   symmetric3x3<T> U;
 
-  auto const e = decompose_polar(F, R, U);
+  auto const e = decompose_polar_right(F, R, U);
   EXPECT_EQ(e, polar_errc::success);
 
   EXPECT_FLOAT_EQ(l, U.xx()) << "U.xx()";
@@ -2445,7 +2445,7 @@ TEST(polar_decomp, simple_shear){
   matrix3x3<T> R;
   symmetric3x3<T> U;
 
-  auto const e = decompose_polar(F, R, U);
+  auto const e = decompose_polar_right(F, R, U);
   EXPECT_EQ(e, polar_errc::success);
 
   EXPECT_FLOAT_EQ(root23, U.xx()) << "U.xx()";
