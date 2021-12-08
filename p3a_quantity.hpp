@@ -210,6 +210,16 @@ quantity<T, Dimension>& operator*=(
   return a;
 }
 
+template <class T, class Dimension>
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+quantity<T, Dimension>& operator*=(
+    quantity<T, Dimension>& a,
+    T const& b)
+{
+  a = a * b;
+  return a;
+}
+
 template <class T, class ADimension, class BDimension>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator/(
