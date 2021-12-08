@@ -373,7 +373,7 @@ void store(
 
 template <class T, class Mask>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-symmetric3x3<T>
+std::enable_if_t<!std::is_same_v<Mask, bool>, symmetric3x3<T>>
 condition(
     Mask const& a,
     symmetric3x3<T> const& b,
