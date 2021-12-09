@@ -113,16 +113,18 @@ install(
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if (BUILD_TESTING)
-  set_source_files_properties(
-    p3a_unit_tests.cpp PROPERTIES LANGUAGE ${p3a_LANGUAGE})
-  add_executable(p3a-unit-tests
+  set(unit_test_sources
+    p3a_unit_tests_main.cpp
     p3a_unit_tests_mandel.cpp
     p3a_unit_tests_polar.cpp
     p3a_unit_tests_lie.cpp
     p3a_unit_tests_symmetric3x3.cpp
     )
+  set_source_files_properties(
+    ${unit_test_sources} PROPERTIES LANGUAGE ${p3a_LANGUAGE})
+  add_executable(p3a-unit-tests ${unit_test_sources})
   target_link_libraries(p3a-unit-tests PRIVATE p3a)
-  target_link_libraries(p3a-unit-tests PRIVATE GTest::gtest_main)
+  target_link_libraries(p3a-unit-tests PRIVATE GTest::gtest)
   add_test(NAME unit-tests COMMAND p3a-unit-tests)
 endif()
 
