@@ -203,22 +203,22 @@ template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto determinant(matrix3x3<T> const& m)
 {
-  T const& a = m.xx();
-  T const& b = m.xy();
-  T const& c = m.xz();
-  T const& d = m.yx();
-  T const& e = m.yy();
-  T const& f = m.yz();
-  T const& g = m.zx();
-  T const& h = m.zy();
-  T const& i = m.zz();
-  return
-    (a * e * i)
-  + (b * f * g)
-  + (c * d * h)
-  - (c * e * g)
-  - (b * d * i)
-  - (a * f * h);
+  T const a1 = m.xx();
+  T const a2 = m.xy();
+  T const a3 = m.xz();
+  T const b1 = m.yx();
+  T const b2 = m.yy();
+  T const b3 = m.yz();
+  T const c1 = m.zx();
+  T const c2 = m.zy();
+  T const c3 = m.zz();
+  auto const term1 = ((a1 * b2) * c3);
+  auto const term2 = ((a1 * b3) * c2);
+  auto const term3 = ((a2 * b1) * c3);
+  auto const term4 = ((a2 * b3) * c1);
+  auto const term5 = ((a3 * b1) * c2);
+  auto const term6 = ((a3 * b2) * c1);
+  return ((((term1 - term2) - term3) + term4) + term5) - term6;
 }
 
 template <class T>

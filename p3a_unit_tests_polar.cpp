@@ -25,6 +25,10 @@ incremental deformation gradient determinant 1.06496643020610238e+00
 
 P3A_HOST P3A_DEVICE void print_bug1()
 {
+  printf("det(1 -2 4; -5 2 0; 1 0 3) = %.7e\n",
+      determinant(
+        matrix3x3<adimensional_quantity<double>>(
+          1, -2, 4, -5, 2, 0, 1, 0, 3)).value());
   auto const F = matrix3x3<adimensional_quantity<double>>(
     -2.04085437594717629e+07, -1.24461560189389233e+07, -1.80950325823258795e+07,
     1.97281075824120641e+07, 1.20311933035031799e+07, 1.74917295885286182e+07,
