@@ -115,7 +115,12 @@ install(
 if (BUILD_TESTING)
   set_source_files_properties(
     p3a_unit_tests.cpp PROPERTIES LANGUAGE ${p3a_LANGUAGE})
-  add_executable(p3a-unit-tests p3a_unit_tests.cpp)
+  add_executable(p3a-unit-tests
+    p3a_unit_tests_mandel.cpp
+    p3a_unit_tests_polar.cpp
+    p3a_unit_tests_lie.cpp
+    p3a_unit_tests_symmetric3x3.cpp
+    )
   target_link_libraries(p3a-unit-tests PRIVATE p3a)
   target_link_libraries(p3a-unit-tests PRIVATE GTest::gtest_main)
   add_test(NAME unit-tests COMMAND p3a-unit-tests)

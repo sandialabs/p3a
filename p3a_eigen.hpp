@@ -1,6 +1,9 @@
 #pragma once
 
 #include "p3a_static_matrix.hpp"
+#include "p3a_constants.hpp"
+#include "p3a_symmetric3x3.hpp"
+#include "p3a_matrix3x3.hpp"
 
 namespace p3a {
 
