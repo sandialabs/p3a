@@ -47,14 +47,19 @@ P3A_HOST P3A_DEVICE void print_bug1()
   printf("deformed deformation gradient determinant %.17e\n", det_F.value());
 }
 
+void device_bug1()
+{
+  printf("bug1: device result\n");
+  for_each(device, counting_iterator<int>(0), counting_iterator<int>(1),
+  [] P3A_DEVICE (int) {
+    print_bug1();
+  });
+}
+
 TEST(polar_decomp, bug1){
   printf("bug1: serial result\n");
   print_bug1();
-  printf("bug1: device result\n");
-  for_each(device, counting_iterator<int>(0), counting_iterator<int>(1),
-  [] (int) {
-    print_bug1();
-  });
+  device_bug1();
 }
 
 TEST(polar_decomp, stretch){
