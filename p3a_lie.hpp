@@ -58,9 +58,9 @@ template <class T>
 diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
 {
   return diagonal3x3<T>(
-      std::log(m.xx()),
-      std::log(m.yy()),
-      std::log(m.zz()));
+      natural_logarithm(m.xx()),
+      natural_logarithm(m.yy()),
+      natural_logarithm(m.zz()));
 }
 
 /* Polar Decomposition:
@@ -101,9 +101,9 @@ symmetric3x3<T> spd_exponential(symmetric3x3<T> const& log_m)
   matrix3x3<T> q;
   eigendecompose(log_m, l, q);
   diagonal3x3<T> const exp_l(
-      std::exp(l.xx()),
-      std::exp(l.yy()),
-      std::exp(l.zz()));
+      natural_exponential(l.xx()),
+      natural_exponential(l.yy()),
+      natural_exponential(l.zz()));
   return multiply_a_b_at(q, exp_l);
 }
 
@@ -115,9 +115,9 @@ symmetric3x3<T> spd_logarithm(symmetric3x3<T> const& exp_m)
   matrix3x3<T> q;
   eigendecompose(exp_m, l, q);
   diagonal3x3<T> const log_l(
-      std::log(l.xx()),
-      std::log(l.yy()),
-      std::log(l.zz()));
+      natural_logarithm(l.xx()),
+      natural_logarithm(l.yy()),
+      natural_logarithm(l.zz()));
   return multiply_a_b_at(q, log_l);
 }
 

@@ -371,6 +371,15 @@ auto operator>=(
 
 template <class T, class Dimension>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto operator>=(
+    quantity<T, Dimension> const& a,
+    T const& b)
+{
+  return a.value() >= b;
+}
+
+template <class T, class Dimension>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator<=(
     quantity<T, Dimension> const& a,
     quantity<T, Dimension> const& b)
@@ -704,6 +713,13 @@ template <class T>
 adimensional_quantity<T> natural_logarithm(adimensional_quantity<T> const& a)
 {
   return adimensional_quantity<T>(natural_logarithm(a.value()));
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+adimensional_quantity<T> natural_exponential(adimensional_quantity<T> const& a)
+{
+  return adimensional_quantity<T>(natural_exponential(a.value()));
 }
 
 template <class T>
