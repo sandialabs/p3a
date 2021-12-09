@@ -123,6 +123,7 @@ if (BUILD_TESTING)
   set_source_files_properties(
     ${unit_test_sources} PROPERTIES LANGUAGE ${p3a_LANGUAGE})
   add_executable(p3a-unit-tests ${unit_test_sources})
+  set_target_properties(p3a-unit-tests PROPERTIES ${p3a_LANGUAGE}_ARCHITECTURES "${p3a_ARCHITECTURES}")
   target_link_libraries(p3a-unit-tests PRIVATE p3a)
   target_link_libraries(p3a-unit-tests PRIVATE GTest::gtest)
   add_test(NAME unit-tests COMMAND p3a-unit-tests)
