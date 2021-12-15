@@ -98,6 +98,28 @@ maximum(T const& a, T const& b)
   return condition(a < b, b, a);
 }
 
+template <class Head, class... Tail>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr auto
+recursive_maximum(Head const& head, Tail... tail)
+{
+  return maximum(head, recursive_maximum(std::forward<Tail>(tail)...));
+}
+
+// only call recursive_maximum for three or more arguments
+template <class T, class... Tail>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr auto
+maximum(T const& a, T const& b, T const& c, Tail... tail)
+{
+  return recursive_maximum(a, b, c, std::forward<Tail>(tail)...);
+}
+
+template <class Head>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+Head const& recursive_maximum(Head const& head)
+{
+  return head;
+}
+
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T ceildiv(T a, T b) {
