@@ -388,4 +388,17 @@ condition(
       condition(a, b.zz(), c.zz()));
 }
 
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+T maximum_norm(symmetric3x3<T> const& a)
+{
+  return maximum(
+      absolute_value(a.xx()),
+      absolute_value(a.xy()),
+      absolute_value(a.xz()),
+      absolute_value(a.yy()),
+      absolute_value(a.yz()),
+      absolute_value(a.zz()));
+}
+
 }
