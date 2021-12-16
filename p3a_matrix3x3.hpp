@@ -72,6 +72,48 @@ class matrix3x3 {
   T& zy() { return m_zy; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T& zz() { return m_zz; }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  T const& operator() (int const i, int const j) const
+  {
+  #ifdef P3A_DEBUG
+    assert(i >= 0 && i < 3);
+    assert(j >= 0 && j < 3);
+  #endif
+    if (i == 0) {
+      if (j == 0) return m_xx;
+      if (j == 1) return m_xy;
+      if (j == 2) return m_xz;
+    } else if (i == 1) {
+      if (j == 0) return m_yx;
+      if (j == 1) return m_yy;
+      if (j == 2) return m_yz;
+    } else if (i == 2) {
+      if (j == 0) return m_zx;
+      if (j == 1) return m_zy;
+      if (j == 2) return m_zz;
+    }
+  }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  T& operator()(int const i, int const j)
+  {
+  #ifdef P3A_DEBUG
+    assert(i >= 0 && i < 3);
+    assert(j >= 0 && j < 3);
+  #endif
+    if (i == 0) {
+      if (j == 0) return m_xx;
+      if (j == 1) return m_xy;
+      if (j == 2) return m_xz;
+    } else if (i == 1) {
+      if (j == 0) return m_yx;
+      if (j == 1) return m_yy;
+      if (j == 2) return m_yz;
+    } else if (i == 2) {
+      if (j == 0) return m_zx;
+      if (j == 1) return m_zy;
+      if (j == 2) return m_zz;
+    }
+  }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
   matrix3x3<T> zero()
   {
