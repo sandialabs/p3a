@@ -298,6 +298,13 @@ auto frobenius_inner_product(
        a.zz() * b.zz();
 }
 
+template <class A>
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto l2_norm(symmetric3x3<A> const& a)
+{
+  return .5 * square_root(frobenius_inner_product(a, a));
+}
+
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 T determinant(symmetric3x3<T> const& a)
