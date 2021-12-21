@@ -75,10 +75,6 @@ class matrix3x3 {
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& operator() (int const i, int const j) const
   {
-  #ifdef P3A_DEBUG
-    assert(i >= 0 && i < 3);
-    assert(j >= 0 && j < 3);
-  #endif
     if (i == 0) {
       if (j == 0) return m_xx;
       if (j == 1) return m_xy;
@@ -96,10 +92,6 @@ class matrix3x3 {
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T& operator()(int const i, int const j)
   {
-  #ifdef P3A_DEBUG
-    assert(i >= 0 && i < 3);
-    assert(j >= 0 && j < 3);
-  #endif
     if (i == 0) {
       if (j == 0) return m_xx;
       if (j == 1) return m_xy;
