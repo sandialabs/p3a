@@ -1,8 +1,5 @@
 #pragma once
 
-#ifdef P3A_DEBUG
-#include <stdexcept>
-#endif
 #include "p3a_macros.hpp"
 #include "p3a_scaled_identity3x3.hpp"
 #include "p3a_diagonal3x3.hpp"
@@ -73,6 +70,40 @@ class symmetric3x3 {
   T& zy() { return m_yz; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   T& zz() { return m_zz; }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  T const& operator() (int const i, int const j) const
+  {
+    if (i == 0) {
+      if (j == 0) return m_xx;
+      if (j == 1) return m_xy;
+      if (j == 2) return m_xz;
+    } else if (i == 1) {
+      if (j == 0) return m_xy;
+      if (j == 1) return m_yy;
+      if (j == 2) return m_yz;
+    } else if (i == 2) {
+      if (j == 0) return m_xz;
+      if (j == 1) return m_yz;
+      if (j == 2) return m_zz;
+    }
+  }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  T& operator()(int const i, int const j)
+  {
+    if (i == 0) {
+      if (j == 0) return m_xx;
+      if (j == 1) return m_xy;
+      if (j == 2) return m_xz;
+    } else if (i == 1) {
+      if (j == 0) return m_xy;
+      if (j == 1) return m_yy;
+      if (j == 2) return m_yz;
+    } else if (i == 2) {
+      if (j == 0) return m_xz;
+      if (j == 1) return m_yz;
+      if (j == 2) return m_zz;
+    }
+  }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
   symmetric3x3 zero()
   {
@@ -296,6 +327,13 @@ auto frobenius_inner_product(
        a.yy() * b.yy() +
        2 * a.yz() * b.yz() +
        a.zz() * b.zz();
+}
+
+template <class A>
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto l2_norm(symmetric3x3<A> const& a)
+{
+  return .5 * square_root(frobenius_inner_product(a, a));
 }
 
 template <class T>
