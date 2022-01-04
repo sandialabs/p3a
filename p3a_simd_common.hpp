@@ -8,6 +8,8 @@
 
 namespace p3a {
 
+class element_aligned_tag {};
+
 template <class T, class Abi>
 class simd;
 

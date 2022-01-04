@@ -91,10 +91,10 @@ class simd<float, simd_abi::avx512> {
   P3A_ALWAYS_INLINE inline simd operator-() const {
     return simd(_mm512_sub_ps(_mm512_set1_ps(0.0), m_value));
   }
-  P3A_ALWAYS_INLINE static inline simd load(float const* ptr) {
-    return simd(_mm512_loadu_ps(ptr));
+  P3A_ALWAYS_INLINE inline void copy_from(float const* ptr, element_aligned_tag) {
+    m_value = _mm512_loadu_ps(ptr);
   }
-  P3A_ALWAYS_INLINE inline void store(float* ptr) const {
+  P3A_ALWAYS_INLINE inline void copy_to(float* ptr, element_aligned_tag) const {
     _mm512_storeu_ps(ptr, m_value);
   }
   P3A_ALWAYS_INLINE static inline simd masked_load(float const* ptr, mask_type const& mask) {
@@ -357,10 +357,10 @@ class simd<double, simd_abi::avx512> {
   P3A_ALWAYS_INLINE inline simd operator-() const {
     return simd(_mm512_sub_pd(_mm512_set1_pd(0.0), m_value));
   }
-  P3A_ALWAYS_INLINE static inline simd load(double const* ptr) {
-    return simd(_mm512_loadu_pd(ptr));
+  P3A_ALWAYS_INLINE inline void copy_from(double const* ptr, element_aligned_tag) {
+    m_value = _mm512_loadu_pd(ptr);
   }
-  P3A_ALWAYS_INLINE inline void store(double* ptr) const {
+  P3A_ALWAYS_INLINE inline void copy_to(double* ptr, element_aligned_tag) const {
     _mm512_storeu_pd(ptr, m_value);
   }
   P3A_ALWAYS_INLINE static inline simd masked_load(double const* ptr, mask_type const& mask) {
