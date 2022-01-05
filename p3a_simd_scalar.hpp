@@ -175,9 +175,6 @@ class simd<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void store(T* ptr) const {
     *ptr = m_value;
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline simd masked_load(T const* ptr, mask_type const& mask) {
-    return simd(mask.get() ? *ptr : T(0));
-  }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void masked_store(T* ptr, mask_type const& mask) const {
     if (mask.get()) *ptr = m_value;
   }
@@ -239,5 +236,38 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, Abi>
 copysign(simd<T, Abi> a, simd<T, Abi> b) {
   return std::copysign(a.get(), b.get());
 }
+
+template <class T>
+class const_where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::scalar>> {
+ public:
+  using abi_type = simd_abi::scalar;
+  using value_type = simd<T, abi_type>;
+  using mask_type = simd_mask<T, abi_type>;
+ protected:
+  value_type& m_value;
+  mask_type const& m_mask;
+ public:
+  const_where_expression(mask_type const& mask_arg, value_type const& value_arg)
+    :m_value(const_cast<value_type&>(value_arg))
+    ,m_mask(mask_arg)
+  {}
+  P3A_ALWAYS_INLINE inline void copy_to(T* mem, element_aligned_tag) const {
+    if (m_mask.get()) *mem = m_value.get();
+  }
+};
+
+template <class T>
+class where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::scalar>>
+ : public const_where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::scalar>> {
+  using base_type = const_where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::scalar>>;
+ public:
+  using typename base_type::value_type;
+  where_expression(simd_mask<T, simd_abi::scalar> const& mask_arg, simd<T, simd_abi::scalar>& value_arg)
+    :base_type(mask_arg, value_arg)
+  {}
+  P3A_ALWAYS_INLINE inline void copy_from(T const* mem, element_aligned_tag) {
+    this->m_value = value_type(this->m_mask.get() ? *mem : T(0));
+  }
+};
 
 }
