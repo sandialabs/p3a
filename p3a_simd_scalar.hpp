@@ -236,6 +236,7 @@ class const_where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::s
   value_type& m_value;
   mask_type const& m_mask;
  public:
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
   const_where_expression(mask_type const& mask_arg, value_type const& value_arg)
     :m_value(const_cast<value_type&>(value_arg))
     ,m_mask(mask_arg)
@@ -256,6 +257,7 @@ class where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::scalar>
   using base_type = const_where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::scalar>>;
  public:
   using typename base_type::value_type;
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
   where_expression(simd_mask<T, simd_abi::scalar> const& mask_arg, simd<T, simd_abi::scalar>& value_arg)
     :base_type(mask_arg, value_arg)
   {}
