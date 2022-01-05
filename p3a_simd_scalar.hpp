@@ -169,22 +169,11 @@ class simd<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator!=(simd const& other) const {
     return simd_mask<T, simd_abi::scalar>(m_value != other.m_value);
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline simd load(T const* ptr) {
-    return simd(*ptr);
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void copy_from(T const* ptr, element_aligned_tag) {
+    m_value = *ptr;
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void store(T* ptr) const {
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void copy_to(T* ptr, element_aligned_tag) const {
     *ptr = m_value;
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void masked_store(T* ptr, mask_type const& mask) const {
-    if (mask.get()) *ptr = m_value;
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline
-  simd masked_gather(T const* ptr, index_type const& index, mask_type const& mask) {
-    return simd(mask.get() ? ptr[index.get()] : T(0));
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-  void masked_scatter(T* ptr, index_type const& index, mask_type const& mask) const {
-    if (mask.get()) ptr[index.get()] = m_value;
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline simd zero() {
     return simd(T(0));
@@ -251,8 +240,13 @@ class const_where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::s
     :m_value(const_cast<value_type&>(value_arg))
     ,m_mask(mask_arg)
   {}
-  P3A_ALWAYS_INLINE inline void copy_to(T* mem, element_aligned_tag) const {
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void copy_to(T* mem, element_aligned_tag) const {
     if (m_mask.get()) *mem = m_value.get();
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void copy_to(T* mem, scatter<T, simd_abi::scalar> const& s) const {
+    if (m_mask.get()) mem[s.index().get()] = m_value.get();
   }
 };
 
@@ -265,8 +259,13 @@ class where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::scalar>
   where_expression(simd_mask<T, simd_abi::scalar> const& mask_arg, simd<T, simd_abi::scalar>& value_arg)
     :base_type(mask_arg, value_arg)
   {}
-  P3A_ALWAYS_INLINE inline void copy_from(T const* mem, element_aligned_tag) {
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void copy_from(T const* mem, element_aligned_tag) {
     this->m_value = value_type(this->m_mask.get() ? *mem : T(0));
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void copy_from(T const* mem, gather<T, simd_abi::scalar> const& g) {
+    this->m_value = value_type(this->m_mask.get() ? mem[g.index().get()] : T(0));
   }
 };
 
