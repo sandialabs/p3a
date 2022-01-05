@@ -46,6 +46,7 @@ set(P3A_HEADERS
   p3a_execution.hpp
   p3a_dynamic_array.hpp
   p3a_for_each.hpp
+  p3a_functional.hpp
   p3a_reduce.hpp
   p3a_quantity.hpp
   p3a_scalar.hpp

@@ -242,6 +242,10 @@ class const_where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::s
     ,m_mask(mask_arg)
   {}
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  mask_type const& mask() const { return m_mask; }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  value_type const& value() const { return m_value; }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
   void copy_to(T* mem, element_aligned_tag) const {
     if (m_mask.get()) *mem = m_value.get();
   }
@@ -270,5 +274,15 @@ class where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::scalar>
     this->m_value = value_type(this->m_mask.get() ? mem[index.get()] : T(0));
   }
 };
+
+template <class T, class BinaryOp>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+T reduce(
+    const_where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::scalar>> const& x,
+    T identity_element,
+    BinaryOp)
+{
+  return x.mask().get() ? x.value().get() : identity_element;
+}
 
 }

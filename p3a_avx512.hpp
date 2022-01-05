@@ -2,6 +2,8 @@
 
 #include <immintrin.h>
 
+#include "p3a_functional.hpp"
+
 namespace p3a {
 
 namespace simd_abi {
@@ -513,6 +515,10 @@ class const_where_expression<simd_mask<double, simd_abi::avx512>, simd<double, s
     :m_value(const_cast<value_type&>(value_arg))
     ,m_mask(mask_arg)
   {}
+  [[nodiscard]] P3A_ALWAYS_INLINE inline constexpr
+  mask_type const& mask() const { return m_mask; }
+  [[nodiscard]] P3A_ALWAYS_INLINE inline constexpr
+  value_type const& value() const { return m_value; }
   P3A_ALWAYS_INLINE inline
   void copy_to(double* mem, element_aligned_tag) const {
     _mm512_mask_storeu_pd(mem, m_mask.get(), m_value.get());
@@ -549,5 +555,23 @@ class where_expression<simd_mask<double, simd_abi::avx512>, simd<double, simd_ab
         8));
   }
 };
+
+[[nodiscard]] P3A_ALWAYS_INLINE inline
+double reduce(
+    const_where_expression<simd_mask<double, simd_abi::avx512>, simd<double, simd_abi::avx512>> const& x,
+    double,
+    minimizer<double>)
+{
+  return _mm512_mask_reduce_min_pd(x.mask().get(), x.value().get());
+}
+
+[[nodiscard]] P3A_ALWAYS_INLINE inline
+double reduce(
+    const_where_expression<simd_mask<double, simd_abi::avx512>, simd<double, simd_abi::avx512>> const& x,
+    double,
+    adder<double>)
+{
+  return _mm512_mask_reduce_add_pd(x.mask().get(), x.value().get());
+}
 
 }
