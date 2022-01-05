@@ -23,6 +23,20 @@ class reducer<T, serial_execution> {
   reducer& operator=(reducer&&) = default;
   reducer(reducer const&) = delete;
   reducer& operator=(reducer const&) = delete;
+  template <class Iterator, class BinaryOp, class UnaryOp>
+  [[nodiscard]] P3A_NEVER_INLINE
+  T transform_reduce(
+      Iterator first,
+      Iterator last,
+      T init,
+      BinaryOp binary_op,
+      UnaryOp unary_op)
+  {
+    for (; first != last; ++first) {
+      init = binary_op(init, unary_op(*first));
+    }
+    return init;
+  }
   template <class BinaryOp, class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
   T transform_reduce(
@@ -37,18 +51,18 @@ class reducer<T, serial_execution> {
     });
     return init;
   }
-  template <class Iterator, class BinaryOp, class UnaryOp>
+  template <class BinaryOp, class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
-  T transform_reduce(
-      Iterator first,
-      Iterator last,
+  T simd_transform_reduce(
+      subgrid3 grid,
       T init,
       BinaryOp binary_op,
       UnaryOp unary_op)
   {
-    for (; first != last; ++first) {
-      init = binary_op(init, unary_op(*first));
-    }
+    simd_for_each<T>(m_policy, grid,
+    [&] (vector3<int> const& item, host_simd_mask<T> const& mask) P3A_ALWAYS_INLINE {
+      init = binary_op(init, unary_op(item, mask));
+    });
     return init;
   }
 };
