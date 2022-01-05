@@ -97,12 +97,6 @@ class simd<float, simd_abi::avx512> {
   P3A_ALWAYS_INLINE inline void copy_to(float* ptr, element_aligned_tag) const {
     _mm512_storeu_ps(ptr, m_value);
   }
-  P3A_ALWAYS_INLINE static inline simd masked_load(float const* ptr, mask_type const& mask) {
-    return simd(_mm512_mask_loadu_ps(_mm512_set1_ps(0.0), mask.get(), ptr));
-  }
-  P3A_ALWAYS_INLINE inline void masked_store(float* ptr, mask_type const& mask) const {
-    _mm512_mask_storeu_ps(ptr, mask.get(), m_value);
-  }
   P3A_ALWAYS_INLINE inline constexpr __m512 get() const { return m_value; }
   P3A_ALWAYS_INLINE inline simd_mask<float, simd_abi::avx512> operator<(simd const& other) const {
     return simd_mask<float, simd_abi::avx512>(_mm512_cmplt_ps_mask(m_value, other.m_value));
@@ -363,12 +357,6 @@ class simd<double, simd_abi::avx512> {
   P3A_ALWAYS_INLINE inline void copy_to(double* ptr, element_aligned_tag) const {
     _mm512_storeu_pd(ptr, m_value);
   }
-  P3A_ALWAYS_INLINE static inline simd masked_load(double const* ptr, mask_type const& mask) {
-    return simd(_mm512_mask_loadu_pd(_mm512_set1_pd(0.0), mask.get(), ptr));
-  }
-  P3A_ALWAYS_INLINE inline void masked_store(double* ptr, mask_type const& mask) const {
-    _mm512_mask_storeu_pd(ptr, mask.get(), m_value);
-  }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline
   simd masked_gather(double const* ptr, index_type const& index, mask_type const& mask) {
     return _mm512_mask_i32gather_pd(
@@ -479,5 +467,67 @@ condition(
 {
   return simd<double, simd_abi::avx512>(_mm512_mask_blend_pd(a.get(), c.get(), b.get()));
 }
+
+template <>
+class const_where_expression<simd_mask<float, simd_abi::avx512>, simd<float, simd_abi::avx512>> {
+ public:
+  using abi_type = simd_abi::avx512;
+  using value_type = simd<float, abi_type>;
+  using mask_type = simd_mask<float, abi_type>;
+ protected:
+  value_type& m_value;
+  mask_type const& m_mask;
+ public:
+  const_where_expression(mask_type const& mask_arg, value_type const& value_arg)
+    :m_value(const_cast<value_type&>(value_arg))
+    ,m_mask(mask_arg)
+  {}
+  P3A_ALWAYS_INLINE inline void copy_to(float* mem, element_aligned_tag) const {
+    _mm512_mask_storeu_ps(mem, m_mask.get(), m_value.get());
+  }
+};
+
+template <>
+class where_expression<simd_mask<float, simd_abi::avx512>, simd<float, simd_abi::avx512>>
+ : public const_where_expression<simd_mask<float, simd_abi::avx512>, simd<float, simd_abi::avx512>> {
+ public:
+  where_expression(simd_mask<float, simd_abi::avx512> const& mask_arg, simd<float, simd_abi::avx512>& value_arg)
+    :const_where_expression(mask_arg, value_arg)
+  {}
+  P3A_ALWAYS_INLINE inline void copy_from(float const* mem, element_aligned_tag) {
+    m_value = value_type(_mm512_mask_loadu_ps(_mm512_set1_ps(0.0), m_mask.get(), mem));
+  }
+};
+
+template <>
+class const_where_expression<simd_mask<double, simd_abi::avx512>, simd<double, simd_abi::avx512>> {
+ public:
+  using abi_type = simd_abi::avx512;
+  using value_type = simd<double, abi_type>;
+  using mask_type = simd_mask<double, abi_type>;
+ protected:
+  value_type& m_value;
+  mask_type const& m_mask;
+ public:
+  const_where_expression(mask_type const& mask_arg, value_type const& value_arg)
+    :m_value(const_cast<value_type&>(value_arg))
+    ,m_mask(mask_arg)
+  {}
+  P3A_ALWAYS_INLINE inline void copy_to(double* mem, element_aligned_tag) {
+    _mm512_mask_storeu_pd(mem, m_mask.get(), m_value.get());
+  }
+};
+
+template <>
+class where_expression<simd_mask<double, simd_abi::avx512>, simd<double, simd_abi::avx512>>
+ : public const_where_expression<simd_mask<double, simd_abi::avx512>, simd<double, simd_abi::avx512>> {
+ public:
+  where_expression(simd_mask<double, simd_abi::avx512> const& mask_arg, simd<double, simd_abi::avx512>& value_arg)
+    :const_where_expression(mask_arg, value_arg)
+  {}
+  P3A_ALWAYS_INLINE inline void copy_from(double const* mem, element_aligned_tag) {
+    m_value = value_type(_mm512_mask_loadu_pd(_mm512_set1_pd(0.0), m_mask.get(), mem));
+  }
+};
 
 }

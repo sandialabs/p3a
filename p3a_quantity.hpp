@@ -437,33 +437,19 @@ quantity<T, Dimension> absolute_value(quantity<T, Dimension> const& a)
   return quantity<T, Dimension>(absolute_value(a.value()));
 }
 
-template <class T, class Dimension>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-quantity<T, Dimension> load_scalar(
-    quantity<T, Dimension> const* ptr, int offset)
-{
-  return load(ptr, offset);
-}
-
 template <class T, class Dimension, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 quantity<simd<T, Abi>, Dimension> load(
     quantity<T, Dimension> const* ptr, int offset, simd_mask<T, Abi> const& mask)
 {
-  return simd<T, Abi>::masked_load(&(ptr->value()) + offset, mask);
+  simd<T, Abi> result;
+  where(mask, result).copy_from(&(ptr->value()) + offset, element_aligned_tag());
+  return result;
 }
 
 template <class T, class Dimension, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-quantity<simd<T, Abi>, Dimension> load_scalar(
-    quantity<T, Dimension> const* ptr, int offset, simd_mask<T, Abi> const& mask)
-{
-  return simd<T, Abi>::masked_load(&(ptr->value()) + offset, mask);
-}
-
-template <class T, class Dimension, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-quantity<simd<T, Abi>, Dimension> load_scalar(
+quantity<simd<T, Abi>, Dimension> load(
     quantity<T, Dimension> const* ptr, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
 {
   return load(&(ptr->value()), offset, mask);
@@ -475,9 +461,9 @@ vector3<quantity<simd<T, Abi>, Dimension>> load_vector3(
     quantity<T, Dimension> const* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
 {
   return vector3<quantity<simd<T, Abi>, Dimension>>(
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 0 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 1 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 2 + offset, mask));
+      load(ptr, stride * 0 + offset, mask),
+      load(ptr, stride * 1 + offset, mask),
+      load(ptr, stride * 2 + offset, mask));
 }
 
 template <class T, class Dimension, class Abi>
@@ -486,9 +472,9 @@ vector3<quantity<simd<T, Abi>, Dimension>> load_vector3(
     quantity<T, Dimension> const* ptr, int stride, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
 {
   return vector3<quantity<simd<T, Abi>, Dimension>>(
-      load_scalar(ptr, offset + stride * 0, mask),
-      load_scalar(ptr, offset + stride * 1, mask),
-      load_scalar(ptr, offset + stride * 2, mask));
+      load(ptr, stride * 0 + offset, mask),
+      load(ptr, stride * 1 + offset, mask),
+      load(ptr, stride * 2 + offset, mask));
 }
 
 template <class T, class Dimension, class Abi>
@@ -497,12 +483,12 @@ symmetric3x3<quantity<simd<T, Abi>, Dimension>> load_symmetric3x3(
     quantity<T, Dimension> const* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
 {
   return symmetric3x3<quantity<simd<T, Abi>, Dimension>>(
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 0 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 1 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 2 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 3 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 4 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 5 + offset, mask));
+      load(ptr, stride * 0 + offset, mask),
+      load(ptr, stride * 1 + offset, mask),
+      load(ptr, stride * 2 + offset, mask),
+      load(ptr, stride * 3 + offset, mask),
+      load(ptr, stride * 4 + offset, mask),
+      load(ptr, stride * 5 + offset, mask));
 }
 
 template <class T, class Dimension, class Abi>
@@ -511,15 +497,15 @@ matrix3x3<quantity<simd<T, Abi>, Dimension>> load_matrix3x3(
     quantity<T, Dimension> const* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
 {
   return matrix3x3<quantity<simd<T, Abi>, Dimension>>(
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 0 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 1 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 2 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 3 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 4 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 5 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 6 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 7 + offset, mask),
-      simd<T, Abi>::masked_load(&(ptr->value()) + stride * 8 + offset, mask));
+      load(ptr, stride * 0 + offset, mask),
+      load(ptr, stride * 1 + offset, mask),
+      load(ptr, stride * 2 + offset, mask),
+      load(ptr, stride * 3 + offset, mask),
+      load(ptr, stride * 4 + offset, mask),
+      load(ptr, stride * 5 + offset, mask),
+      load(ptr, stride * 6 + offset, mask),
+      load(ptr, stride * 7 + offset, mask),
+      load(ptr, stride * 8 + offset, mask));
 }
 
 template <class T, class Dimension, class Abi>
@@ -530,7 +516,7 @@ void store(
     int offset,
     simd_mask<T, Abi> const& mask)
 {
-  q.value().masked_store(&(ptr->value()) + offset, mask);
+  store(q.value(), &(ptr->value()), offset, mask);
 }
 
 template <class T, class Dimension, class Abi>
@@ -553,9 +539,9 @@ void store(
     int offset,
     simd_mask<T, Abi> const& mask)
 {
-  q.x().value().masked_store(&(ptr->value()) + stride * 0 + offset, mask);
-  q.y().value().masked_store(&(ptr->value()) + stride * 1 + offset, mask);
-  q.z().value().masked_store(&(ptr->value()) + stride * 2 + offset, mask);
+  store(q.x(), ptr, stride * 0 + offset, mask);
+  store(q.y(), ptr, stride * 1 + offset, mask);
+  store(q.z(), ptr, stride * 2 + offset, mask);
 }
 
 template <class T, class Dimension, class Abi>
@@ -567,9 +553,9 @@ void store(
     simd_index<T, Abi> const& offset,
     simd_mask<T, Abi> const& mask)
 {
-  store(q.x(), ptr, offset + stride * 0, mask);
-  store(q.x(), ptr, offset + stride * 1, mask);
-  store(q.x(), ptr, offset + stride * 2, mask);
+  store(q.x(), ptr, stride * 0 + offset, mask);
+  store(q.y(), ptr, stride * 1 + offset, mask);
+  store(q.z(), ptr, stride * 2 + offset, mask);
 }
 
 template <class T, class Dimension, class Abi>
@@ -581,12 +567,12 @@ void store(
     int offset,
     simd_mask<T, Abi> const& mask)
 {
-  q.xx().value().masked_store(&(ptr->value()) + stride * 0 + offset, mask);
-  q.xy().value().masked_store(&(ptr->value()) + stride * 1 + offset, mask);
-  q.xz().value().masked_store(&(ptr->value()) + stride * 2 + offset, mask);
-  q.yy().value().masked_store(&(ptr->value()) + stride * 3 + offset, mask);
-  q.yz().value().masked_store(&(ptr->value()) + stride * 4 + offset, mask);
-  q.zz().value().masked_store(&(ptr->value()) + stride * 5 + offset, mask);
+  store(q.xx(), ptr, stride * 0 + offset, mask);
+  store(q.xy(), ptr, stride * 1 + offset, mask);
+  store(q.xz(), ptr, stride * 2 + offset, mask);
+  store(q.yy(), ptr, stride * 3 + offset, mask);
+  store(q.yz(), ptr, stride * 4 + offset, mask);
+  store(q.zz(), ptr, stride * 5 + offset, mask);
 }
 
 template <class T, class Dimension, class Abi>
@@ -598,15 +584,15 @@ void store(
     int offset,
     simd_mask<T, Abi> const& mask)
 {
-  q.xx().value().masked_store(&(ptr->value()) + stride * 0 + offset, mask);
-  q.xy().value().masked_store(&(ptr->value()) + stride * 1 + offset, mask);
-  q.xz().value().masked_store(&(ptr->value()) + stride * 2 + offset, mask);
-  q.yx().value().masked_store(&(ptr->value()) + stride * 3 + offset, mask);
-  q.yy().value().masked_store(&(ptr->value()) + stride * 4 + offset, mask);
-  q.yz().value().masked_store(&(ptr->value()) + stride * 5 + offset, mask);
-  q.zx().value().masked_store(&(ptr->value()) + stride * 6 + offset, mask);
-  q.zy().value().masked_store(&(ptr->value()) + stride * 7 + offset, mask);
-  q.zz().value().masked_store(&(ptr->value()) + stride * 8 + offset, mask);
+  store(q.xx(), ptr, stride * 0 + offset, mask);
+  store(q.xy(), ptr, stride * 1 + offset, mask);
+  store(q.xz(), ptr, stride * 2 + offset, mask);
+  store(q.yx(), ptr, stride * 3 + offset, mask);
+  store(q.yy(), ptr, stride * 4 + offset, mask);
+  store(q.yz(), ptr, stride * 5 + offset, mask);
+  store(q.zx(), ptr, stride * 6 + offset, mask);
+  store(q.zy(), ptr, stride * 7 + offset, mask);
+  store(q.zz(), ptr, stride * 8 + offset, mask);
 }
 
 template <class T, class Abi>

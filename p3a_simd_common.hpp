@@ -8,8 +8,6 @@
 
 namespace p3a {
 
-class element_aligned_tag {};
-
 template <class T, class Abi>
 class simd;
 
@@ -18,6 +16,43 @@ class simd_mask;
 
 template <class T, class Abi>
 class simd_index;
+
+class element_aligned_tag {};
+
+template <class Mask, class Value>
+class const_where_expression {
+ protected:
+  Value& m_value;
+  Mask const& m_mask;
+ public:
+  const_where_expression(Mask const& mask_arg, Value const& value_arg)
+    :m_value(const_cast<Value&>(value_arg))
+    ,m_mask(mask_arg)
+  {}
+};
+
+template <class Mask, class Value>
+class where_expression : public const_where_expression<Mask, Value> {
+  using base_type = const_where_expression<Mask, Value>;
+ public:
+  where_expression(Mask const& mask_arg, Value& value_arg)
+    :base_type(mask_arg, value_arg)
+  {}
+};
+
+template <class T, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+where_expression<simd_mask<T, Abi>, simd<T, Abi>>
+where(simd_mask<T, Abi> const& mask, simd<T, Abi>& value) {
+  return where_expression(mask, value);
+}
+
+template <class T, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+const_where_expression<simd_mask<T, Abi>, simd<T, Abi>>
+where(simd_mask<T, Abi> const& mask, simd<T, Abi> const& value) {
+  return const_where_expression(mask, value);
+}
 
 template <class T, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, Abi>& operator+=(simd<T, Abi>& a, simd<T, Abi> const& b) {
@@ -113,6 +148,20 @@ operator/=(simd<T, Abi>& a, U const& b) {
   return a;
 }
 
+template <class T, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd_index<T, Abi>
+operator+(simd_index<T, Abi> const& a, int b) {
+  return a + simd_index<T, Abi>(b);
+}
+
+template <class T, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd_index<T, Abi>
+operator+(int a, simd_index<T, Abi> const& b) {
+  return simd_index<T, Abi>(a) + b;
+}
+
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr bool
 all_of(bool a) { return a; }
 
@@ -133,7 +182,9 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 simd<T, Abi> load(
     T const* ptr, int offset, simd_mask<T, Abi> const& mask)
 {
-  return simd<T, Abi>::masked_load(ptr + offset, mask);
+  simd<T, Abi> result;
+  where(mask, result).copy_from(ptr + offset, element_aligned_tag());
+  return result;
 }
 
 template <class T, class Abi>
@@ -150,7 +201,7 @@ void store(
     simd<T, Abi> const& value,
     T* ptr, int offset, simd_mask<T, Abi> const& mask)
 {
-  return value.masked_store(ptr + offset, mask);
+  where(mask, value).copy_to(ptr + offset, element_aligned_tag());
 }
 
 template <class T, class Abi>
