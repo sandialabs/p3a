@@ -245,8 +245,8 @@ class const_where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::s
     if (m_mask.get()) *mem = m_value.get();
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-  void copy_to(T* mem, scatter<T, simd_abi::scalar> const& s) const {
-    if (m_mask.get()) mem[s.index().get()] = m_value.get();
+  void scatter_to(T* mem, simd_index<T, simd_abi::scalar> const& index) const {
+    if (m_mask.get()) mem[index.get()] = m_value.get();
   }
 };
 
@@ -264,8 +264,8 @@ class where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::scalar>
     this->m_value = value_type(this->m_mask.get() ? *mem : T(0));
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-  void copy_from(T const* mem, gather<T, simd_abi::scalar> const& g) {
-    this->m_value = value_type(this->m_mask.get() ? mem[g.index().get()] : T(0));
+  void gather_from(T const* mem, simd_index<T, simd_abi::scalar> const& index) {
+    this->m_value = value_type(this->m_mask.get() ? mem[index.get()] : T(0));
   }
 };
 

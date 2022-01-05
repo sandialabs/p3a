@@ -513,8 +513,18 @@ class const_where_expression<simd_mask<double, simd_abi::avx512>, simd<double, s
     :m_value(const_cast<value_type&>(value_arg))
     ,m_mask(mask_arg)
   {}
-  P3A_ALWAYS_INLINE inline void copy_to(double* mem, element_aligned_tag) {
+  P3A_ALWAYS_INLINE inline
+  void copy_to(double* mem, element_aligned_tag) const {
     _mm512_mask_storeu_pd(mem, m_mask.get(), m_value.get());
+  }
+  P3A_ALWAYS_INLINE inline
+  void scatter_to(double* mem, simd_index<double, simd_abi::avx512> const& index) const {
+    _mm512_mask_i32scatter_pd(
+        mem,
+        m_mask.get(),
+        index.get(),
+        m_value.get(),
+        8);
   }
 };
 
@@ -525,8 +535,18 @@ class where_expression<simd_mask<double, simd_abi::avx512>, simd<double, simd_ab
   where_expression(simd_mask<double, simd_abi::avx512> const& mask_arg, simd<double, simd_abi::avx512>& value_arg)
     :const_where_expression(mask_arg, value_arg)
   {}
-  P3A_ALWAYS_INLINE inline void copy_from(double const* mem, element_aligned_tag) {
+  P3A_ALWAYS_INLINE inline
+  void copy_from(double const* mem, element_aligned_tag) {
     m_value = value_type(_mm512_mask_loadu_pd(_mm512_set1_pd(0.0), m_mask.get(), mem));
+  }
+  P3A_ALWAYS_INLINE inline
+  void gather_from(double const* mem, simd_index<double, simd_abi::avx512> const& index) {
+    m_value = value_type(_mm512_mask_i32gather_pd(
+        _mm512_set1_pd(0.0),
+        m_mask.get(),
+        index.get(),
+        mem,
+        8));
   }
 };
 

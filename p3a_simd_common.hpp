@@ -55,30 +55,6 @@ where(simd_mask<T, Abi> const& mask, simd<T, Abi> const& value) {
 }
 
 template <class T, class Abi>
-class scatter {
-  simd_index<T, Abi> m_index;
- public:
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-  scatter(simd_index<T, Abi> const& index_arg)
-   :m_index(index_arg)
-  {}
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-  simd_index<T, Abi> const& index() const { return m_index; }
-};
-
-template <class T, class Abi>
-class gather {
-  simd_index<T, Abi> m_index;
- public:
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-  gather(simd_index<T, Abi> const& index_arg)
-   :m_index(index_arg)
-  {}
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-  simd_index<T, Abi> const& index() const { return m_index; }
-};
-
-template <class T, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, Abi>& operator+=(simd<T, Abi>& a, simd<T, Abi> const& b) {
   a = a + b;
   return a;
@@ -217,7 +193,7 @@ simd<T, Abi> load(
     T const* ptr, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
 {
   simd<T, Abi> result;
-  where(mask, result).copy_from(ptr, gather(offset));
+  where(mask, result).gather_from(ptr, offset);
   return result;
 }
 
@@ -236,7 +212,7 @@ void store(
     simd<T, Abi> const& value,
     T* ptr, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
 {
-  where(mask, value).copy_to(ptr, scatter(offset));
+  where(mask, value).scatter_to(ptr, offset);
 }
 
 template <class T, class Abi>
