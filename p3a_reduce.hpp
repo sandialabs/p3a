@@ -929,10 +929,10 @@ class reproducible_adder<double, Allocator, ExecutionPolicy> {
       Iterator last,
       UnaryOp unary_op)
   {
-    auto const policy = m_values.get_execution_policy();
-    auto const values = m_values.begin();
     auto const n = (last - first);
     m_values.resize(n);
+    auto const policy = m_values.get_execution_policy();
+    auto const values = m_values.begin();
     using size_type = std::remove_const_t<decltype(n)>;
     for_each(policy,
         counting_iterator<size_type>(0),
