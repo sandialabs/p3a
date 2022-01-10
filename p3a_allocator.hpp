@@ -5,6 +5,23 @@
 
 namespace p3a {
 
+class allocation_failure : public std::bad_alloc {
+  char message[100];
+  std::int64_t n;
+ public:
+  allocation_failure(char const* memory_space_arg, std::int64_t n_arg)
+  {
+    using long_long = long long;
+    auto const long_long_n = long_long(n_arg);
+    std::snprintf(message, sizeof(message), "failed to allocate %lld bytes in %s memory",
+        long_long_n, memory_space_arg);
+  }
+  virtual const char* what() const noexcept override
+  {
+    return message;
+  }
+};
+
 template <class T>
 class allocator {
  public:
@@ -12,7 +29,11 @@ class allocator {
   template <class U> struct rebind { using other = p3a::allocator<U>; };
   P3A_NEVER_INLINE static T* allocate(size_type n)
   {
-    return static_cast<T*>(std::malloc(std::size_t(n) * sizeof(T)));
+    auto const result = std::malloc(std::size_t(n) * sizeof(T));
+    if ((result == nullptr) && (n != 0)) {
+      throw allocation_failure("CPU", n);
+    }
+    return static_cast<T*>(result);
   }
   P3A_NEVER_INLINE static void deallocate(T* p, size_type)
   {
@@ -30,7 +51,10 @@ class cuda_host_allocator {
   P3A_NEVER_INLINE static T* allocate(size_type n)
   {
     void* ptr = nullptr;
-    cudaMallocHost(&ptr, std::size_t(n) * sizeof(T));
+    auto const result = cudaMallocHost(&ptr, std::size_t(n) * sizeof(T));
+    if (result != cudaSuccess) {
+      throw allocation_failure("CUDA host pinned", n);
+    }
     return static_cast<T*>(ptr);
   }
   P3A_NEVER_INLINE static void deallocate(T* p, size_type)
@@ -47,7 +71,10 @@ class cuda_device_allocator {
   P3A_NEVER_INLINE static T* allocate(size_type n)
   {
     void* ptr = nullptr;
-    cudaMalloc(&ptr, std::size_t(n) * sizeof(T));
+    auto const result = cudaMalloc(&ptr, std::size_t(n) * sizeof(T));
+    if (result != cudaSuccess) {
+      throw allocation_failure("CUDA device", n);
+    }
     return static_cast<T*>(ptr);
   }
   P3A_NEVER_INLINE static void deallocate(T* p, size_type)
@@ -68,7 +95,10 @@ class hip_host_allocator {
   P3A_NEVER_INLINE static T* allocate(size_type n)
   {
     void* ptr = nullptr;
-    hipHostMalloc(&ptr, std::size_t(n) * sizeof(T), hipHostMallocDefault);
+    auto const result = hipHostMalloc(&ptr, std::size_t(n) * sizeof(T), hipHostMallocDefault);
+    if (result != hipSuccess) {
+      throw allocation_failure("HIP host pinned", n);
+    }
     return static_cast<T*>(ptr);
   }
   P3A_NEVER_INLINE static void deallocate(T* p, size_type)
@@ -85,7 +115,10 @@ class hip_device_allocator {
   P3A_NEVER_INLINE static T* allocate(size_type n)
   {
     void* ptr = nullptr;
-    hipMalloc(&ptr, std::size_t(n) * sizeof(T));
+    auto const result = hipMalloc(&ptr, std::size_t(n) * sizeof(T));
+    if (result != hipSuccess) {
+      throw allocation_failure("HIP device", n);
+    }
     return static_cast<T*>(ptr);
   }
   P3A_NEVER_INLINE static void deallocate(T* p, size_type)
