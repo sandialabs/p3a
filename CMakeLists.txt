@@ -117,6 +117,7 @@ install(
 if (BUILD_TESTING)
   set(unit_test_sources
     p3a_unit_tests_main.cpp
+    p3a_unit_tests_fp.cpp
     p3a_unit_tests_mandel.cpp
     p3a_unit_tests_polar.cpp
     p3a_unit_tests_lie.cpp

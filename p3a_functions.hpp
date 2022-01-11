@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cmath>
+#include <cstdint>
+#include <cstring>
 
 #include "p3a_macros.hpp"
 #include "p3a_constants.hpp"
@@ -230,6 +232,30 @@ T sin_x_over_x(T const& x) {
   } else {
     return T(1.0);
   }
+}
+
+template <class To, class From>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+To bit_cast(From const& src)
+{
+  To dst;
+  memcpy(&dst, &src, sizeof(To));
+  return dst;
+}
+
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+int exponent(double x)
+{
+  auto const as_int = p3a::bit_cast<std::uint64_t>(x);
+  auto const biased_exponent = (as_int >> 52) & 0b11111111111ull;
+  return int(biased_exponent) - 1023;
+}
+
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+double power_of_two_as_double(int e)
+{
+  auto const as_int = std::uint64_t(e + 1023) << 52;
+  return p3a::bit_cast<double>(as_int);
 }
 
 }
