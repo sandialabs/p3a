@@ -234,6 +234,7 @@ T sin_x_over_x(T const& x) {
   }
 }
 
+// this is std::bit_cast in C++20
 template <class To, class From>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 To bit_cast(From const& src)
