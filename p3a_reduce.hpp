@@ -59,9 +59,12 @@ class reducer<T, serial_execution> {
       BinaryOp binary_op,
       UnaryOp unary_op)
   {
+    T const identity_value = init;
     simd_for_each<T>(m_policy, grid,
     [&] (vector3<int> const& item, host_simd_mask<T> const& mask) P3A_ALWAYS_INLINE {
-      init = binary_op(init, unary_op(item, mask));
+      simd<T, simd_abi::host_native> const simd_value = unary_op(item, mask);
+      T const scalar_value = reduce(where(mask, simd_value), identity_value, binary_op);
+      init = binary_op(init, scalar_value);
     });
     return init;
   }
@@ -271,7 +274,9 @@ __global__ void cuda_simd_grid_reduce(
   int const y_i = block_idx.y();
   int const z_i = block_idx.z();
   vector3<int> const xyz(x_i, y_i, z_i);
-  T myResult = unop(xyz + first, device_simd_mask<T>(x_i < user_extents.x()));
+  auto const mask = simd<T, simd_abi::scalar>(x_i < user_extents.x());
+  simd<T, simd_abi::scalar> const simd_value = unop(xyz + first, mask);
+  T myResult = reduce(where(mask, simd_value), init, binop);
   // each thread puts its local sum into shared memory
   sdata[tid] = myResult;
   __syncthreads();
