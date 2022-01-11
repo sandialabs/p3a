@@ -111,7 +111,6 @@ P3A_NEVER_INLINE int conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
     axpy(-alpha, Ap, r, r); // r = r - alpha * (A * p)
     T const r_dot_r_new = dot_product(m_adder, r, r);
     residual_magnitude = square_root(r_dot_r_old);
-    printf("k %d |r| %.7e\n", k, residual_magnitude);
     if (residual_magnitude <= absolute_tolerance) {
       return k;
     }
