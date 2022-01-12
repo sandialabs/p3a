@@ -55,7 +55,7 @@ int sign_bit(double x)
   return double_sign_bit(as_int);
 }
 
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void decompose_double(double value, int& sign_bit, int& exponent, std::uint64_t& mantissa)
 {
   std::uint64_t const as_int = p3a::bit_cast<std::uint64_t>(value);
@@ -71,6 +71,20 @@ double compose_double(int sign_bit_arg, int exponent_arg, std::uint64_t mantissa
       (std::uint64_t(exponent_arg + 1023) << 52) |
       (std::uint64_t(sign_bit_arg) << 63);
   return p3a::bit_cast<double>(as_int);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void decompose_double(double value, std::int64_t& significand, int& exponent)
+{
+  int sign_bit;
+  std::uint64_t mantissa;
+  decompose_double(value, sign_bit, exponent, mantissa);
+  if (exponent > -1023) {
+    mantissa |= 0b10000000000000000000000000000000000000000000000000000ull;
+  }
+  significand = mantissa;
+  if (sign_bit) significand = -significand;
+  exponent -= 52;
 }
 
 class int128 {

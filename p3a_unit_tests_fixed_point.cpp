@@ -26,6 +26,9 @@ TEST(fixed_point, one){
     double const recomposed = p3a::compose_double(sign_bit, exponent, mantissa);
     printf("recomposed value is %.17e\n", recomposed);
     EXPECT_EQ(value, recomposed);
+    std::int64_t significand;
+    p3a::decompose_double(value, significand, exponent);
+    printf("value %.17e = %lld * 2 ^ %d\n", value, significand, exponent);
   }
 }
 
