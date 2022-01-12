@@ -73,6 +73,7 @@ double compose_double(int sign_bit_arg, int exponent_arg, std::uint64_t mantissa
   return p3a::bit_cast<double>(as_int);
 }
 
+// value = significand * (2 ^ exponent)
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void decompose_double(double value, std::int64_t& significand, int& exponent)
 {
@@ -85,6 +86,44 @@ void decompose_double(double value, std::int64_t& significand, int& exponent)
   significand = mantissa;
   if (sign_bit) significand = -significand;
   exponent -= 52;
+}
+
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+double compose_double(std::int64_t significand, int exponent)
+{
+  int sign_bit;
+  if (significand < 0) {
+    sign_bit = 1;
+    significand = -significand;
+  } else {
+    sign_bit = 0;
+  }
+  auto constexpr maximum_significand =
+    0b11111111111111111111111111111111111111111111111111111ull;
+  while (significand > maximum_significand) {
+    significand >>= 1;
+    ++exponent;
+  }
+  auto constexpr minimum_significand =
+    0b10000000000000000000000000000000000000000000000000000ull;
+  while (significand < minimum_significand) {
+    significand <<= 1;
+    --exponent;
+  }
+  exponent += 52;
+  // subnormals
+  while (exponent < -1023) {
+    significand >>= 1;
+    ++exponent;
+  }
+  // infinity
+  if (exponent > 1023) {
+    significand = 0;
+    exponent = 1023;
+  }
+  std::uint64_t mantissa =
+    std::uint64_t(significand) & 0b1111111111111111111111111111111111111111111111111111ull;
+  return compose_double(sign_bit, exponent, mantissa);
 }
 
 class int128 {
