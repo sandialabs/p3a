@@ -16,36 +16,52 @@ extern "C" void p3a_mpi_int128_sum(
 namespace p3a {
 
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+int double_exponent(std::uint64_t as_int)
+{
+  auto const biased_exponent = (as_int >> 52) & 0b11111111111ull;
+  return int(biased_exponent) - 1023;
+}
+
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 int exponent(double x)
 {
   auto const as_int = p3a::bit_cast<std::uint64_t>(x);
-  auto const biased_exponent = (as_int >> 52) & 0b11111111111ull;
-  return int(biased_exponent) - 1023;
+  return double_exponent(as_int);
+}
+
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::uint64_t double_mantissa(std::uint64_t as_int)
+{
+  return as_int & 0b1111111111111111111111111111111111111111111111111111ull;
 }
 
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 std::uint64_t mantissa(double x)
 {
   auto const as_int = p3a::bit_cast<std::uint64_t>(x);
-  return as_int & 0b1111111111111111111111111111111111111111111111111111ull;
+  return double_mantissa(as_int);
+}
+
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+int double_sign_bit(std::uint64_t as_int)
+{
+  return int((as_int & 0b1000000000000000000000000000000000000000000000000000000000000000ull) >> 63);
 }
 
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 int sign_bit(double x)
 {
   auto const as_int = p3a::bit_cast<std::uint64_t>(x);
-  return int((as_int & 0b1000000000000000000000000000000000000000000000000000000000000000ull) >> 63);
+  return double_sign_bit(as_int);
 }
 
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-std::int64_t double_significand(int sign_bit_arg, int exponent_arg, std::uint64_t mantissa_arg)
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void decompose_double(double value, int& sign_bit, int& exponent, std::uint64_t& mantissa)
 {
-  if (exponent_arg > -1023) {
-    mantissa_arg |= 0b10000000000000000000000000000000000000000000000000000ull;
-  }
-  auto result = std::int64_t(mantissa_arg);
-  if (sign_bit_arg) result = -result;
-  return result;
+  std::uint64_t const as_int = p3a::bit_cast<std::uint64_t>(value);
+  sign_bit = p3a::double_sign_bit(as_int);
+  exponent = p3a::double_exponent(as_int);
+  mantissa = p3a::double_mantissa(as_int);
 }
 
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
