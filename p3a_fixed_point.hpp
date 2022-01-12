@@ -121,7 +121,7 @@ double compose_double(std::int64_t significand, int exponent)
   // infinity
   if (exponent > 1023) {
     significand = 0;
-    exponent = 1023;
+    exponent = 1024;
   }
   std::uint64_t mantissa =
     std::uint64_t(significand) & 0b1111111111111111111111111111111111111111111111111111ull;
