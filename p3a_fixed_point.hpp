@@ -106,9 +106,11 @@ double compose_double(std::int64_t significand, int exponent)
   }
   auto constexpr minimum_significand =
     0b10000000000000000000000000000000000000000000000000000ull;
-  while (significand < minimum_significand) {
-    significand <<= 1;
-    --exponent;
+  if (significand != 0) {
+    while (significand < minimum_significand) {
+      significand <<= 1;
+      --exponent;
+    }
   }
   exponent += 52;
   // subnormals

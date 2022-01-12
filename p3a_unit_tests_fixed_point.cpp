@@ -29,6 +29,8 @@ TEST(fixed_point, one){
     std::int64_t significand;
     p3a::decompose_double(value, significand, exponent);
     printf("value %.17e = %lld * 2 ^ %d\n", value, significand, exponent);
+    double const recomposed_again = p3a::compose_double(significand, exponent);
+    printf("recomposed value %.17e = %lld * 2 ^ %d\n", recomposed_again, significand, exponent);
   }
 }
 
