@@ -7,8 +7,8 @@ TEST(fixed_point, one){
     0.0,
     -0.0,
     1.0,
-    42.0,
-    -42.0,
+    420.0,
+    -420.0,
     1.0e-20,
     -1.0e+20,
     1.0e-320,
@@ -43,14 +43,26 @@ TEST(fixed_point, one){
     printf("value %.17e = %lld * (2 ^ %d)\n", value, significand, exponent);
     int const shift = maximum_exponent - exponent;
     printf("needs shift %d to be desired exponent %d\n", shift, maximum_exponent);
-    if (shift > 64) {
-      significand = 0;
+    int sign;
+    std::uint64_t unsigned_significand;
+    if (significand < 0) {
+      sign = -1;
+      unsigned_significand = -significand;
     } else {
-      significand >>= shift;
+      sign = 1;
+      unsigned_significand = significand;
     }
+    if (shift > 64) {
+      unsigned_significand = 0;
+    } else {
+      unsigned_significand >>= shift;
+    }
+    significand = sign * unsigned_significand;
     printf("value %.17e ~= %lld * (2 ^ %d)\n", value, significand, maximum_exponent);
     fixed_point_sum_64 += significand;
   }
-  printf("fixed point sum = %lld * (2 ^ %d)\n", fixed_point_sum_64, maximum_exponent);
+  printf("fixed point sum (64bit) = %lld * (2 ^ %d)\n", fixed_point_sum_64, maximum_exponent);
+  double const recomposed_fixed_point_sum_64 = p3a::compose_double(fixed_point_sum_64, maximum_exponent);
+  printf("recomposed fixed point sum (64bit) = %.17e\n", recomposed_fixed_point_sum_64); 
 }
 
