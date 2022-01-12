@@ -61,7 +61,7 @@ set(P3A_HEADERS
   p3a_simd.hpp
   p3a_simd_common.hpp
   p3a_simd_scalar.hpp
-  p3a_int128.hpp
+  p3a_fixed_point.hpp
   p3a_counting_iterator.hpp
   p3a_dynamic_matrix.hpp
   p3a_skew3x3.hpp
@@ -83,6 +83,7 @@ set(P3A_HEADERS
 set(P3A_SOURCES
   p3a_execution.cpp
   p3a_mpi.cpp
+  p3a_fixed_point.cpp
   p3a_opts.cpp
   )
 
@@ -117,7 +118,7 @@ install(
 if (BUILD_TESTING)
   set(unit_test_sources
     p3a_unit_tests_main.cpp
-    p3a_unit_tests_fp.cpp
+    p3a_unit_tests_fixed_point.cpp
     p3a_unit_tests_mandel.cpp
     p3a_unit_tests_polar.cpp
     p3a_unit_tests_lie.cpp
