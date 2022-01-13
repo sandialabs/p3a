@@ -43,21 +43,7 @@ TEST(fixed_point, one){
     printf("value %.17e = %lld * (2 ^ %d)\n", value, significand, exponent);
     int const shift = maximum_exponent - exponent;
     printf("needs shift %d to be desired exponent %d\n", shift, maximum_exponent);
-    int sign;
-    std::uint64_t unsigned_significand;
-    if (significand < 0) {
-      sign = -1;
-      unsigned_significand = -significand;
-    } else {
-      sign = 1;
-      unsigned_significand = significand;
-    }
-    if (shift > 64) {
-      unsigned_significand = 0;
-    } else {
-      unsigned_significand >>= shift;
-    }
-    significand = sign * unsigned_significand;
+    significand = p3a::fixed_point_right_shift(significand, shift);
     printf("value %.17e ~= %lld * (2 ^ %d)\n", value, significand, maximum_exponent);
     fixed_point_sum_128 += p3a::int128(significand);
   }

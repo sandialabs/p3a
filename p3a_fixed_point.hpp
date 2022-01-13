@@ -128,6 +128,27 @@ double compose_double(std::int64_t significand, int exponent)
   return compose_double(sign_bit, exponent, mantissa);
 }
 
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+std::int64_t fixed_point_right_shift(std::int64_t significand, int shift)
+{
+  int sign;
+  std::uint64_t unsigned_significand;
+  if (significand < 0) {
+    sign = -1;
+    unsigned_significand = -significand;
+  } else {
+    sign = 1;
+    unsigned_significand = significand;
+  }
+  if (shift > 64) {
+    unsigned_significand = 0;
+  } else {
+    unsigned_significand >>= shift;
+  }
+  significand = sign * unsigned_significand;
+  return significand;
+}
+
 class int128 {
   std::int64_t m_high;
   std::uint64_t m_low;
