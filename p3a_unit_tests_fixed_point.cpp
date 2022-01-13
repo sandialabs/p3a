@@ -78,7 +78,7 @@ TEST(fixed_point, one){
     fixed_point_sum_128 >>= 1;
     ++sum_exponent;
   }
-  std::int64_t const fixed_point_sum_64 = p3a::bit_cast<std::int64_t>(fixed_point_sum_128.low());
+  std::int64_t const fixed_point_sum_64 = sum_sign * p3a::bit_cast<std::int64_t>(fixed_point_sum_128.low());
   printf("fixed point sum = %lld * (2 ^ %d)\n", fixed_point_sum_64, maximum_exponent);
   double const recomposed_fixed_point_sum = p3a::compose_double(fixed_point_sum_64, maximum_exponent);
   printf("recomposed fixed point sum = %.17e\n", recomposed_fixed_point_sum); 
