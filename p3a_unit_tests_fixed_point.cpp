@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "p3a_fixed_point.hpp"
 
-TEST(fixed_point, one){
+TEST(fixed_point, sum){
   int constexpr count = 10;
   double const values[count] = {
     0.0,
