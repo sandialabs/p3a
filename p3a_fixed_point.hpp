@@ -148,15 +148,15 @@ class int128 {
   int128 from_double(double value, double unit) {
     return int128(std::int64_t(value / unit));
   }
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
   std::int64_t high() const { return m_high; }
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
   std::uint64_t low() const { return m_low; }
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
   double to_double(double unit) const;
 };
 
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 int128 operator+(int128 const& a, int128 const& b) {
   auto high = a.high() + b.high();
   auto const low = a.low() + b.low();
@@ -165,7 +165,13 @@ int128 operator+(int128 const& a, int128 const& b) {
   return int128(high, low);
 }
 
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+void operator+=(int128& a, int128 const& b)
+{
+  a = a + b;
+}
+
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 int128 operator-(int128 const& a, int128 const& b) {
   auto high = a.high() - b.high();
   auto const low = a.low() - b.low();
@@ -179,7 +185,7 @@ int128 operator-(int128 const& x) {
   return int128(0) - x;
 }
 
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 int128 operator>>(int128 const& x, int expo) {
   auto const low =
     (x.low() >> expo) |
@@ -188,17 +194,28 @@ int128 operator>>(int128 const& x, int expo) {
   return int128(high, low);
 }
 
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+void operator>>=(int128& x, int expo)
+{
+  x = x >> expo;
+}
+
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 bool operator==(int128 const& lhs, int128 const& rhs) {
   return lhs.high() == rhs.high() && lhs.low() == rhs.low();
 }
 
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 bool operator<(int128 const& lhs, int128 const& rhs) {
   if (lhs.high() != rhs.high()) {
     return lhs.high() < rhs.high();
   }
   return lhs.low() < rhs.low();
+}
+
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+bool operator>(int128 const& lhs, int128 const& rhs) {
+  return rhs < lhs;
 }
 
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
