@@ -149,6 +149,15 @@ std::int64_t fixed_point_right_shift(std::int64_t significand, int shift)
   return significand;
 }
 
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+std::int64_t decompose_double(double value, int maximum_exponent)
+{
+  int exponent;
+  std::int64_t significand;
+  decompose_double(value, significand, exponent);
+  return fixed_point_right_shift(significand, maximum_exponent - exponent);
+}
+
 class int128 {
   std::int64_t m_high;
   std::uint64_t m_low;
@@ -237,6 +246,26 @@ bool operator<(int128 const& lhs, int128 const& rhs) {
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 bool operator>(int128 const& lhs, int128 const& rhs) {
   return rhs < lhs;
+}
+
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+double compose_double(int128 significand_128, int exponent)
+{
+  int sign;
+  if (significand_128 < p3a::int128(0)) {
+    sign = -1;
+    significand_128 = -significand_128;
+  } else {
+    sign = 1;
+  }
+  p3a::int128 const maximum_significand_128(
+    0b11111111111111111111111111111111111111111111111111111ll);
+  while (significand_128 > maximum_significand_128) {
+    significand_128 >>= 1;
+    ++exponent;
+  }
+  std::int64_t const significand_64 = sign * p3a::bit_cast<std::int64_t>(significand_128.low());
+  return compose_double(significand_64, exponent);
 }
 
 P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline

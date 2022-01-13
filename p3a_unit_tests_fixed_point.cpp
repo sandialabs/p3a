@@ -49,24 +49,7 @@ TEST(fixed_point, sum){
   }
   printf("fixed point sum high %lld low %llu\n",
       fixed_point_sum_128.high(), fixed_point_sum_128.low());
-  int sum_sign;
-  if (fixed_point_sum_128 < p3a::int128(0)) {
-    sum_sign = -1;
-    fixed_point_sum_128 = -fixed_point_sum_128;
-  } else {
-    sum_sign = 1;
-  }
-  int sum_exponent = maximum_exponent;
-  p3a::int128 const maximum_significand_128(
-    0b11111111111111111111111111111111111111111111111111111ll);
-  while (fixed_point_sum_128 > maximum_significand_128) {
-    printf("happened!\n");
-    fixed_point_sum_128 >>= 1;
-    ++sum_exponent;
-  }
-  std::int64_t const fixed_point_sum_64 = sum_sign * p3a::bit_cast<std::int64_t>(fixed_point_sum_128.low());
-  printf("fixed point sum = %lld * (2 ^ %d)\n", fixed_point_sum_64, maximum_exponent);
-  double const recomposed_fixed_point_sum = p3a::compose_double(fixed_point_sum_64, maximum_exponent);
+  double const recomposed_fixed_point_sum = p3a::compose_double(fixed_point_sum_128, maximum_exponent);
   printf("recomposed fixed point sum = %.17e\n", recomposed_fixed_point_sum); 
   EXPECT_EQ(recomposed_fixed_point_sum, nonassociative_sum);
 }
