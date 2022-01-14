@@ -41,9 +41,7 @@ TEST(fixed_point, sum){
     std::int64_t significand;
     p3a::decompose_double(value, significand, exponent);
     printf("value %.17e = %lld * (2 ^ %d)\n", value, significand, exponent);
-    int const shift = maximum_exponent - exponent;
-    printf("needs shift %d to be desired exponent %d\n", shift, maximum_exponent);
-    significand = p3a::fixed_point_right_shift(significand, shift);
+    significand = p3a::decompose_double(value, maximum_exponent);
     printf("value %.17e ~= %lld * (2 ^ %d)\n", value, significand, maximum_exponent);
     fixed_point_sum_128 += p3a::int128(significand);
   }
