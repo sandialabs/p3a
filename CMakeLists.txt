@@ -100,7 +100,7 @@ target_include_directories(p3a
 set_target_properties(p3a PROPERTIES ${p3a_LANGUAGE}_ARCHITECTURES "${p3a_ARCHITECTURES}")
 
 if (p3a_ENABLE_AVX512)
-  target_compile_options(p3a PUBLIC -mavx512f -mavx512vl)
+  target_compile_options(p3a PUBLIC -mavx512f -mavx512vl -mavx512dq)
 endif()
 
 target_link_libraries(p3a PUBLIC MPI::MPI_CXX)

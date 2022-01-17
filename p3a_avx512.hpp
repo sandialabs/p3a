@@ -2,6 +2,10 @@
 
 #include <immintrin.h>
 
+#ifndef __AVX512DQ__
+#error "P3A requires AVX512DQ"
+#endif
+
 #include "p3a_functional.hpp"
 
 namespace p3a {
@@ -27,14 +31,14 @@ class simd_mask<double, simd_abi::avx512_mm512> {
   {}
   P3A_ALWAYS_INLINE inline constexpr __mmask8 get() const { return m_value; }
   P3A_ALWAYS_INLINE simd_mask operator||(simd_mask const& other) const {
-    return simd_mask(static_cast<__mmask8>(_mm512_kor(m_value, other.m_value)));
+    return simd_mask(_kor_mask8(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE simd_mask operator&&(simd_mask const& other) const {
-    return simd_mask(static_cast<__mmask8>(_mm512_kand(m_value, other.m_value)));
+    return simd_mask(_kand_mask8(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE simd_mask operator!() const {
     static const __mmask8 true_value(simd_mask<double, simd_abi::avx512_mm512>(true).get());
-    return simd_mask(static_cast<__mmask8>(_mm512_kxor(true_value, m_value)));
+    return simd_mask(_kxor_mask8(true_value, m_value));
   }
   P3A_ALWAYS_INLINE static inline
   simd_mask first_n(int n)
