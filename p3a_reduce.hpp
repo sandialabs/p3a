@@ -851,7 +851,7 @@ class int128 {
 template <
   class Allocator,
   class ExecutionPolicy>
-class fixed_point_double_adder {
+class fixed_point_double_sum {
  public:
   using values_type = dynamic_array<double, Allocator, ExecutionPolicy>;
  private:
@@ -860,14 +860,14 @@ class fixed_point_double_adder {
   reducer<int, ExecutionPolicy> m_exponent_reducer;
   reducer<int128, ExecutionPolicy> m_int128_reducer;
  public:
-  fixed_point_double_adder() = default;
-  explicit fixed_point_double_adder(mpi::comm&& comm_arg)
+  fixed_point_double_sum() = default;
+  explicit fixed_point_double_sum(mpi::comm&& comm_arg)
     :m_comm(std::move(comm_arg))
   {}
-  fixed_point_double_adder(fixed_point_double_adder&&) = default;
-  fixed_point_double_adder& operator=(fixed_point_double_adder&&) = default;
-  fixed_point_double_adder(fixed_point_double_adder const&) = delete;
-  fixed_point_double_adder& operator=(fixed_point_double_adder const&) = delete;
+  fixed_point_double_sum(fixed_point_double_sum&&) = default;
+  fixed_point_double_sum& operator=(fixed_point_double_sum&&) = default;
+  fixed_point_double_sum(fixed_point_double_sum const&) = delete;
+  fixed_point_double_sum& operator=(fixed_point_double_sum const&) = delete;
  public:
   [[nodiscard]] P3A_NEVER_INLINE
   double compute();
@@ -875,12 +875,12 @@ class fixed_point_double_adder {
   values_type& values() { return m_values; }
 };
 
-extern template class fixed_point_double_adder<allocator<double>, serial_execution>;
+extern template class fixed_point_double_sum<allocator<double>, serial_execution>;
 #ifdef __CUDACC__
-extern template class fixed_point_double_adder<cuda_device_allocator<double>, cuda_execution>;
+extern template class fixed_point_double_sum<cuda_device_allocator<double>, cuda_execution>;
 #endif
 #ifdef __HIPCC__
-extern template class fixed_point_double_adder<hip_device_allocator<double>, hip_execution>;
+extern template class fixed_point_double_sum<hip_device_allocator<double>, hip_execution>;
 #endif
 
 }
@@ -892,7 +892,7 @@ template <
   class Allocator,
   class ExecutionPolicy>
 class associative_sum<double, Allocator, ExecutionPolicy> {
-  details::fixed_point_double_adder<Allocator, ExecutionPolicy> m_fixed_point;
+  details::fixed_point_double_sum<Allocator, ExecutionPolicy> m_fixed_point;
  public:
   associative_sum() = default;
   explicit associative_sum(mpi::comm&& comm_arg)

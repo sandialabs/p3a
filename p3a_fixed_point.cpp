@@ -48,7 +48,7 @@ template <
   class Allocator,
   class ExecutionPolicy>
 [[nodiscard]] P3A_NEVER_INLINE
-double fixed_point_double_adder<Allocator, ExecutionPolicy>::compute()
+double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
 {
   int constexpr minimum_exponent = -1023;
   int const local_max_exponent =
@@ -85,12 +85,12 @@ double fixed_point_double_adder<Allocator, ExecutionPolicy>::compute()
 // explicitly instantiate for host and device so the actual reduction
 // code can stay in this translation unit
 //
-template class fixed_point_double_adder<allocator<double>, serial_execution>;
+template class fixed_point_double_sum<allocator<double>, serial_execution>;
 #ifdef __CUDACC__
-template class fixed_point_double_adder<cuda_device_allocator<double>, cuda_execution>;
+template class fixed_point_double_sum<cuda_device_allocator<double>, cuda_execution>;
 #endif
 #ifdef __HIPCC__
-template class fixed_point_double_adder<hip_device_allocator<double>, hip_execution>;
+template class fixed_point_double_sum<hip_device_allocator<double>, hip_execution>;
 #endif
 
 }
