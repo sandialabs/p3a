@@ -4,12 +4,6 @@
 
 #include <string>
 
-extern "C" void p3a_mpi_int128_sum(
-    void* a,
-    void* b,
-    int*,
-    MPI_Datatype*);
-
 namespace p3a {
 
 namespace mpi {

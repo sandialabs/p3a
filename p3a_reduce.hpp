@@ -1,7 +1,6 @@
 #pragma once
 
 #include "p3a_mpi.hpp"
-#include "p3a_int128.hpp"
 #include "p3a_quantity.hpp"
 #include "p3a_execution.hpp"
 #include "p3a_grid3.hpp"
@@ -825,107 +824,89 @@ T transform_reduce(
 
 #endif
 
-template <
-  class T,
-  class Allocator = allocator<double>,
-  class ExecutionPolicy = serial_execution>
-class reproducible_adder;
+namespace details {
 
-/* A reproducible sum of floating-point values.
-   this operation is one of the key places where
-   a program's output begins to depend on parallel
-   partitioning and traversal order, because
-   floating-point values do not produce the same
-   sum when added in a different order.
-
-   IEEE 754 64-bit floating point format is assumed,
-   which has 52 bits in the fraction.
-
-   The idea here is to add the numbers as fixed-point values.
-   max_exponent() finds the largest exponent (e) such that
-   all values are (<= 2^(e)).
-   We then use the value (2^(e - 52)) as the unit, and sum all
-   values as integers in that unit.
-   This is guaranteed to be at least as accurate as the
-   worst-case ordering of the values, i.e. being added
-   in order of decreasing magnitude.
-
-   If we used a 64-bit integer type, we would only be
-   able to reliably add up to (2^12 = 4096) values
-   (64 - 52 = 12).
-   Thus we use a 128-bit integer type.
-   This allows us to reliably add up to (2^76 > 10^22) values.
-   By comparison, supercomputers today
-   support a maximum of one million MPI ranks (10^6)
-   and each rank typically can't hold more than
-   one billion values (10^9), for a total of (10^15) values.
-*/
+class int128 {
+  std::int64_t m_high;
+  std::uint64_t m_low;
+ public:
+  P3A_ALWAYS_INLINE inline int128() = default;
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  int128(std::int64_t high_arg, std::uint64_t low_arg)
+    :m_high(high_arg)
+    ,m_low(low_arg)
+  {}
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  int128(std::int64_t value)
+    :int128(
+        std::int64_t(-1) * (value < 0),
+        std::uint64_t(value))
+  {}
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  std::int64_t high() const { return m_high; }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  std::uint64_t low() const { return m_low; }
+};
 
 template <
   class Allocator,
   class ExecutionPolicy>
-class reproducible_adder<double, Allocator, ExecutionPolicy> {
+class fixed_point_double_sum {
+ public:
+  using values_type = dynamic_array<double, Allocator, ExecutionPolicy>;
+ private:
   mpi::comm m_comm;
-  dynamic_array<double, Allocator, ExecutionPolicy> m_values;
+  values_type m_values;
   reducer<int, ExecutionPolicy> m_exponent_reducer;
   reducer<int128, ExecutionPolicy> m_int128_reducer;
  public:
-  reproducible_adder() = default;
-  explicit reproducible_adder(
-      mpi::comm&& comm_arg)
+  fixed_point_double_sum() = default;
+  explicit fixed_point_double_sum(mpi::comm&& comm_arg)
     :m_comm(std::move(comm_arg))
   {}
-  reproducible_adder(reproducible_adder&&) = default;
-  reproducible_adder& operator=(reproducible_adder&&) = default;
-  reproducible_adder(reproducible_adder const&) = delete;
-  reproducible_adder& operator=(reproducible_adder const&) = delete;
+  fixed_point_double_sum(fixed_point_double_sum&&) = default;
+  fixed_point_double_sum& operator=(fixed_point_double_sum&&) = default;
+  fixed_point_double_sum(fixed_point_double_sum const&) = delete;
+  fixed_point_double_sum& operator=(fixed_point_double_sum const&) = delete;
+ public:
+  [[nodiscard]] P3A_NEVER_INLINE
+  double compute();
+  [[nodiscard]] P3A_ALWAYS_INLINE inline constexpr
+  values_type& values() { return m_values; }
+};
+
+extern template class fixed_point_double_sum<allocator<double>, serial_execution>;
+#ifdef __CUDACC__
+extern template class fixed_point_double_sum<cuda_device_allocator<double>, cuda_execution>;
+#endif
+#ifdef __HIPCC__
+extern template class fixed_point_double_sum<hip_device_allocator<double>, hip_execution>;
+#endif
+
+}
+
+template <class T, class Allocator, class ExecutionPolicy>
+class associative_sum;
+
+template <
+  class Allocator,
+  class ExecutionPolicy>
+class associative_sum<double, Allocator, ExecutionPolicy> {
+  details::fixed_point_double_sum<Allocator, ExecutionPolicy> m_fixed_point;
+ public:
+  associative_sum() = default;
+  explicit associative_sum(mpi::comm&& comm_arg)
+    :m_fixed_point(std::move(comm_arg))
+  {}
+  associative_sum(associative_sum&&) = default;
+  associative_sum& operator=(associative_sum&&) = default;
+  associative_sum(associative_sum const&) = delete;
+  associative_sum& operator=(associative_sum const&) = delete;
 #ifdef __CUDACC__
  public:
 #else
  private:
 #endif
-  [[nodiscard]] P3A_NEVER_INLINE
-  double reduce_stored_values()
-  {
-    int constexpr minimum_exponent =
-      std::numeric_limits<int>::lowest();
-    int const local_max_exponent =
-      m_exponent_reducer.transform_reduce(
-          m_values.cbegin(), m_values.cend(),
-          minimum_exponent,
-          maximizes<int>,
-    [=] P3A_HOST P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
-      if (value == 0.0) return minimum_exponent;
-      int exponent;
-      std::frexp(value, &exponent);
-      return exponent;
-    });
-    int global_max_exponent = local_max_exponent;
-    m_comm.iallreduce(
-        &global_max_exponent, 1, mpi::op::max());
-    if (global_max_exponent == minimum_exponent) return 0.0;
-    constexpr int mantissa_bits = 52;
-    double const unit = std::exp2(
-        double(global_max_exponent - mantissa_bits));
-    int128 const local_sum =
-      m_int128_reducer.transform_reduce(
-          m_values.cbegin(), m_values.cend(),
-          int128(0),
-          adds<int128>,
-    [=] P3A_HOST P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
-      return int128::from_double(value, unit);
-    });
-    int128 global_sum = local_sum;
-    auto const int128_mpi_sum_op = 
-      mpi::op::create(p3a_mpi_int128_sum);
-    m_comm.iallreduce(
-        MPI_IN_PLACE,
-        &global_sum,
-        sizeof(int128),
-        mpi::datatype::predefined_packed(),
-        int128_mpi_sum_op);
-    return global_sum.to_double(unit);
-  }
  public:
   template <class Iterator, class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
@@ -935,9 +916,9 @@ class reproducible_adder<double, Allocator, ExecutionPolicy> {
       UnaryOp unary_op)
   {
     auto const n = (last - first);
-    m_values.resize(n);
-    auto const policy = m_values.get_execution_policy();
-    auto const values = m_values.begin();
+    m_fixed_point.values().resize(n);
+    auto const policy = m_fixed_point.values().get_execution_policy();
+    auto const values = m_fixed_point.values().begin();
     using size_type = std::remove_const_t<decltype(n)>;
     for_each(policy,
         counting_iterator<size_type>(0),
@@ -945,7 +926,7 @@ class reproducible_adder<double, Allocator, ExecutionPolicy> {
     [=] P3A_HOST P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
       values[i] = unary_op(first[i]);
     });
-    return reduce_stored_values();
+    return m_fixed_point.compute();
   }
   template <class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
@@ -953,24 +934,23 @@ class reproducible_adder<double, Allocator, ExecutionPolicy> {
       subgrid3 grid,
       UnaryOp unary_op)
   {
-    m_values.resize(grid.size());
-    auto const policy = m_values.get_execution_policy();
-    auto const values = m_values.begin();
+    m_fixed_point.values().resize(grid.size());
+    auto const policy = m_fixed_point.values().get_execution_policy();
+    auto const values = m_fixed_point.values().begin();
     for_each(policy, grid,
     [=] P3A_HOST P3A_DEVICE (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
       int const index = grid.index(grid_point);
       values[index] = unary_op(grid_point);
     });
-    return reduce_stored_values();
+    return m_fixed_point.compute();
   }
 };
 
 template <class T>
-using device_reproducible_adder = 
-  reproducible_adder<T, device_allocator<T>, device_execution>;
+using device_associative_sum = 
+  associative_sum<T, device_allocator<T>, device_execution>;
 template <class T>
-using host_reproducible_adder = 
-  reproducible_adder<
-    T, allocator<T>, serial_execution>;
+using host_associative_sum = 
+  associative_sum<T, allocator<T>, serial_execution>;
 
 }
