@@ -824,4 +824,133 @@ T transform_reduce(
 
 #endif
 
+namespace details {
+
+class int128 {
+  std::int64_t m_high;
+  std::uint64_t m_low;
+ public:
+  P3A_ALWAYS_INLINE inline int128() = default;
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  int128(std::int64_t high_arg, std::uint64_t low_arg)
+    :m_high(high_arg)
+    ,m_low(low_arg)
+  {}
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  int128(std::int64_t value)
+    :int128(
+        std::int64_t(-1) * (value < 0),
+        std::uint64_t(value))
+  {}
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  std::int64_t high() const { return m_high; }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  std::uint64_t low() const { return m_low; }
+};
+
+template <
+  class Allocator,
+  class ExecutionPolicy>
+class fixed_point_double_adder {
+ public:
+  using values_type = dynamic_array<double, Allocator, ExecutionPolicy>;
+ private:
+  mpi::comm m_comm;
+  values_type m_values;
+  reducer<int, ExecutionPolicy> m_exponent_reducer;
+  reducer<int128, ExecutionPolicy> m_int128_reducer;
+ public:
+  fixed_point_double_adder() = default;
+  explicit fixed_point_double_adder(mpi::comm&& comm_arg)
+    :m_comm(std::move(comm_arg))
+  {}
+  fixed_point_double_adder(fixed_point_double_adder&&) = default;
+  fixed_point_double_adder& operator=(fixed_point_double_adder&&) = default;
+  fixed_point_double_adder(fixed_point_double_adder const&) = delete;
+  fixed_point_double_adder& operator=(fixed_point_double_adder const&) = delete;
+ public:
+  [[nodiscard]] P3A_NEVER_INLINE
+  double compute();
+  [[nodiscard]] P3A_ALWAYS_INLINE inline constexpr
+  values_type& values() { return m_values; }
+};
+
+extern template class fixed_point_double_adder<allocator<double>, serial_execution>;
+#ifdef __CUDACC__
+extern template class fixed_point_double_adder<cuda_device_allocator<double>, cuda_execution>;
+#endif
+#ifdef __HIPCC__
+extern template class fixed_point_double_adder<hip_device_allocator<double>, hip_execution>;
+#endif
+
+}
+
+template <class T, class Allocator, class ExecutionPolicy>
+class associative_sum;
+
+template <
+  class Allocator,
+  class ExecutionPolicy>
+class associative_sum<double, Allocator, ExecutionPolicy> {
+  details::fixed_point_double_adder<Allocator, ExecutionPolicy> m_fixed_point;
+ public:
+  associative_sum() = default;
+  explicit associative_sum(mpi::comm&& comm_arg)
+    :m_fixed_point(std::move(comm_arg))
+  {}
+  associative_sum(associative_sum&&) = default;
+  associative_sum& operator=(associative_sum&&) = default;
+  associative_sum(associative_sum const&) = delete;
+  associative_sum& operator=(associative_sum const&) = delete;
+#ifdef __CUDACC__
+ public:
+#else
+ private:
+#endif
+ public:
+  template <class Iterator, class UnaryOp>
+  [[nodiscard]] P3A_NEVER_INLINE
+  double transform_reduce(
+      Iterator first,
+      Iterator last,
+      UnaryOp unary_op)
+  {
+    auto const n = (last - first);
+    m_fixed_point.values().resize(n);
+    auto const policy = m_fixed_point.values().get_execution_policy();
+    auto const values = m_fixed_point.values().begin();
+    using size_type = std::remove_const_t<decltype(n)>;
+    for_each(policy,
+        counting_iterator<size_type>(0),
+        counting_iterator<size_type>(n),
+    [=] P3A_HOST P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
+      values[i] = unary_op(first[i]);
+    });
+    return m_fixed_point.compute();
+  }
+  template <class UnaryOp>
+  [[nodiscard]] P3A_NEVER_INLINE
+  double transform_reduce(
+      subgrid3 grid,
+      UnaryOp unary_op)
+  {
+    m_fixed_point.values().resize(grid.size());
+    auto const policy = m_fixed_point.values().get_execution_policy();
+    auto const values = m_fixed_point.values().begin();
+    for_each(policy, grid,
+    [=] P3A_HOST P3A_DEVICE (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
+      int const index = grid.index(grid_point);
+      values[index] = unary_op(grid_point);
+    });
+    return m_fixed_point.compute();
+  }
+};
+
+template <class T>
+using device_associative_sum = 
+  associative_sum<T, device_allocator<T>, device_execution>;
+template <class T>
+using host_associative_sum = 
+  associative_sum<T, allocator<T>, serial_execution>;
+
 }
