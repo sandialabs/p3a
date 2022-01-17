@@ -270,22 +270,22 @@ class simd_index<double, simd_abi::avx512> {
   }
   P3A_ALWAYS_INLINE inline constexpr __m256i get() const { return m_value; }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator<(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm256_cmp_epi32_mask(m_value, other.m_value, _MM_CMPINT_LT));
+    return simd_mask<double, simd_abi::avx512>(_mm256_cmplt_epi32_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator>(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm256_cmp_epi32_mask(other.m_value, m_value, _MM_CMPINT_LT));
+    return simd_mask<double, simd_abi::avx512>(_mm256_cmplt_epi32_mask(other.m_value, m_value));
   }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator<=(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm256_cmp_epi32_mask(m_value, other.m_value, _MM_CMPINT_LE));
+    return simd_mask<double, simd_abi::avx512>(_mm256_cmple_epi32_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator>=(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm256_cmp_epi32_mask(other.m_value, m_value, _MM_CMPINT_LE));
+    return simd_mask<double, simd_abi::avx512>(_mm256_cmple_epi32_mask(other.m_value, m_value));
   }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator==(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm256_cmp_epi32_mask(m_value, other.m_value, _MM_CMPINT_EQ));
+    return simd_mask<double, simd_abi::avx512>(_mm256_cmpeq_epi32_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512> operator!=(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512>(_mm256_cmp_epi32_mask(m_value, other.m_value, _MM_CMPINT_NE));
+    return simd_mask<double, simd_abi::avx512>(_mm256_cmpneq_epi32_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE inline void masked_store(int* ptr, mask_type const& mask) const {
     _mm256_mask_storeu_epi32(ptr, mask.get(), m_value);
