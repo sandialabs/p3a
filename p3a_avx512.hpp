@@ -48,29 +48,29 @@ class simd_mask<T, simd_abi::avx512_fixed_bits<sizeof(T) * 8 * 8>> {
   }
 };
 
-template <class T>
+template <class T, int Bits>
 P3A_ALWAYS_INLINE inline
-std::enable_if_t<sizeof(T) == 8, bool>
-all_of(simd_mask<T, simd_abi::avx512_fixed_bits<512>> const& a) {
+std::enable_if_t<sizeof(T) * 8 * 8 == Bits, bool>
+all_of(simd_mask<T, simd_abi::avx512_fixed_bits<Bits>> const& a) {
   static const __mmask16 false_value(-std::int16_t(false));
   const __mmask16 a_value(0xFF00 | a.get());
   return _kortestc_mask16_u8(a_value, false_value);
 }
 
-template <class T>
+template <class T, int Bits>
 P3A_ALWAYS_INLINE inline
-std::enable_if_t<sizeof(T) == 8, bool>
-any_of(simd_mask<T, simd_abi::avx512_fixed_bits<512>> const& a) {
+std::enable_if_t<sizeof(T) * 8 * 8 == Bits, bool>
+any_of(simd_mask<T, simd_abi::avx512_fixed_bits<Bits>> const& a) {
   static const __mmask16 false_value(-std::int16_t(false));
   const __mmask16 a_value(0x0000 | a.get());
   return !_kortestc_mask16_u8(~a_value, false_value);
 }
 
-template <class T>
+template <class T, int Bits>
 P3A_ALWAYS_INLINE inline
-std::enable_if_t<sizeof(T) == 8, bool>
-none_of(simd_mask<T, simd_abi::avx512_fixed_bits<512>> const& a) {
-  return a.get() == simd_mask<T, simd_abi::avx512_fixed_bits<512>>(false).get();
+std::enable_if_t<sizeof(T) * 8 * 8 == Bits, bool>
+none_of(simd_mask<T, simd_abi::avx512_fixed_bits<Bits>> const& a) {
+  return a.get() == simd_mask<T, simd_abi::avx512_fixed_bits<Bits>>(false).get();
 }
 
 template <>
