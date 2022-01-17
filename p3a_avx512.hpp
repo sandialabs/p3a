@@ -12,12 +12,31 @@ namespace p3a {
 
 namespace simd_abi {
 
+class avx512_mm256 {};
 class avx512_mm512 {};
+
+template <int Bits>
+class avx512_fixed_bits {};
+
+template <>
+class avx512_fixed_bits<256> {
+ public:
+  using type = avx512_mm256;
+};
+
+template <>
+class avx512_fixed_bits<512> {
+ public:
+  using type = avx512_mm512;
+};
+
+template <int Bits>
+using avx512_fixed_bits_t = typename avx512_fixed_bits<Bits>::type;
 
 }
 
 template <class T>
-class simd_mask<T, std::enable_if_t<sizeof(T) == 8, simd_abi::avx512_mm512>> {
+class simd_mask<T, simd_abi::avx512_fixed_bits_t<sizeof(T) * 8 * 8>> {
   __mmask8 m_value;
  public:
   using value_type = bool;
