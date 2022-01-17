@@ -50,26 +50,35 @@ template <
 [[nodiscard]] P3A_NEVER_INLINE
 double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
 {
-  int constexpr minimum_exponent = -1023;
+  int constexpr minimum_exponent = -1075;
   int const local_max_exponent =
     m_exponent_reducer.transform_reduce(
         m_values.cbegin(), m_values.cend(),
         minimum_exponent,
         maximizes<int>,
   [=] P3A_HOST P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
-    return exponent(value);
+    std::int64_t significand;
+    int exponent;
+    decompose_double(value, significand, exponent);
+    printf("value %.17e exponent %d\n", value, exponent);
+    return exponent;
   });
   int global_max_exponent = local_max_exponent;
   m_comm.iallreduce(
       &global_max_exponent, 1, mpi::op::max());
+  printf("global max exponent %d\n", global_max_exponent);
   int128 const local_sum =
     m_int128_reducer.transform_reduce(
         m_values.cbegin(), m_values.cend(),
         int128(0),
         adds<int128>,
   [=] P3A_HOST P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
-    return int128(decompose_double(value, global_max_exponent));
+    std::int64_t significand_64 = decompose_double(value, global_max_exponent);
+    printf("value %.17e ~= %lld * (2 ^ %d)\n",
+        value, significand_64, global_max_exponent);
+    return int128(significand_64);
   });
+  printf("local sum high %lld low %llu\n", local_sum.high(), local_sum.low());
   int128 global_sum = local_sum;
   auto const int128_mpi_sum_op = 
     mpi::op::create(p3a_mpi_int128_sum);
@@ -79,7 +88,16 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
       sizeof(int128),
       mpi::datatype::predefined_packed(),
       int128_mpi_sum_op);
-  return compose_double(global_sum, global_max_exponent);
+  printf("global sum high %lld low %llu\n", local_sum.high(), local_sum.low());
+  double const result = compose_double(global_sum, global_max_exponent);
+  printf("result %.17e\n", result);
+  double debug_sum = 0.0;
+  for (std::int64_t i = 0; i < m_values.size(); ++i) {
+    debug_sum += m_values[i];
+  }
+  printf("debug sum %.17e\n", debug_sum);
+  std::exit(-1);
+  return result;
 }
 
 // explicitly instantiate for host and device so the actual reduction

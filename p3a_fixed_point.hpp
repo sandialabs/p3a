@@ -146,6 +146,7 @@ std::int64_t decompose_double(double value, int maximum_exponent)
   int exponent;
   std::int64_t significand;
   decompose_double(value, significand, exponent);
+  printf("value %.17e = %lld * (2 ^ %d)\n", value, significand, exponent);
   return fixed_point_right_shift(significand, maximum_exponent - exponent);
 }
 

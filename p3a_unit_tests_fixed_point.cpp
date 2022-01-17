@@ -16,7 +16,7 @@ TEST(fixed_point, sum){
     -3.0e+20
   };
   double nonassociative_sum = 0.0;
-  int maximum_exponent = std::numeric_limits<int>::lowest();
+  int maximum_exponent = -1075;
   for (int i = 0; i < count; ++i) {
     double const value = values[i];
     int sign_bit;
