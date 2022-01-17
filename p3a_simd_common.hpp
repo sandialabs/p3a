@@ -229,52 +229,56 @@ T get(simd<T, Abi> const& value, int i)
 
 template <class T, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-simd<T, Abi> natural_exponential(simd<T, Abi> const& a)
+simd<T, Abi> natural_exponential(simd<T, Abi> a)
 {
   T a_array[simd<T, Abi>::size()];
-  a.store(a_array);
+  a.copy_to(a_array, element_aligned_tag());
   for (int i = 0; i < simd<T, Abi>::size(); ++i) {
     a_array[i] = natural_exponential(a_array[i]);
   }
-  return simd<T, Abi>::load(a_array);
+  a.copy_from(a_array, element_aligned_tag());
+  return a;
 }
 
 template <class T, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-simd<T, Abi> exponentiate(simd<T, Abi> const& a, simd<T, Abi> const& b)
+simd<T, Abi> exponentiate(simd<T, Abi> a, simd<T, Abi> const& b)
 {
   T a_array[simd<T, Abi>::size()];
   T b_array[simd<T, Abi>::size()];
-  a.store(a_array);
-  b.store(b_array);
+  a.copy_to(a_array, element_aligned_tag());
+  b.copy_to(b_array, element_aligned_tag());
   for (int i = 0; i < simd<T, Abi>::size(); ++i) {
     a_array[i] = exponentiate(a_array[i], b_array[i]);
   }
-  return simd<T, Abi>::load(a_array);
+  a.copy_from(a_array, element_aligned_tag());
+  return a;
 }
 
 template <class T, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-simd<T, Abi> sine(simd<T, Abi> const& a)
+simd<T, Abi> sine(simd<T, Abi> a)
 {
   T a_array[simd<T, Abi>::size()];
-  a.store(a_array);
+  a.copy_to(a_array, element_aligned_tag());
   for (int i = 0; i < simd<T, Abi>::size(); ++i) {
     a_array[i] = sine(a_array[i]);
   }
-  return simd<T, Abi>::load(a_array);
+  a.copy_from(a_array, element_aligned_tag());
+  return a;
 }
 
 template <class T, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-simd<T, Abi> cosine(simd<T, Abi> const& a)
+simd<T, Abi> cosine(simd<T, Abi> a)
 {
   T a_array[simd<T, Abi>::size()];
-  a.store(a_array);
+  a.copy_to(a_array, element_aligned_tag());
   for (int i = 0; i < simd<T, Abi>::size(); ++i) {
     a_array[i] = cosine(a_array[i]);
   }
-  return simd<T, Abi>::load(a_array);
+  a.copy_from(a_array, element_aligned_tag());
+  return a;
 }
 
 }
