@@ -447,10 +447,11 @@ quantity<simd<T, Abi>, Dimension> load(
   return result;
 }
 
-template <class T, class Dimension, class Abi>
+template <class T, class Integral, class Dimension, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-quantity<simd<T, Abi>, Dimension> load(
-    quantity<T, Dimension> const* ptr, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
+std::enable_if_t<std::is_integral_v<Integral>, quantity<simd<T, Abi>, Dimension>>
+load(
+    quantity<T, Dimension> const* ptr, simd<Integral, Abi> const& offset, simd_mask<T, Abi> const& mask)
 {
   return load(&(ptr->value()), offset, mask);
 }
@@ -466,10 +467,14 @@ vector3<quantity<simd<T, Abi>, Dimension>> load_vector3(
       load(ptr, stride * 2 + offset, mask));
 }
 
-template <class T, class Dimension, class Abi>
+template <class T, class Integral, class Dimension, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-vector3<quantity<simd<T, Abi>, Dimension>> load_vector3(
-    quantity<T, Dimension> const* ptr, int stride, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
+std::enable_if_t<std::is_integral_v<Integral>, vector3<quantity<simd<T, Abi>, Dimension>>>
+load_vector3(
+    quantity<T, Dimension> const* ptr,
+    int stride,
+    simd<Integral, Abi> const& offset,
+    simd_mask<T, Abi> const& mask)
 {
   return vector3<quantity<simd<T, Abi>, Dimension>>(
       load(ptr, stride * 0 + offset, mask),
@@ -519,12 +524,13 @@ void store(
   store(q.value(), &(ptr->value()), offset, mask);
 }
 
-template <class T, class Dimension, class Abi>
+template <class T, class Integral, class Dimension, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-void store(
+std::enable_if_t<std::is_integral_v<Integral>, void>
+store(
     quantity<simd<T, Abi>, Dimension> const& q,
     quantity<T, Dimension>* ptr,
-    simd_index<T, Abi> const& offset,
+    simd<Integral, Abi> const& offset,
     simd_mask<T, Abi> const& mask)
 {
   store(q.value(), &(ptr->value()), offset, mask);
@@ -544,13 +550,14 @@ void store(
   store(q.z(), ptr, stride * 2 + offset, mask);
 }
 
-template <class T, class Dimension, class Abi>
+template <class T, class Integral, class Dimension, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-void store(
+std::enable_if_t<std::is_integral_v<Integral>, void>
+store(
     vector3<quantity<simd<T, Abi>, Dimension>> const& q,
     quantity<T, Dimension>* ptr,
     int stride,
-    simd_index<T, Abi> const& offset,
+    simd<Integral, Abi> const& offset,
     simd_mask<T, Abi> const& mask)
 {
   store(q.x(), ptr, stride * 0 + offset, mask);

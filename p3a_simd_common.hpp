@@ -14,9 +14,6 @@ class simd;
 template <class T, class Abi>
 class simd_mask;
 
-template <class T, class Abi>
-class simd_index;
-
 class element_aligned_tag {};
 
 template <class Mask, class Value>
@@ -75,12 +72,6 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, Abi>& operator*=(simd<T, Ab
 template <class T, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, Abi>& operator/=(simd<T, Abi>& a, simd<T, Abi> const& b) {
   a = a / b;
-  return a;
-}
-
-template <class T, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_index<T, Abi>& operator+=(simd_index<T, Abi>& a, simd_index<T, Abi> const& b) {
-  a = a + b;
   return a;
 }
 
@@ -148,20 +139,6 @@ operator/=(simd<T, Abi>& a, U const& b) {
   return a;
 }
 
-template <class T, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-simd_index<T, Abi>
-operator+(simd_index<T, Abi> const& a, int b) {
-  return a + simd_index<T, Abi>(b);
-}
-
-template <class T, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-simd_index<T, Abi>
-operator+(int a, simd_index<T, Abi> const& b) {
-  return simd_index<T, Abi>(a) + b;
-}
-
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr bool
 all_of(bool a) { return a; }
 
@@ -187,10 +164,10 @@ simd<T, Abi> load(
   return result;
 }
 
-template <class T, class Abi>
+template <class T, class Integral, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-simd<T, Abi> load(
-    T const* ptr, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
+std::enable_if_t<std::is_integral_v<Integral>, simd<T, Abi>>
+load(T const* ptr, simd<Integral, Abi> const& offset, simd_mask<T, Abi> const& mask)
 {
   simd<T, Abi> result;
   where(mask, result).gather_from(ptr, offset);
@@ -206,11 +183,12 @@ void store(
   where(mask, value).copy_to(ptr + offset, element_aligned_tag());
 }
 
-template <class T, class Abi>
+template <class T, class Integral, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-void store(
+std::enable_if_t<std::is_integral_v<Integral>, void>
+store(
     simd<T, Abi> const& value,
-    T* ptr, simd_index<T, Abi> const& offset, simd_mask<T, Abi> const& mask)
+    T* ptr, simd<Integral, Abi> const& offset, simd_mask<T, Abi> const& mask)
 {
   where(mask, value).scatter_to(ptr, offset);
 }

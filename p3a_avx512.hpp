@@ -23,9 +23,14 @@ class simd_mask<T, simd_abi::avx512_fixed_size<8>> {
  public:
   using value_type = bool;
   P3A_ALWAYS_INLINE inline simd_mask() = default;
-  P3A_ALWAYS_INLINE inline simd_mask(bool value)
+  P3A_ALWAYS_INLINE inline explicit simd_mask(value_type value)
     :m_value(-std::int16_t(value))
   {}
+  template <class U>
+  P3A_ALWAYS_INLINE inline simd_mask(simd_mask<U, simd_abi::avx512_fixed_size<8>> const& other)
+    :m_value(other.get())
+  {
+  }
   P3A_ALWAYS_INLINE inline static constexpr int size() { return 8; }
   P3A_ALWAYS_INLINE inline constexpr simd_mask(__mmask8 const& value_in)
     :m_value(value_in)
@@ -71,59 +76,59 @@ bool none_of(simd_mask<T, simd_abi::avx512_fixed_size<Size>> const& a) {
 }
 
 template <>
-class simd_index<double, simd_abi::avx512_fixed_size<8>> {
+class simd<std::int32_t, simd_abi::avx512_fixed_size<8>> {
   __m256i m_value;
  public:
-  using value_type = int;
+  using value_type = std::int32_t;
   using abi_type = simd_abi::avx512_fixed_size<8>;
-  using mask_type = simd_mask<double, abi_type>;
-  P3A_ALWAYS_INLINE inline simd_index() = default;
-  P3A_ALWAYS_INLINE inline simd_index(simd_index const&) = default;
-  P3A_ALWAYS_INLINE inline simd_index(simd_index&&) = default;
-  P3A_ALWAYS_INLINE inline simd_index& operator=(simd_index const&) = default;
-  P3A_ALWAYS_INLINE inline simd_index& operator=(simd_index&&) = default;
+  using mask_type = simd_mask<value_type, abi_type>;
+  P3A_ALWAYS_INLINE inline simd() = default;
+  P3A_ALWAYS_INLINE inline simd(simd const&) = default;
+  P3A_ALWAYS_INLINE inline simd(simd&&) = default;
+  P3A_ALWAYS_INLINE inline simd& operator=(simd const&) = default;
+  P3A_ALWAYS_INLINE inline simd& operator=(simd&&) = default;
   P3A_ALWAYS_INLINE inline static constexpr int size() { return 8; }
-  P3A_ALWAYS_INLINE inline simd_index(int value)
+  P3A_ALWAYS_INLINE inline simd(value_type value)
     :m_value(_mm256_set1_epi32(value))
   {}
-  P3A_ALWAYS_INLINE inline constexpr simd_index(__m256i const& value_in)
+  P3A_ALWAYS_INLINE inline constexpr simd(__m256i const& value_in)
     :m_value(value_in)
   {}
-  P3A_ALWAYS_INLINE inline simd_index operator*(simd_index const& other) const {
+  P3A_ALWAYS_INLINE inline simd operator*(simd const& other) const {
     return _mm256_mullo_epi32(m_value, other.m_value);
   }
-  P3A_ALWAYS_INLINE inline simd_index operator+(simd_index const& other) const {
+  P3A_ALWAYS_INLINE inline simd operator+(simd const& other) const {
     return _mm256_add_epi32(m_value, other.m_value);
   }
-  P3A_ALWAYS_INLINE inline simd_index operator-(simd_index const& other) const {
+  P3A_ALWAYS_INLINE inline simd operator-(simd const& other) const {
     return _mm256_sub_epi32(m_value, other.m_value);
   }
-  P3A_ALWAYS_INLINE inline simd_index operator-() const {
-    return simd_index(0) - *this;
+  P3A_ALWAYS_INLINE inline simd operator-() const {
+    return simd(0) - *this;
   }
   P3A_ALWAYS_INLINE inline constexpr __m256i get() const { return m_value; }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator<(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm256_cmplt_epi32_mask(m_value, other.m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator<(simd const& other) const {
+    return mask_type(_mm256_cmplt_epi32_mask(m_value, other.m_value));
   }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator>(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm256_cmplt_epi32_mask(other.m_value, m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator>(simd const& other) const {
+    return mask_type(_mm256_cmplt_epi32_mask(other.m_value, m_value));
   }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator<=(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm256_cmple_epi32_mask(m_value, other.m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator<=(simd const& other) const {
+    return mask_type(_mm256_cmple_epi32_mask(m_value, other.m_value));
   }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator>=(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm256_cmple_epi32_mask(other.m_value, m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator>=(simd const& other) const {
+    return mask_type(_mm256_cmple_epi32_mask(other.m_value, m_value));
   }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator==(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm256_cmpeq_epi32_mask(m_value, other.m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator==(simd const& other) const {
+    return mask_type(_mm256_cmpeq_epi32_mask(m_value, other.m_value));
   }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator!=(simd_index const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm256_cmpneq_epi32_mask(m_value, other.m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator!=(simd const& other) const {
+    return mask_type(_mm256_cmpneq_epi32_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE inline void masked_store(int* ptr, mask_type const& mask) const {
     _mm256_mask_storeu_epi32(ptr, mask.get(), m_value);
   }
-  P3A_ALWAYS_INLINE static inline simd_index contiguous_from(int i) {
+  P3A_ALWAYS_INLINE static inline simd contiguous_from(int i) {
     return _mm256_setr_epi32(
         i,
         i + 1,
@@ -136,14 +141,15 @@ class simd_index<double, simd_abi::avx512_fixed_size<8>> {
   }
 };
 
+template <class T>
 P3A_ALWAYS_INLINE inline
-simd_index<double, simd_abi::avx512_fixed_size<8>>
+simd<std::int32_t, simd_abi::avx512_fixed_size<8>>
 condition(
-    simd_mask<double, simd_abi::avx512_fixed_size<8>> const& a,
-    simd_index<double, simd_abi::avx512_fixed_size<8>> const& b,
-    simd_index<double, simd_abi::avx512_fixed_size<8>> const& c)
+    simd_mask<T, simd_abi::avx512_fixed_size<8>> const& a,
+    simd<std::int32_t, simd_abi::avx512_fixed_size<8>> const& b,
+    simd<std::int32_t, simd_abi::avx512_fixed_size<8>> const& c)
 {
-  return simd_index<double, simd_abi::avx512_fixed_size<8>>(_mm256_mask_blend_epi32(a.get(), c.get(), b.get()));
+  return simd<std::int32_t, simd_abi::avx512_fixed_size<8>>(_mm256_mask_blend_epi32(a.get(), c.get(), b.get()));
 }
 
 template <>
@@ -152,8 +158,7 @@ class simd<double, simd_abi::avx512_fixed_size<8>> {
  public:
   using value_type = double;
   using abi_type = simd_abi::avx512_fixed_size<8>;
-  using mask_type = simd_mask<double, abi_type>;
-  using index_type = simd_index<double, abi_type>;
+  using mask_type = simd_mask<value_type, abi_type>;
   P3A_ALWAYS_INLINE inline simd() = default;
   P3A_ALWAYS_INLINE inline simd(simd const&) = default;
   P3A_ALWAYS_INLINE inline simd(simd&&) = default;
@@ -192,42 +197,24 @@ class simd<double, simd_abi::avx512_fixed_size<8>> {
   P3A_ALWAYS_INLINE inline void copy_to(double* ptr, element_aligned_tag) const {
     _mm512_storeu_pd(ptr, m_value);
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline
-  simd masked_gather(double const* ptr, index_type const& index, mask_type const& mask) {
-    return _mm512_mask_i32gather_pd(
-        _mm512_set1_pd(0.0),
-        mask.get(),
-        index.get(),
-        ptr,
-        8);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-  void masked_scatter(double* ptr, index_type const& index, mask_type const& mask) const {
-    _mm512_mask_i32scatter_pd(
-        ptr,
-        mask.get(),
-        index.get(),
-        m_value,
-        8);
-  }
   P3A_ALWAYS_INLINE inline constexpr __m512d get() const { return m_value; }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator<(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm512_cmplt_pd_mask(m_value, other.m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator<(simd const& other) const {
+    return mask_type(_mm512_cmplt_pd_mask(m_value, other.m_value));
   }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator>(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm512_cmplt_pd_mask(other.m_value, m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator>(simd const& other) const {
+    return mask_type(_mm512_cmplt_pd_mask(other.m_value, m_value));
   }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator<=(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm512_cmple_pd_mask(m_value, other.m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator<=(simd const& other) const {
+    return mask_type(_mm512_cmple_pd_mask(m_value, other.m_value));
   }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator>=(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm512_cmple_pd_mask(other.m_value, m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator>=(simd const& other) const {
+    return mask_type(_mm512_cmple_pd_mask(other.m_value, m_value));
   }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator==(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm512_cmpeq_pd_mask(m_value, other.m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator==(simd const& other) const {
+    return mask_type(_mm512_cmpeq_pd_mask(m_value, other.m_value));
   }
-  P3A_ALWAYS_INLINE inline simd_mask<double, simd_abi::avx512_fixed_size<8>> operator!=(simd const& other) const {
-    return simd_mask<double, simd_abi::avx512_fixed_size<8>>(_mm512_cmpneq_pd_mask(m_value, other.m_value));
+  P3A_ALWAYS_INLINE inline mask_type operator!=(simd const& other) const {
+    return mask_type(_mm512_cmpneq_pd_mask(m_value, other.m_value));
   }
   P3A_ALWAYS_INLINE static inline simd zero() {
     return simd(double(0));
@@ -293,10 +280,11 @@ minimum(
   return simd<double, simd_abi::avx512_fixed_size<8>>(_mm512_min_pd(a.get(), b.get()));
 }
 
+template <class T>
 P3A_ALWAYS_INLINE inline
 simd<double, simd_abi::avx512_fixed_size<8>>
 condition(
-    simd_mask<double, simd_abi::avx512_fixed_size<8>> const& a,
+    simd_mask<T, simd_abi::avx512_fixed_size<8>> const& a,
     simd<double, simd_abi::avx512_fixed_size<8>> const& b,
     simd<double, simd_abi::avx512_fixed_size<8>> const& c)
 {
@@ -326,7 +314,7 @@ class const_where_expression<simd_mask<double, simd_abi::avx512_fixed_size<8>>, 
     _mm512_mask_storeu_pd(mem, m_mask.get(), m_value.get());
   }
   P3A_ALWAYS_INLINE inline
-  void scatter_to(double* mem, simd_index<double, simd_abi::avx512_fixed_size<8>> const& index) const {
+  void scatter_to(double* mem, simd<std::int32_t, simd_abi::avx512_fixed_size<8>> const& index) const {
     _mm512_mask_i32scatter_pd(
         mem,
         m_mask.get(),
@@ -348,7 +336,7 @@ class where_expression<simd_mask<double, simd_abi::avx512_fixed_size<8>>, simd<d
     m_value = value_type(_mm512_mask_loadu_pd(_mm512_set1_pd(0.0), m_mask.get(), mem));
   }
   P3A_ALWAYS_INLINE inline
-  void gather_from(double const* mem, simd_index<double, simd_abi::avx512_fixed_size<8>> const& index) {
+  void gather_from(double const* mem, simd<std::int32_t, simd_abi::avx512_fixed_size<8>> const& index) {
     m_value = value_type(_mm512_mask_i32gather_pd(
         _mm512_set1_pd(0.0),
         m_mask.get(),

@@ -55,77 +55,12 @@ bool any_of(simd_mask<T, simd_abi::scalar> const& a)
 { return a.get(); }
 
 template <class T>
-class simd_index<T, simd_abi::scalar> {
-  int m_value;
- public:
-  using value_type = int;
-  using abi_type = simd_abi::scalar;
-  P3A_ALWAYS_INLINE inline simd_index() = default;
-  P3A_ALWAYS_INLINE inline simd_index(simd_index const&) = default;
-  P3A_ALWAYS_INLINE inline simd_index(simd_index&&) = default;
-  P3A_ALWAYS_INLINE inline simd_index& operator=(simd_index const&) = default;
-  P3A_ALWAYS_INLINE inline simd_index& operator=(simd_index&&) = default;
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static constexpr int size() { return 1; }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_index(int value)
-    :m_value(value)
-  {}
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_index operator*(simd_index const& other) const {
-    return simd_index(m_value * other.m_value);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_index operator/(simd_index const& other) const {
-    return simd_index(m_value / other.m_value);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_index operator+(simd_index const& other) const {
-    return simd_index(m_value + other.m_value);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_index operator-(simd_index const& other) const {
-    return simd_index(m_value - other.m_value);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_index operator-() const {
-    return simd_index(-m_value);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr int get() const { return m_value; }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator<(simd_index const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value < other.m_value);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator>(simd_index const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value > other.m_value);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator<=(simd_index const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value <= other.m_value);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator>=(simd_index const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value >= other.m_value);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator==(simd_index const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value == other.m_value);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator!=(simd_index const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value != other.m_value);
-  }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline simd_index contiguous_from(int i) {
-    return simd_index(i);
-  }
-};
-
-template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_index<T, simd_abi::scalar>
-condition(
-    simd_mask<T, simd_abi::scalar> const& a,
-    simd_index<T, simd_abi::scalar> const& b,
-    simd_index<T, simd_abi::scalar> const& c)
-{
-  return simd_index<T, simd_abi::scalar>(condition(a.get(), b.get(), c.get()));
-}
-
-template <class T>
 class simd<T, simd_abi::scalar> {
   T m_value;
  public:
   using value_type = T;
   using abi_type = simd_abi::scalar;
   using mask_type = simd_mask<T, abi_type>;
-  using index_type = simd_index<T, abi_type>;
   P3A_ALWAYS_INLINE inline simd() = default;
   P3A_ALWAYS_INLINE inline simd(simd const&) = default;
   P3A_ALWAYS_INLINE inline simd(simd&&) = default;
@@ -249,8 +184,10 @@ class const_where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::s
   void copy_to(T* mem, element_aligned_tag) const {
     if (m_mask.get()) *mem = m_value.get();
   }
+  template <class Integral>
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-  void scatter_to(T* mem, simd_index<T, simd_abi::scalar> const& index) const {
+  std::enable_if_t<std::is_integral_v<Integral>, void>
+  scatter_to(T* mem, simd<Integral, simd_abi::scalar> const& index) const {
     if (m_mask.get()) mem[index.get()] = m_value.get();
   }
 };
@@ -269,8 +206,10 @@ class where_expression<simd_mask<T, simd_abi::scalar>, simd<T, simd_abi::scalar>
   void copy_from(T const* mem, element_aligned_tag) {
     this->m_value = value_type(this->m_mask.get() ? *mem : T(0));
   }
+  template <class Integral>
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-  void gather_from(T const* mem, simd_index<T, simd_abi::scalar> const& index) {
+  std::enable_if_t<std::is_integral_v<Integral>, void>
+  gather_from(T const* mem, simd<Integral, simd_abi::scalar> const& index) {
     this->m_value = value_type(this->m_mask.get() ? mem[index.get()] : T(0));
   }
 };
