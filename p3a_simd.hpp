@@ -13,7 +13,7 @@ namespace p3a {
 namespace simd_abi {
 
 #if defined(__AVX512F__)
-using host_native = avx512_fixed_bits<512>;
+using host_native = avx512_fixed_size<8>;
 #else
 using host_native = scalar;
 #endif
