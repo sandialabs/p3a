@@ -125,10 +125,7 @@ class simd<std::int32_t, simd_abi::avx512_fixed_size<8>> {
   P3A_ALWAYS_INLINE inline mask_type operator!=(simd const& other) const {
     return mask_type(_mm256_cmpneq_epi32_mask(m_value, other.m_value));
   }
-  P3A_ALWAYS_INLINE inline void masked_store(int* ptr, mask_type const& mask) const {
-    _mm256_mask_storeu_epi32(ptr, mask.get(), m_value);
-  }
-  P3A_ALWAYS_INLINE static inline simd contiguous_from(int i) {
+  P3A_ALWAYS_INLINE static inline simd contiguous_from(value_type i) {
     return _mm256_setr_epi32(
         i,
         i + 1,

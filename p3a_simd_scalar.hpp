@@ -1,6 +1,7 @@
 #pragma once
 
 #include "p3a_simd_common.hpp"
+#include "p3a_type_traits.hpp"
 
 namespace p3a {
 
@@ -19,9 +20,15 @@ class simd_mask<T, simd_abi::scalar> {
   using abi_type = simd_abi::scalar;
   P3A_ALWAYS_INLINE inline simd_mask() = default;
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static constexpr int size() { return 1; }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask(bool value)
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask(value_type value)
     :m_value(value)
   {}
+  template <class U>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  simd_mask(simd_mask<U, simd_abi::scalar> const& other)
+    :m_value(other.get())
+  {
+  }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr bool get() const { return m_value; }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask operator||(simd_mask const& other) const {
     return m_value || other.m_value;
@@ -113,6 +120,9 @@ class simd<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline simd zero() {
     return simd(T(0));
   }
+  P3A_ALWAYS_INLINE static inline simd contiguous_from(value_type i) {
+    return simd(i);
+  }
 };
 
 template <class T>
@@ -148,7 +158,7 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar> min(
 template <class T>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, simd_abi::scalar>
 condition(
-    simd_mask<T, simd_abi::scalar> const& a,
+    no_deduce_t<simd_mask<T, simd_abi::scalar>> const& a,
     simd<T, simd_abi::scalar> const& b,
     simd<T, simd_abi::scalar> const& c)
 {
