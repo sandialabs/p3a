@@ -138,11 +138,10 @@ class simd<std::int32_t, simd_abi::avx512_fixed_size<8>> {
   }
 };
 
-template <class T>
 P3A_ALWAYS_INLINE inline
 simd<std::int32_t, simd_abi::avx512_fixed_size<8>>
 condition(
-    simd_mask<T, simd_abi::avx512_fixed_size<8>> const& a,
+    simd_mask<std::int32_t, simd_abi::avx512_fixed_size<8>> const& a,
     simd<std::int32_t, simd_abi::avx512_fixed_size<8>> const& b,
     simd<std::int32_t, simd_abi::avx512_fixed_size<8>> const& c)
 {
@@ -277,11 +276,10 @@ minimum(
   return simd<double, simd_abi::avx512_fixed_size<8>>(_mm512_min_pd(a.get(), b.get()));
 }
 
-template <class T>
 P3A_ALWAYS_INLINE inline
 simd<double, simd_abi::avx512_fixed_size<8>>
 condition(
-    simd_mask<T, simd_abi::avx512_fixed_size<8>> const& a,
+    simd_mask<double, simd_abi::avx512_fixed_size<8>> const& a,
     simd<double, simd_abi::avx512_fixed_size<8>> const& b,
     simd<double, simd_abi::avx512_fixed_size<8>> const& c)
 {
