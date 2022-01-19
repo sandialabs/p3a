@@ -149,6 +149,79 @@ condition(
 }
 
 template <>
+class simd<std::int64_t, simd_abi::avx512_fixed_size<8>> {
+  __m512i m_value;
+ public:
+  using value_type = std::int64_t;
+  using abi_type = simd_abi::avx512_fixed_size<8>;
+  using mask_type = simd_mask<value_type, abi_type>;
+  P3A_ALWAYS_INLINE inline simd() = default;
+  P3A_ALWAYS_INLINE inline simd(simd const&) = default;
+  P3A_ALWAYS_INLINE inline simd(simd&&) = default;
+  P3A_ALWAYS_INLINE inline simd& operator=(simd const&) = default;
+  P3A_ALWAYS_INLINE inline simd& operator=(simd&&) = default;
+  P3A_ALWAYS_INLINE inline static constexpr int size() { return 8; }
+  P3A_ALWAYS_INLINE inline simd(value_type value)
+    :m_value(_mm512_set1_epi64(value))
+  {}
+  P3A_ALWAYS_INLINE inline constexpr simd(__m512i const& value_in)
+    :m_value(value_in)
+  {}
+  P3A_ALWAYS_INLINE inline simd operator*(simd const& other) const {
+    return _mm512_mullo_epi64(m_value, other.m_value);
+  }
+  P3A_ALWAYS_INLINE inline simd operator+(simd const& other) const {
+    return _mm512_add_epi64(m_value, other.m_value);
+  }
+  P3A_ALWAYS_INLINE inline simd operator-(simd const& other) const {
+    return _mm512_sub_epi64(m_value, other.m_value);
+  }
+  P3A_ALWAYS_INLINE inline simd operator-() const {
+    return simd(0) - *this;
+  }
+  P3A_ALWAYS_INLINE inline constexpr __m512i get() const { return m_value; }
+  P3A_ALWAYS_INLINE inline mask_type operator<(simd const& other) const {
+    return mask_type(_mm512_cmplt_epi64_mask(m_value, other.m_value));
+  }
+  P3A_ALWAYS_INLINE inline mask_type operator>(simd const& other) const {
+    return mask_type(_mm512_cmplt_epi64_mask(other.m_value, m_value));
+  }
+  P3A_ALWAYS_INLINE inline mask_type operator<=(simd const& other) const {
+    return mask_type(_mm512_cmple_epi64_mask(m_value, other.m_value));
+  }
+  P3A_ALWAYS_INLINE inline mask_type operator>=(simd const& other) const {
+    return mask_type(_mm512_cmple_epi64_mask(other.m_value, m_value));
+  }
+  P3A_ALWAYS_INLINE inline mask_type operator==(simd const& other) const {
+    return mask_type(_mm512_cmpeq_epi64_mask(m_value, other.m_value));
+  }
+  P3A_ALWAYS_INLINE inline mask_type operator!=(simd const& other) const {
+    return mask_type(_mm512_cmpneq_epi64_mask(m_value, other.m_value));
+  }
+  P3A_ALWAYS_INLINE static inline simd contiguous_from(value_type i) {
+    return _mm512_setr_epi64(
+        i,
+        i + 1,
+        i + 2,
+        i + 3,
+        i + 4,
+        i + 5,
+        i + 6,
+        i + 7);
+  }
+};
+
+P3A_ALWAYS_INLINE inline
+simd<std::int64_t, simd_abi::avx512_fixed_size<8>>
+condition(
+    simd_mask<std::int64_t, simd_abi::avx512_fixed_size<8>> const& a,
+    simd<std::int64_t, simd_abi::avx512_fixed_size<8>> const& b,
+    simd<std::int64_t, simd_abi::avx512_fixed_size<8>> const& c)
+{
+  return simd<std::int64_t, simd_abi::avx512_fixed_size<8>>(_mm512_mask_blend_epi64(a.get(), c.get(), b.get()));
+}
+
+template <>
 class simd<double, simd_abi::avx512_fixed_size<8>> {
   __m512d m_value;
  public:
