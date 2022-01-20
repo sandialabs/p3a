@@ -36,7 +36,7 @@ std::uint64_t mantissa(double x)
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 int double_sign_bit(std::uint64_t as_int)
 {
-  return int((as_int & 0b1000000000000000000000000000000000000000000000000000000000000000ull) >> 63);
+  return int((as_int >> 63) & 0b1ull);
 }
 
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
