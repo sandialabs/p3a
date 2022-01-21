@@ -148,7 +148,8 @@ class cuda_recursive_sliced_shuffle_helper<Count, false>
 };
 
 template <class T>
-__device__ P3A_ALWAYS_INLINE T cuda_shuffle_down(T element, unsigned int delta)
+__device__ P3A_ALWAYS_INLINE inline
+T cuda_shuffle_down(T element, unsigned int delta)
 {
   if constexpr (
       std::is_same_v<T, int> ||
@@ -273,7 +274,7 @@ __global__ void cuda_simd_grid_reduce(
   int const y_i = block_idx.y();
   int const z_i = block_idx.z();
   vector3<int> const xyz(x_i, y_i, z_i);
-  auto const mask = simd<T, simd_abi::scalar>(x_i < user_extents.x());
+  auto const mask = simd_mask<T, simd_abi::scalar>(x_i < user_extents.x());
   simd<T, simd_abi::scalar> const simd_value = unop(xyz + first, mask);
   T myResult = reduce(where(mask, simd_value), init, binop);
   // each thread puts its local sum into shared memory

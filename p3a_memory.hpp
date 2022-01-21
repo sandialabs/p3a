@@ -298,7 +298,8 @@ P3A_NEVER_INLINE void copy(
 }
 
 template <class ForwardIt1, class ForwardIt2>
-P3A_ALWAYS_INLINE void copy(
+P3A_ALWAYS_INLINE inline
+void copy(
     serial_local_execution,
     ForwardIt1 first,
     ForwardIt1 last,
@@ -336,7 +337,8 @@ P3A_NEVER_INLINE void copy(
 }
 
 template <class ForwardIt1, class ForwardIt2>
-P3A_DEVICE P3A_ALWAYS_INLINE void copy(
+P3A_DEVICE P3A_ALWAYS_INLINE inline
+void copy(
     cuda_local_execution,
     ForwardIt1 first,
     ForwardIt1 last,
@@ -402,7 +404,8 @@ P3A_NEVER_INLINE void move(
 }
 
 template <class ForwardIt1, class ForwardIt2>
-P3A_ALWAYS_INLINE void move(
+P3A_ALWAYS_INLINE inline void
+move(
     serial_local_execution,
     ForwardIt1 first,
     ForwardIt1 last,
@@ -416,7 +419,8 @@ P3A_ALWAYS_INLINE void move(
 #ifdef __CUDACC__
 
 template <class ForwardIt1, class ForwardIt2>
-P3A_DEVICE P3A_ALWAYS_INLINE void move(
+P3A_DEVICE P3A_ALWAYS_INLINE inline
+void move(
     cuda_local_execution,
     ForwardIt1 first,
     ForwardIt1 last,
@@ -446,7 +450,8 @@ __device__ P3A_ALWAYS_INLINE void move(
 #endif
 
 template <class BidirIt1, class BidirIt2>
-P3A_NEVER_INLINE void move_backward(
+P3A_NEVER_INLINE inline
+void move_backward(
     serial_execution,
     BidirIt1 first,
     BidirIt1 last,
@@ -458,7 +463,8 @@ P3A_NEVER_INLINE void move_backward(
 }
 
 template <class BidirIt1, class BidirIt2>
-P3A_ALWAYS_INLINE void move_backward(
+P3A_ALWAYS_INLINE inline
+void move_backward(
     serial_local_execution,
     BidirIt1 first,
     BidirIt1 last,
@@ -472,7 +478,8 @@ P3A_ALWAYS_INLINE void move_backward(
 #ifdef __CUDACC__
 
 template <class BidirIt1, class BidirIt2>
-__device__ P3A_ALWAYS_INLINE void move_backward(
+__device__ P3A_ALWAYS_INLINE inline
+void move_backward(
     cuda_local_execution,
     BidirIt1 first,
     BidirIt1 last,
@@ -514,7 +521,8 @@ P3A_NEVER_INLINE void fill(
 }
 
 template <class ForwardIt, class T>
-P3A_ALWAYS_INLINE void fill(
+P3A_ALWAYS_INLINE inline
+void fill(
     serial_local_execution,
     ForwardIt first,
     ForwardIt last,
@@ -542,7 +550,8 @@ P3A_NEVER_INLINE void fill(
 }
 
 template <class ForwardIt, class T>
-__device__ P3A_ALWAYS_INLINE void fill(
+__device__ P3A_ALWAYS_INLINE inline
+void fill(
     cuda_local_execution,
     ForwardIt first,
     ForwardIt last,

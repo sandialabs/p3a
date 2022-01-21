@@ -120,7 +120,7 @@ class simd<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline simd zero() {
     return simd(T(0));
   }
-  P3A_ALWAYS_INLINE static inline simd contiguous_from(value_type i) {
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline simd contiguous_from(value_type i) {
     return simd(i);
   }
 };
