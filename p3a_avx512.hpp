@@ -591,6 +591,35 @@ class where_expression<simd_mask<double, simd_abi::avx512_fixed_size<8>>, simd<d
   }
 };
 
+template <>
+class const_where_expression<simd_mask<std::int32_t, simd_abi::avx512_fixed_size<8>>, simd<std::int32_t, simd_abi::avx512_fixed_size<8>>> {
+ public:
+  using abi_type = simd_abi::avx512_fixed_size<8>;
+  using value_type = simd<std::int32_t, abi_type>;
+  using mask_type = simd_mask<std::int32_t, abi_type>;
+ protected:
+  value_type& m_value;
+  mask_type const& m_mask;
+ public:
+  const_where_expression(mask_type const& mask_arg, value_type const& value_arg)
+    :m_value(const_cast<value_type&>(value_arg))
+    ,m_mask(mask_arg)
+  {}
+  [[nodiscard]] P3A_ALWAYS_INLINE inline constexpr
+  mask_type const& mask() const { return m_mask; }
+  [[nodiscard]] P3A_ALWAYS_INLINE inline constexpr
+  value_type const& value() const { return m_value; }
+};
+
+[[nodiscard]] P3A_ALWAYS_INLINE inline
+std::int32_t reduce(
+    const_where_expression<simd_mask<std::int32_t, simd_abi::avx512_fixed_size<8>>, simd<std::int32_t, simd_abi::avx512_fixed_size<8>>> const& x,
+    std::int32_t,
+    maximizer<std::int32_t>)
+{
+  return _mm512_mask_reduce_max_epi32(x.mask().get(), _mm512_castsi256_si512(x.value().get()));
+}
+
 [[nodiscard]] P3A_ALWAYS_INLINE inline
 double reduce(
     const_where_expression<simd_mask<double, simd_abi::avx512_fixed_size<8>>, simd<double, simd_abi::avx512_fixed_size<8>>> const& x,
