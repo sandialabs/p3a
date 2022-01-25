@@ -14,36 +14,15 @@ int double_exponent(std::uint64_t as_int)
 }
 
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-int exponent(double x)
-{
-  auto const as_int = p3a::bit_cast<std::uint64_t>(x);
-  return double_exponent(as_int);
-}
-
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 std::uint64_t double_mantissa(std::uint64_t as_int)
 {
   return as_int & 0b1111111111111111111111111111111111111111111111111111ull;
 }
 
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-std::uint64_t mantissa(double x)
-{
-  auto const as_int = p3a::bit_cast<std::uint64_t>(x);
-  return double_mantissa(as_int);
-}
-
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 int double_sign_bit(std::uint64_t as_int)
 {
   return int((as_int >> 63) & 0b1ull);
-}
-
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-int sign_bit(double x)
-{
-  auto const as_int = p3a::bit_cast<std::uint64_t>(x);
-  return double_sign_bit(as_int);
 }
 
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
