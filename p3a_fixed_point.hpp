@@ -6,32 +6,14 @@ namespace p3a {
 
 namespace details {
 
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-int double_exponent(std::uint64_t as_int)
-{
-  auto const biased_exponent = (as_int >> 52) & 0b11111111111ull;
-  return int(biased_exponent) - 1023;
-}
-
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-std::uint64_t double_mantissa(std::uint64_t as_int)
-{
-  return as_int & 0b1111111111111111111111111111111111111111111111111111ull;
-}
-
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-int double_sign_bit(std::uint64_t as_int)
-{
-  return int((as_int >> 63) & 0b1ull);
-}
-
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void decompose_double(double value, int& sign_bit, int& exponent, std::uint64_t& mantissa)
 {
   std::uint64_t const as_int = p3a::bit_cast<std::uint64_t>(value);
-  sign_bit = double_sign_bit(as_int);
-  exponent = double_exponent(as_int);
-  mantissa = double_mantissa(as_int);
+  sign_bit = int((as_int >> 63) & 0b1ull);
+  auto const biased_exponent = (as_int >> 52) & 0b11111111111ull;
+  exponent = int(biased_exponent) - 1023;
+  mantissa = as_int & 0b1111111111111111111111111111111111111111111111111111ull;
 }
 
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
