@@ -140,12 +140,36 @@ std::int64_t fixed_point_right_shift(std::int64_t significand, int shift)
     sign = 1;
     unsigned_significand = significand;
   }
-  if (shift > 64) {
+  if (shift >= 64) {
     unsigned_significand = 0;
   } else {
     unsigned_significand >>= shift;
   }
   significand = sign * unsigned_significand;
+  return significand;
+}
+
+template <class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<std::int64_t, Abi> fixed_point_right_shift(
+    simd<std::int64_t, Abi> significand,
+    simd<std::int32_t, Abi> const& shift)
+{
+  auto const mask = significand < 0;
+  auto const sign = condition(
+      simd_mask<std::int32_t, Abi>(mask),
+      simd<std::int32_t, Abi>(-1),
+      simd<std::int32_t, Abi>(1));
+  auto const uint64_mask = simd_mask<std::uint64_t, Abi>(mask);
+  auto unsigned_significand = condition(
+      uint64_mask,
+      simd<std::uint64_t, Abi>(-significand),
+      simd<std::uint64_t, Abi>(significand));
+  unsigned_significand = condition(
+      simd_mask<std::uint64_t, Abi>(shift >= 64),
+      simd<std::uint64_t, Abi>(0),
+      unsigned_significand >> simd<std::uint32_t, Abi>(shift));
+  significand = simd<std::int64_t, Abi>(sign) * simd<std::int64_t, Abi>(unsigned_significand);
   return significand;
 }
 
@@ -156,6 +180,18 @@ std::int64_t decompose_double(double value, int maximum_exponent)
   std::int64_t significand;
   decompose_double(value, significand, exponent);
   return fixed_point_right_shift(significand, maximum_exponent - exponent);
+}
+
+template <class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<std::int64_t, Abi> decompose_double(
+    simd<double, Abi> const& value,
+    int maximum_exponent)
+{
+  simd<std::int32_t, Abi> exponent;
+  simd<std::int64_t, Abi> significand;
+  decompose_double(value, significand, exponent);
+  return fixed_point_right_shift(significand, simd<std::int32_t, Abi>(maximum_exponent) - exponent);
 }
 
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr

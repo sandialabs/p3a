@@ -48,7 +48,7 @@ TEST(fixed_point, sum){
     auto const mask = p3a::simd_mask<double, abi_type>::first_n(1);
     where(mask, value).copy_from(values + i, p3a::element_aligned_tag());
     p3a::simd<std::int64_t, abi_type> significand;
-//  significand = p3a::details::decompose_double(value, maximum_exponent);
+    significand = p3a::details::decompose_double(value, maximum_exponent);
 //  fixed_point_sum_128 += p3a::details::int128(significand);
   }
 //double const recomposed_fixed_point_sum = p3a::details::compose_double(fixed_point_sum_128, maximum_exponent);
