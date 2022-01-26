@@ -648,6 +648,26 @@ class const_where_expression<simd_mask<std::int32_t, simd_abi::avx512_fixed_size
   value_type const& value() const { return m_value; }
 };
 
+template <>
+class const_where_expression<simd_mask<std::int64_t, simd_abi::avx512_fixed_size<8>>, simd<std::int64_t, simd_abi::avx512_fixed_size<8>>> {
+ public:
+  using abi_type = simd_abi::avx512_fixed_size<8>;
+  using value_type = simd<std::int64_t, abi_type>;
+  using mask_type = simd_mask<std::int64_t, abi_type>;
+ protected:
+  value_type& m_value;
+  mask_type const& m_mask;
+ public:
+  const_where_expression(mask_type const& mask_arg, value_type const& value_arg)
+    :m_value(const_cast<value_type&>(value_arg))
+    ,m_mask(mask_arg)
+  {}
+  [[nodiscard]] P3A_ALWAYS_INLINE inline constexpr
+  mask_type const& mask() const { return m_mask; }
+  [[nodiscard]] P3A_ALWAYS_INLINE inline constexpr
+  value_type const& value() const { return m_value; }
+};
+
 [[nodiscard]] P3A_ALWAYS_INLINE inline
 std::int32_t reduce(
     const_where_expression<simd_mask<std::int32_t, simd_abi::avx512_fixed_size<8>>, simd<std::int32_t, simd_abi::avx512_fixed_size<8>>> const& x,
@@ -664,6 +684,15 @@ double reduce(
     minimizer<double>)
 {
   return _mm512_mask_reduce_min_pd(x.mask().get(), x.value().get());
+}
+
+[[nodiscard]] P3A_ALWAYS_INLINE inline
+std::int64_t reduce(
+    const_where_expression<simd_mask<std::int64_t, simd_abi::avx512_fixed_size<8>>, simd<std::int64_t, simd_abi::avx512_fixed_size<8>>> const& x,
+    std::int64_t,
+    adder<std::int64_t>)
+{
+  return _mm512_mask_reduce_add_epi64(x.mask().get(), x.value().get());
 }
 
 [[nodiscard]] P3A_ALWAYS_INLINE inline
