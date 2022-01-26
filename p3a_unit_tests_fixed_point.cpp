@@ -49,10 +49,13 @@ TEST(fixed_point, sum){
     where(mask, value).copy_from(values + i, p3a::element_aligned_tag());
     p3a::simd<std::int64_t, abi_type> significand;
     significand = p3a::details::decompose_double(value, maximum_exponent);
-//  fixed_point_sum_128 += p3a::details::int128(significand);
+    fixed_point_sum_128 += p3a::reduce(
+        where(p3a::simd_mask<std::int64_t, abi_type>(mask), significand),
+        p3a::details::int128(0),
+        p3a::adder<p3a::details::int128>());
   }
-//double const recomposed_fixed_point_sum = p3a::details::compose_double(fixed_point_sum_128, maximum_exponent);
-//// in this small example, the sums are exactly the same
-//EXPECT_EQ(recomposed_fixed_point_sum, nonassociative_sum);
+  double const recomposed_fixed_point_sum = p3a::details::compose_double(fixed_point_sum_128, maximum_exponent);
+  // in this small example, the sums are exactly the same
+  EXPECT_EQ(recomposed_fixed_point_sum, nonassociative_sum);
 }
 

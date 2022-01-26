@@ -278,4 +278,20 @@ double compose_double(int128 significand_128, int exponent)
 
 }
 
+// hack! in the fixed point reduction we assume that individual significands
+// have at most 52 significant bits, so the sum of a small number of these
+// (about 10) should not exceed 63 significant bits.
+// this overload is a way to trick the system into first adding the 64-bit
+// numbers and then converting to a 128-bit class
+template <class Abi>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+details::int128
+reduce(
+    const_where_expression<simd_mask<std::int64_t, Abi>, simd<std::int64_t, Abi>> const& we,
+    details::int128 identity_value,
+    adder<details::int128>)
+{
+  return details::int128(reduce(we, std::int64_t(0), adder<std::int64_t>()));
+}
+
 }
