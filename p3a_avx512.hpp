@@ -46,6 +46,9 @@ class simd_mask<T, simd_abi::avx512_fixed_size<8>> {
     static const __mmask8 true_value(simd_mask(true).get());
     return simd_mask(_kxor_mask8(true_value, m_value));
   }
+  P3A_ALWAYS_INLINE inline bool operator==(simd_mask const& other) const {
+    return m_value == other.m_value;
+  }
   P3A_ALWAYS_INLINE static inline
   simd_mask first_n(int n)
   {
@@ -94,9 +97,7 @@ class simd<std::int32_t, simd_abi::avx512_fixed_size<8>> {
   P3A_ALWAYS_INLINE inline constexpr simd(__m256i const& value_in)
     :m_value(value_in)
   {}
-  P3A_ALWAYS_INLINE inline explicit simd(simd<std::uint64_t, abi_type> const& other)
-    :m_value(_mm512_cvtepi64_epi32(other.get()))
-  {}
+  P3A_ALWAYS_INLINE inline explicit simd(simd<std::uint64_t, abi_type> const& other);
   P3A_ALWAYS_INLINE inline simd operator*(simd const& other) const {
     return _mm256_mullo_epi32(m_value, other.m_value);
   }
@@ -409,6 +410,12 @@ condition(
 {
   return simd<std::uint64_t, simd_abi::avx512_fixed_size<8>>(_mm512_mask_blend_epi64(a.get(), c.get(), b.get()));
 }
+
+P3A_ALWAYS_INLINE inline
+simd<std::int32_t, simd_abi::avx512_fixed_size<8>>::simd(
+    simd<std::uint64_t, simd_abi::avx512_fixed_size<8>> const& other)
+  :m_value(_mm512_cvtepi64_epi32(other.get()))
+{}
 
 template <>
 class simd<double, simd_abi::avx512_fixed_size<8>> {
