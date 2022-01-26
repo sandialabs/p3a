@@ -41,6 +41,7 @@ TEST(fixed_point, sum){
           -1075, p3a::maximizer<std::int32_t>()));
   }
   printf("non-associative sum %.17e\n", nonassociative_sum);
+  printf("maximum exponent %d\n", maximum_exponent);
   auto fixed_point_sum_128 = p3a::details::int128(0);
   for (int i = 0; i < count; ++i) {
     p3a::simd<double, abi_type> value;
