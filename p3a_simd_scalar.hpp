@@ -92,6 +92,18 @@ class simd<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator-() const {
     return simd(-m_value);
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator>>(unsigned int rhs) const {
+    return simd(m_value >> rhs);
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator>>(simd<std::uint32_t, abi_type> const& rhs) const {
+    return simd(m_value >> rhs.get());
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator<<(unsigned int rhs) const {
+    return simd(m_value << rhs);
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator<<(simd<std::uint32_t, abi_type> const& rhs) const {
+    return simd(m_value << rhs.get());
+  }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr T get() const { return m_value; }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator<(simd const& other) const {
     return simd_mask<T, simd_abi::scalar>(m_value < other.m_value);
