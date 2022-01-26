@@ -16,6 +16,21 @@ void decompose_double(double value, int& sign_bit, int& exponent, std::uint64_t&
   mantissa = as_int & 0b1111111111111111111111111111111111111111111111111111ull;
 }
 
+template <class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void decompose_double(
+    simd<double, Abi> value,
+    simd<std::int32_t, Abi>& sign_bit,
+    simd<std::int32_t, Abi>& exponent,
+    simd<std::uint64_t, Abi>& mantissa)
+{
+  simd<std::uint64_t, Abi> const as_int = p3a::bit_cast<simd<std::uint64_t, Abi>>(value);
+  sign_bit = simd<std::int32_t, Abi>((as_int >> 63) & 0b1ull);
+  auto const biased_exponent = (as_int >> 52) & 0b11111111111ull;
+  exponent = simd<std::int32_t, Abi>(biased_exponent) - 1023;
+  mantissa = as_int & 0b1111111111111111111111111111111111111111111111111111ull;
+}
+
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 double compose_double(int sign_bit_arg, int exponent_arg, std::uint64_t mantissa_arg)
 {
