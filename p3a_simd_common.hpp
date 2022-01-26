@@ -203,7 +203,7 @@ template <class T, class Abi>
 T get(simd<T, Abi> const& value, int i)
 {
   T storage[simd<T, Abi>::size()];
-  value.store(storage);
+  value.copy_to(storage, element_aligned_tag());
   return storage[i];
 }
 
