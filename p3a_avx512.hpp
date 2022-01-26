@@ -247,6 +247,8 @@ class simd<std::int64_t, simd_abi::avx512_fixed_size<8>> {
     :m_value(_mm512_cvtepi32_epi64(other.get()))
   {
   }
+  P3A_ALWAYS_INLINE inline explicit simd(
+      simd<std::uint64_t, simd_abi::avx512_fixed_size<8>> const& other);
   P3A_ALWAYS_INLINE inline constexpr simd(__m512i const& value_in)
     :m_value(value_in)
   {}
@@ -416,6 +418,13 @@ simd<std::int32_t, simd_abi::avx512_fixed_size<8>>::simd(
     simd<std::uint64_t, simd_abi::avx512_fixed_size<8>> const& other)
   :m_value(_mm512_cvtepi64_epi32(other.get()))
 {}
+
+P3A_ALWAYS_INLINE inline
+simd<std::int64_t, simd_abi::avx512_fixed_size<8>>::simd(
+    simd<std::uint64_t, simd_abi::avx512_fixed_size<8>> const& other)
+  :m_value(other.get())
+{
+}
 
 template <>
 class simd<double, simd_abi::avx512_fixed_size<8>> {
