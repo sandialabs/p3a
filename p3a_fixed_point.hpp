@@ -68,6 +68,26 @@ void decompose_double(double value, std::int64_t& significand, int& exponent)
   exponent -= 52;
 }
 
+// value = significand * (2 ^ exponent)
+template <class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void decompose_double(
+    simd<double, Abi> const& value,
+    simd<std::int64_t, Abi>& significand,
+    simd<std::int32_t, Abi>& exponent)
+{
+  simd<std::int32_t, Abi> sign_bit;
+  simd<std::uint64_t, Abi> mantissa;
+  decompose_double(value, sign_bit, exponent, mantissa);
+  mantissa = condition(
+      exponent > -1023,
+      mantissa | 0b10000000000000000000000000000000000000000000000000000ull,
+      mantissa);
+  significand = simd<std::int64_t, Abi>(mantissa);
+  significand = condition(sign_bit == 0, significand, -significand);
+  exponent -= 52;
+}
+
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 double compose_double(std::int64_t significand, int exponent)
 {

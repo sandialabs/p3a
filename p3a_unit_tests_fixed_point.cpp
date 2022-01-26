@@ -29,8 +29,8 @@ TEST(fixed_point, sum){
     p3a::simd<double, abi_type> const recomposed =
       p3a::details::compose_double(sign_bit, exponent, mantissa);
     EXPECT_EQ(mask, mask && (recomposed == value));
-//  std::int64_t significand;
-//  p3a::details::decompose_double(value, significand, exponent);
+    p3a::simd<std::int64_t, abi_type> significand;
+    p3a::details::decompose_double(value, significand, exponent);
 //  double const recomposed_again = p3a::details::compose_double(significand, exponent);
 //  EXPECT_EQ(value, recomposed_again);
 //  nonassociative_sum += value;
