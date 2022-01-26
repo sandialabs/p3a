@@ -39,6 +39,9 @@ class simd_mask<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask operator!() const {
     return !m_value;
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline bool operator==(simd_mask const& other) const {
+    return m_value == other.m_value;
+  }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline
   simd_mask first_n(int n)
   {
@@ -110,6 +113,9 @@ class simd<T, simd_abi::scalar> {
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator&(simd const& other) const {
     return m_value & other.get();
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator|(simd const& other) const {
+    return m_value | other.get();
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr T get() const { return m_value; }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline mask_type operator<(simd const& other) const {

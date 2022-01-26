@@ -94,7 +94,7 @@ class simd<std::int32_t, simd_abi::avx512_fixed_size<8>> {
   P3A_ALWAYS_INLINE inline constexpr simd(__m256i const& value_in)
     :m_value(value_in)
   {}
-  P3A_ALWAYS_INLINE inline simd(simd<std::uint64_t, abi_type> const& other)
+  P3A_ALWAYS_INLINE inline explicit simd(simd<std::uint64_t, abi_type> const& other)
     :m_value(_mm512_cvtepi64_epi32(other.get()))
   {}
   P3A_ALWAYS_INLINE inline simd operator*(simd const& other) const {
@@ -336,6 +336,9 @@ class simd<std::uint64_t, simd_abi::avx512_fixed_size<8>> {
   P3A_ALWAYS_INLINE inline constexpr simd(__m512i const& value_in)
     :m_value(value_in)
   {}
+  P3A_ALWAYS_INLINE inline explicit simd(simd<std::int32_t, abi_type> const& other)
+    :m_value(_mm512_cvtepi32_epi64(other.get()))
+  {}
   P3A_ALWAYS_INLINE inline simd operator*(simd const& other) const {
     return _mm512_mullo_epi64(m_value, other.m_value);
   }
@@ -361,6 +364,9 @@ class simd<std::uint64_t, simd_abi::avx512_fixed_size<8>> {
   }
   P3A_ALWAYS_INLINE inline simd operator&(simd const& other) const {
     return _mm512_and_epi64(m_value, other.get());
+  }
+  P3A_ALWAYS_INLINE inline simd operator|(simd const& other) const {
+    return _mm512_or_epi64(m_value, other.get());
   }
   P3A_ALWAYS_INLINE inline constexpr __m512i get() const { return m_value; }
   P3A_ALWAYS_INLINE inline mask_type operator<(simd const& other) const {

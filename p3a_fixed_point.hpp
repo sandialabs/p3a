@@ -40,6 +40,19 @@ double compose_double(int sign_bit_arg, int exponent_arg, std::uint64_t mantissa
   return p3a::bit_cast<double>(as_int);
 }
 
+template <class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+simd<double, Abi> compose_double(
+    simd<std::int32_t, Abi> const& sign_bit_arg,
+    simd<std::int32_t, Abi> const& exponent_arg,
+    simd<std::uint64_t, Abi> const& mantissa_arg)
+{
+  simd<std::uint64_t, Abi> const as_int = mantissa_arg |
+      (simd<std::uint64_t, Abi>(exponent_arg + 1023) << 52) |
+      (simd<std::uint64_t, Abi>(sign_bit_arg) << 63);
+  return p3a::bit_cast<simd<double, Abi>>(as_int);
+}
+
 // value = significand * (2 ^ exponent)
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void decompose_double(double value, std::int64_t& significand, int& exponent)
