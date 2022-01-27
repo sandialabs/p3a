@@ -16,7 +16,7 @@ class conjugate_gradient {
   array_type m_r;
   array_type m_p;
   array_type m_Ap;
-  reproducible_adder<T, Allocator, ExecutionPolicy> m_adder;
+  associative_sum<T, Allocator, ExecutionPolicy> m_adder;
  public:
   using A_action_type = std::function<
     void(array_type const&, array_type&)>;
@@ -38,7 +38,7 @@ template <
   class Allocator,
   class ExecutionPolicy>
 P3A_NEVER_INLINE double dot_product(
-    reproducible_adder<T, Allocator, ExecutionPolicy>& adder,
+    associative_sum<T, Allocator, ExecutionPolicy>& adder,
     dynamic_array<T, Allocator, ExecutionPolicy> const& a,
     dynamic_array<T, Allocator, ExecutionPolicy> const& b)
 {
