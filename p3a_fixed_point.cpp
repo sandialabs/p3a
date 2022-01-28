@@ -64,7 +64,7 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
   });
   int global_max_exponent = local_max_exponent;
   m_comm.iallreduce(
-      &global_max_exponent, 1, mpi::op::max());
+      &global_max_exponent, 1, mpicpp::op::max());
   int128 const local_sum =
     m_int128_reducer.transform_reduce(
         m_values.cbegin(), m_values.cend(),
@@ -76,12 +76,12 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
   });
   int128 global_sum = local_sum;
   auto const int128_mpi_sum_op = 
-    mpi::op::create(p3a_mpi_int128_sum);
+    mpicpp::op::create(p3a_mpi_int128_sum);
   m_comm.iallreduce(
       MPI_IN_PLACE,
       &global_sum,
       sizeof(int128),
-      mpi::datatype::predefined_packed(),
+      mpicpp::datatype::predefined_packed(),
       int128_mpi_sum_op);
   return compose_double(global_sum, global_max_exponent);
 }

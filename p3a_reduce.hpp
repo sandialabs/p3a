@@ -1,6 +1,7 @@
 #pragma once
 
-#include "p3a_mpi.hpp"
+#include "mpicpp.hpp"
+
 #include "p3a_quantity.hpp"
 #include "p3a_execution.hpp"
 #include "p3a_grid3.hpp"
@@ -856,13 +857,13 @@ class fixed_point_double_sum {
  public:
   using values_type = dynamic_array<double, Allocator, ExecutionPolicy>;
  private:
-  mpi::comm m_comm;
+  mpicpp::comm m_comm;
   values_type m_values;
   reducer<int, ExecutionPolicy> m_exponent_reducer;
   reducer<int128, ExecutionPolicy> m_int128_reducer;
  public:
   fixed_point_double_sum() = default;
-  explicit fixed_point_double_sum(mpi::comm&& comm_arg)
+  explicit fixed_point_double_sum(mpicpp::comm&& comm_arg)
     :m_comm(std::move(comm_arg))
   {}
   fixed_point_double_sum(fixed_point_double_sum&&) = default;
@@ -896,7 +897,7 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
   details::fixed_point_double_sum<Allocator, ExecutionPolicy> m_fixed_point;
  public:
   associative_sum() = default;
-  explicit associative_sum(mpi::comm&& comm_arg)
+  explicit associative_sum(mpicpp::comm&& comm_arg)
     :m_fixed_point(std::move(comm_arg))
   {}
   associative_sum(associative_sum&&) = default;
