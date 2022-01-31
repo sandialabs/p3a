@@ -23,7 +23,7 @@ class conjugate_gradient {
   using b_filler_type = std::function<
     void(array_type&)>;
   conjugate_gradient() = default;
-  conjugate_gradient(mpi::comm&& comm_arg)
+  conjugate_gradient(mpicpp::comm&& comm_arg)
     :m_adder(std::move(comm_arg))
   {}
   P3A_NEVER_INLINE int solve(
