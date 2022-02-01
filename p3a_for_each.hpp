@@ -198,6 +198,23 @@ P3A_ALWAYS_INLINE constexpr void for_each(
   }
 }
 
+template <class Functor, class Integral>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+void for_each(
+    local_execution,
+    counting_iterator3<Integral> const& first,
+    counting_iterator3<Integral> const& last,
+    Functor const& functor)
+{
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
+        functor(vector3<Integral>(i, j, k));
+      }
+    }
+  }
+}
+
 template <class Functor>
 P3A_ALWAYS_INLINE constexpr void for_each(
     serial_local_execution policy,
@@ -213,6 +230,19 @@ P3A_ALWAYS_INLINE constexpr void for_each(
 template <class Functor>
 P3A_ALWAYS_INLINE constexpr void for_each(
     serial_local_execution policy,
+    grid3 const& grid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
+}
+
+template <class Functor>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+void for_each(
+    local_execution policy,
     grid3 const& grid,
     Functor const& functor)
 {

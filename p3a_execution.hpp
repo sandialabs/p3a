@@ -28,6 +28,14 @@ class serial_local_execution {
 
 inline constexpr serial_local_execution serial_local = {};
 
+class local_execution {
+ public:
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  void synchronize() const {}
+};
+
+inline constexpr local_execution local = {};
+
 #ifdef __CUDACC__
 
 class cuda_exception : public std::exception
