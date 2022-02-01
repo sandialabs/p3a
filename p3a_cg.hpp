@@ -77,18 +77,12 @@ P3A_NEVER_INLINE double dot_product(
   using size_type = typename dynamic_array<T, Allocator, ExecutionPolicy>::size_type;
   auto const a_ptr = a.cbegin();
   auto const b_ptr = b.cbegin();
-  //return adder.transform_reduce(
-  //    counting_iterator<size_type>(0),
-  //    counting_iterator<size_type>(a.size()),
-  //[=] P3A_HOST P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
-  //  return a_ptr[i] * b_ptr[i];
-  //});
-  // naive sum below for now...
-  T val = 0.;
-  for (int i = 0; i < a.size(); ++i) {
-    val += a_ptr[i] * b_ptr[i];
-  }
-  return val;
+  return adder.transform_reduce(
+      counting_iterator<size_type>(0),
+      counting_iterator<size_type>(a.size()),
+  [=] P3A_HOST P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
+    return a_ptr[i] * b_ptr[i];
+  });
 }
 
 template <
