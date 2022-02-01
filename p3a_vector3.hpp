@@ -248,9 +248,15 @@ auto scalar_triple_product(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+auto length_squared(vector3<T> const& a) {
+  return dot_product(a, a);
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T length(vector3<T> const& a) {
-  return square_root(dot_product(a, a));
+  return square_root(length_squared(a));
 }
 
 template <class T>
