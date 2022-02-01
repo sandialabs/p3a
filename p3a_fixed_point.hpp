@@ -92,7 +92,7 @@ std::int64_t fixed_point_right_shift(std::int64_t significand, int shift)
     sign = 1;
     unsigned_significand = significand;
   }
-  if (shift > 64) {
+  if (shift >= 64) {
     unsigned_significand = 0;
   } else {
     unsigned_significand >>= shift;
@@ -107,7 +107,9 @@ std::int64_t decompose_double(double value, int maximum_exponent)
   int exponent;
   std::int64_t significand;
   decompose_double(value, significand, exponent);
-  return fixed_point_right_shift(significand, maximum_exponent - exponent);
+  auto const shift = maximum_exponent - exponent;
+  significand = fixed_point_right_shift(significand, shift);
+  return significand;
 }
 
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
