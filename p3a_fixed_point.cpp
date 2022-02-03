@@ -53,16 +53,17 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
   int constexpr minimum_exponent = -1075;
   int const value_count = int(m_values.size());
   auto const values = m_values.cbegin();
+  using simd_abi_type = typename ExecutionPolicy::simd_abi_type;
   int const local_max_exponent =
-    m_exponent_reducer.transform_reduce(
+    m_exponent_reducer.simd_transform_reduce(
         counting_iterator<int>(0),
         counting_iterator<int>(value_count),
         minimum_exponent,
         maximizes<int>,
-  [=] P3A_HOST P3A_DEVICE (int i) P3A_ALWAYS_INLINE {
-    auto const value = load(values, i);
-    std::int64_t significand;
-    int exponent;
+  [=] P3A_HOST P3A_DEVICE (int i, simd_mask<std::int32_t, simd_abi_type> const& mask) P3A_ALWAYS_INLINE {
+    auto const value = load(values, i, simd_mask<double, simd_abi_type>(mask));
+    simd<std::int64_t, simd_abi_type> significand;
+    simd<std::int32_t, simd_abi_type> exponent;
     decompose_double(value, significand, exponent);
     return exponent;
   });

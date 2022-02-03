@@ -6,6 +6,7 @@
 #include "p3a_macros.hpp"
 #include "p3a_functions.hpp"
 #include "p3a_type_traits.hpp"
+#include "p3a_scalar.hpp"
 
 namespace p3a {
 

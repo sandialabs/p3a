@@ -55,7 +55,7 @@ simd_for_each(
     auto const i = *first + qi * width;
     auto const lanes = minimum(width, *last - i);
     auto const mask = mask_type::first_n(lanes);
-    functor(i, mask);
+    f(i, mask);
   }
 }
 
