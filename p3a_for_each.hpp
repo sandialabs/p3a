@@ -34,9 +34,29 @@ for_each(
     counting_iterator<Integral> last,
     UnaryFunction f)
 {
-  Kokkos::parallel_for("p3a_serial",
-      Kokkos::RangePolicy<Kokkos::Serial, Kokkos::IndexType<Integral>>(*first, *last),
-      f);
+  for (Integral i = *first; i < *last; ++i) {
+    f(i);
+  }
+}
+
+template <class T, class Integral, class UnaryFunction>
+P3A_NEVER_INLINE
+std::enable_if_t<std::is_integral_v<Integral>>
+simd_for_each(
+    serial_execution,
+    counting_iterator<Integral> first,
+    counting_iterator<Integral> last,
+    UnaryFunction f)
+{
+  using mask_type = host_simd_mask<T>;
+  auto constexpr width = Integral(mask_type::size());
+  auto const quotient = (*last - *first) / width;
+  for (Integral qi = 0; qi < quotient + 1; ++qi) {
+    auto const i = *first + qi * width;
+    auto const lanes = minimum(width, *last - i);
+    auto const mask = mask_type::first_n(lanes);
+    functor(i, mask);
+  }
 }
 
 template <class ForwardIt, class UnaryFunction>
@@ -47,14 +67,9 @@ void for_each(
     ForwardIt last,
     UnaryFunction f)
 {
-  auto const n = last - first;
-  using integral_type = std::remove_const_t<decltype(n)>;
-  for_each(policy,
-      counting_iterator<integral_type>(0),
-      counting_iterator<integral_type>(n),
-      [=] (integral_type i) P3A_ALWAYS_INLINE {
-        f(first[i]);
-      });
+  for (; first != last; ++first) {
+    f(*first);
+  }
 }
 
 #ifdef __CUDACC__
@@ -307,6 +322,8 @@ P3A_NEVER_INLINE void simd_for_each(
   using mask_type = host_simd_mask<T>;
   auto constexpr width = Integral(mask_type::size());
   auto const quotient = (last.vector.x() - first.vector.x()) / width;
+  // This doesn't use Kokkos MDRangePolicy because doing so slows
+  // down a user application by 10%
   for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
     for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
       for (Integral qi = 0; qi < quotient + 1; ++qi) {
