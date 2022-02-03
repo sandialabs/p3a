@@ -37,6 +37,25 @@ class reducer<T, serial_execution> {
     }
     return init;
   }
+  template <class Iterator, class BinaryOp, class UnaryOp>
+  [[nodiscard]] P3A_NEVER_INLINE
+  T simd_transform_reduce(
+      Iterator first,
+      Iterator last,
+      T init,
+      BinaryOp binary_op,
+      UnaryOp unary_op)
+  {
+    using reference_type = typename std::iterator_traits<Iterator>::reference;
+    auto const identity_value = init;
+    simd_for_each<T>(m_policy, first, last,
+    [&] (reference_type ref, host_simd_mask<T> const& mask) P3A_ALWAYS_INLINE {
+      auto const simd_value = unary_op(ref, mask);
+      auto const scalar_value = reduce(where(mask, simd_value), identity_value, binary_op);
+      init = binary_op(init, scalar_value);
+    });
+    return init;
+  }
   template <class BinaryOp, class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
   T transform_reduce(

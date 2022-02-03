@@ -72,6 +72,25 @@ void for_each(
   }
 }
 
+template <class T, class ForwardIt, class UnaryFunction>
+P3A_NEVER_INLINE
+void
+simd_for_each(
+    serial_execution policy,
+    ForwardIt first,
+    ForwardIt last,
+    UnaryFunction f)
+{
+  auto const n = last - first;
+  using Integral = std::remove_const_t<decltype(n)>;
+  simd_for_each<T>(policy,
+      counting_iterator<Integral>(0),
+      counting_iterator<Integral>(n),
+  [&] (Integral const i) P3A_ALWAYS_INLINE {
+    f(first[i]);
+  });
+}
+
 #ifdef __CUDACC__
 
 template <class Integral, class UnaryFunction>
