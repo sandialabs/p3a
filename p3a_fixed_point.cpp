@@ -51,12 +51,16 @@ template <
 double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
 {
   int constexpr minimum_exponent = -1075;
+  int const value_count = int(m_values.size());
+  auto const values = m_values.cbegin();
   int const local_max_exponent =
     m_exponent_reducer.transform_reduce(
-        m_values.cbegin(), m_values.cend(),
+        counting_iterator<int>(0),
+        counting_iterator<int>(value_count),
         minimum_exponent,
         maximizes<int>,
-  [=] P3A_HOST P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
+  [=] P3A_HOST P3A_DEVICE (int i) P3A_ALWAYS_INLINE {
+    auto const value = load(values, i);
     std::int64_t significand;
     int exponent;
     decompose_double(value, significand, exponent);
@@ -67,10 +71,12 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
       &global_max_exponent, 1, mpicpp::op::max());
   int128 const local_sum =
     m_int128_reducer.transform_reduce(
-        m_values.cbegin(), m_values.cend(),
+        counting_iterator<int>(0),
+        counting_iterator<int>(value_count),
         int128(0),
         adds<int128>,
-  [=] P3A_HOST P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
+  [=] P3A_HOST P3A_DEVICE (int i) P3A_ALWAYS_INLINE {
+    auto const value = load(values, i);
     std::int64_t significand_64 = decompose_double(value, global_max_exponent);
     return int128(significand_64);
   });
