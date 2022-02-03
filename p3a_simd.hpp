@@ -32,8 +32,8 @@ template <class T>
 using device_simd = simd<T, simd_abi::device_native>;
 
 template <class T>
-using host_simd_mask = typename host_simd<T>::mask_type;
+using host_simd_mask = simd_mask<T, simd_abi::host_native>;
 template <class T>
-using device_simd_mask = typename device_simd<T>::mask_type;
+using device_simd_mask = simd_mask<T, simd_abi::device_native>;
 
 }

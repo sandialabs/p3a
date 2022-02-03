@@ -42,14 +42,14 @@ class where_expression : public const_where_expression<Mask, Value> {
 template <class T, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 where_expression<simd_mask<T, Abi>, simd<T, Abi>>
-where(simd_mask<T, Abi> const& mask, simd<T, Abi>& value) {
+where(no_deduce_t<simd_mask<T, Abi>> const& mask, simd<T, Abi>& value) {
   return where_expression(mask, value);
 }
 
 template <class T, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 const_where_expression<simd_mask<T, Abi>, simd<T, Abi>>
-where(simd_mask<T, Abi> const& mask, simd<T, Abi> const& value) {
+where(no_deduce_t<simd_mask<T, Abi>> const& mask, simd<T, Abi> const& value) {
   return const_where_expression(mask, value);
 }
 
