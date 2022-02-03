@@ -305,24 +305,16 @@ P3A_NEVER_INLINE void simd_for_each(
     Functor functor)
 {
   using mask_type = host_simd_mask<T>;
-  Integral constexpr width = Integral(mask_type::size());
-  vector3<Integral> const extents = last.vector - first.vector;
-  Integral const quotient = extents.x() / width;
-  Integral const remainder = extents.x() % width;
-  mask_type const all_mask(true);
-  mask_type const remainder_mask = mask_type::first_n(remainder);
+  auto constexpr width = Integral(mask_type::size());
+  auto const quotient = (last.vector.x() - first.vector.x()) / width;
   for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
     for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = 0; i < quotient; ++i) {
-        functor(
-            vector3<Integral>(
-              first.vector.x() + i * width, j, k),
-            all_mask);
+      for (Integral qi = 0; qi < quotient + 1; ++qi) {
+        auto const i = first.vector.x() + qi * width;
+        auto const lanes = minimum(width, last.vector.x() - i);
+        auto const mask = mask_type::first_n(lanes);
+        functor(vector3<Integral>(i, j, k), mask);
       }
-      functor(
-          vector3<Integral>(
-            first.vector.x() + quotient * width, j, k),
-          remainder_mask);
     }
   }
 }
