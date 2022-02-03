@@ -713,4 +713,13 @@ bit_cast(simd<double, simd_abi::avx512_fixed_size<8>> const& src)
       _mm512_castpd_si512(src.get()));
 }
 
+template <class To>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_same_v<To, simd<double, simd_abi::avx512_fixed_size<8>>>, simd<double, simd_abi::avx512_fixed_size<8>>>
+bit_cast(simd<std::uint64_t, simd_abi::avx512_fixed_size<8>> const& src)
+{
+  return simd<double, simd_abi::avx512_fixed_size<8>>(
+      _mm512_castsi512_pd(src.get()));
+}
+
 }
