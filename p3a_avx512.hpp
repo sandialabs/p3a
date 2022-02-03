@@ -111,7 +111,7 @@ class simd<std::int32_t, simd_abi::avx512_fixed_size<8>> {
     return simd(0) - *this;
   }
   P3A_ALWAYS_INLINE inline void copy_to(value_type* ptr, element_aligned_tag) const {
-    _mm256_storeu_epi32(ptr, m_value);
+    _mm256_mask_storeu_epi32(ptr, mask_type(true).get(), m_value);
   }
   P3A_ALWAYS_INLINE inline constexpr __m256i get() const { return m_value; }
   P3A_ALWAYS_INLINE inline mask_type operator<(simd const& other) const {
@@ -268,7 +268,7 @@ class simd<std::int64_t, simd_abi::avx512_fixed_size<8>> {
     return simd(0) - *this;
   }
   P3A_ALWAYS_INLINE inline void copy_to(value_type* ptr, element_aligned_tag) const {
-    _mm512_storeu_epi64(ptr, m_value);
+    _mm512_mask_storeu_epi64(ptr, mask_type(true).get(), m_value);
   }
   P3A_ALWAYS_INLINE inline simd operator>>(unsigned int rhs) const {
     return _mm512_srai_epi64(m_value, rhs);
