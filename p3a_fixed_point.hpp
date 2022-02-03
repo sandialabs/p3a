@@ -16,6 +16,21 @@ void decompose_double(double value, int& sign_bit, int& exponent, std::uint64_t&
   mantissa = as_int & 0b1111111111111111111111111111111111111111111111111111ull;
 }
 
+template <class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void decompose_double(
+    simd<double, Abi> value,
+    simd<std::int32_t, Abi>& sign_bit,
+    simd<std::int32_t, Abi>& exponent,
+    simd<std::uint64_t, Abi>& mantissa)
+{
+  simd<std::uint64_t, Abi> const as_int = p3a::bit_cast<simd<std::uint64_t, Abi>>(value);
+  sign_bit = simd<std::int32_t, Abi>((as_int >> 63) & 0b1ull);
+  auto const biased_exponent = (as_int >> 52) & 0b11111111111ull;
+  exponent = simd<std::int32_t, Abi>(biased_exponent) - 1023;
+  mantissa = as_int & 0b1111111111111111111111111111111111111111111111111111ull;
+}
+
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 double compose_double(int sign_bit_arg, int exponent_arg, std::uint64_t mantissa_arg)
 {
@@ -23,6 +38,19 @@ double compose_double(int sign_bit_arg, int exponent_arg, std::uint64_t mantissa
       (std::uint64_t(exponent_arg + 1023) << 52) |
       (std::uint64_t(sign_bit_arg) << 63);
   return p3a::bit_cast<double>(as_int);
+}
+
+template <class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+simd<double, Abi> compose_double(
+    simd<std::int32_t, Abi> const& sign_bit_arg,
+    simd<std::int32_t, Abi> const& exponent_arg,
+    simd<std::uint64_t, Abi> const& mantissa_arg)
+{
+  simd<std::uint64_t, Abi> const as_int = mantissa_arg |
+      (simd<std::uint64_t, Abi>(exponent_arg + 1023) << 52) |
+      (simd<std::uint64_t, Abi>(sign_bit_arg) << 63);
+  return p3a::bit_cast<simd<double, Abi>>(as_int);
 }
 
 // value = significand * (2 ^ exponent)
@@ -37,6 +65,26 @@ void decompose_double(double value, std::int64_t& significand, int& exponent)
   }
   significand = mantissa;
   if (sign_bit) significand = -significand;
+  exponent -= 52;
+}
+
+// value = significand * (2 ^ exponent)
+template <class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void decompose_double(
+    simd<double, Abi> const& value,
+    simd<std::int64_t, Abi>& significand,
+    simd<std::int32_t, Abi>& exponent)
+{
+  simd<std::int32_t, Abi> sign_bit;
+  simd<std::uint64_t, Abi> mantissa;
+  decompose_double(value, sign_bit, exponent, mantissa);
+  mantissa = condition(
+      exponent > -1023,
+      mantissa | 0b10000000000000000000000000000000000000000000000000000ull,
+      mantissa);
+  significand = simd<std::int64_t, Abi>(mantissa);
+  significand = condition(sign_bit == 0, significand, -significand);
   exponent -= 52;
 }
 
@@ -101,6 +149,30 @@ std::int64_t fixed_point_right_shift(std::int64_t significand, int shift)
   return significand;
 }
 
+template <class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<std::int64_t, Abi> fixed_point_right_shift(
+    simd<std::int64_t, Abi> significand,
+    simd<std::int32_t, Abi> const& shift)
+{
+  auto const mask = significand < 0;
+  auto const sign = condition(
+      simd_mask<std::int32_t, Abi>(mask),
+      simd<std::int32_t, Abi>(-1),
+      simd<std::int32_t, Abi>(1));
+  auto const uint64_mask = simd_mask<std::uint64_t, Abi>(mask);
+  auto unsigned_significand = condition(
+      uint64_mask,
+      simd<std::uint64_t, Abi>(-significand),
+      simd<std::uint64_t, Abi>(significand));
+  unsigned_significand = condition(
+      simd_mask<std::uint64_t, Abi>(shift >= 64),
+      simd<std::uint64_t, Abi>(0),
+      unsigned_significand >> simd<std::uint32_t, Abi>(shift));
+  significand = simd<std::int64_t, Abi>(sign) * simd<std::int64_t, Abi>(unsigned_significand);
+  return significand;
+}
+
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 std::int64_t decompose_double(double value, int maximum_exponent)
 {
@@ -110,6 +182,18 @@ std::int64_t decompose_double(double value, int maximum_exponent)
   auto const shift = maximum_exponent - exponent;
   significand = fixed_point_right_shift(significand, shift);
   return significand;
+}
+
+template <class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<std::int64_t, Abi> decompose_double(
+    simd<double, Abi> const& value,
+    int maximum_exponent)
+{
+  simd<std::int32_t, Abi> exponent;
+  simd<std::int64_t, Abi> significand;
+  decompose_double(value, significand, exponent);
+  return fixed_point_right_shift(significand, simd<std::int32_t, Abi>(maximum_exponent) - exponent);
 }
 
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
@@ -194,6 +278,22 @@ double compose_double(int128 significand_128, int exponent)
   return compose_double(significand_64, exponent);
 }
 
+}
+
+// hack! in the fixed point reduction we assume that individual significands
+// have at most 52 significant bits, so the sum of a small number of these
+// (about 10) should not exceed 63 significant bits.
+// this overload is a way to trick the system into first adding the 64-bit
+// numbers and then converting to a 128-bit class
+template <class Abi>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+details::int128
+reduce(
+    const_where_expression<simd_mask<std::int64_t, Abi>, simd<std::int64_t, Abi>> const& we,
+    details::int128 identity_value,
+    adder<details::int128>)
+{
+  return details::int128(reduce(we, std::int64_t(0), adder<std::int64_t>()));
 }
 
 }

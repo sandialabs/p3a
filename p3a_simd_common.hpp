@@ -5,6 +5,7 @@
 
 #include "p3a_macros.hpp"
 #include "p3a_functions.hpp"
+#include "p3a_type_traits.hpp"
 
 namespace p3a {
 
@@ -52,25 +53,29 @@ where(simd_mask<T, Abi> const& mask, simd<T, Abi> const& value) {
 }
 
 template <class T, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, Abi>& operator+=(simd<T, Abi>& a, simd<T, Abi> const& b) {
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<T, Abi>& operator+=(simd<T, Abi>& a, no_deduce_t<simd<T, Abi>> const& b) {
   a = a + b;
   return a;
 }
 
 template <class T, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, Abi>& operator-=(simd<T, Abi>& a, simd<T, Abi> const& b) {
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<T, Abi>& operator-=(simd<T, Abi>& a, no_deduce_t<simd<T, Abi>> const& b) {
   a = a - b;
   return a;
 }
 
 template <class T, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, Abi>& operator*=(simd<T, Abi>& a, simd<T, Abi> const& b) {
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<T, Abi>& operator*=(simd<T, Abi>& a, no_deduce_t<simd<T, Abi>> const& b) {
   a = a * b;
   return a;
 }
 
 template <class T, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd<T, Abi>& operator/=(simd<T, Abi>& a, simd<T, Abi> const& b) {
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<T, Abi>& operator/=(simd<T, Abi>& a, no_deduce_t<simd<T, Abi>> const& b) {
   a = a / b;
   return a;
 }
@@ -198,7 +203,7 @@ template <class T, class Abi>
 T get(simd<T, Abi> const& value, int i)
 {
   T storage[simd<T, Abi>::size()];
-  value.store(storage);
+  value.copy_to(storage, element_aligned_tag());
   return storage[i];
 }
 
