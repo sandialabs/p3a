@@ -81,7 +81,7 @@ class simd<T, simd_abi::scalar> {
     :m_value(value)
   {}
   template <class U>
-  P3A_ALWAYS_INLINE inline explicit simd(simd<U, abi_type> const& other)
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline explicit simd(simd<U, abi_type> const& other)
     :m_value(value_type(other.get()))
   {}
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator*(simd const& other) const {

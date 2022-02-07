@@ -236,6 +236,32 @@ __global__ void cuda_reduce(ForwardIt first, T* g_odata, int n, T init, BinaryOp
   if (tid == 0) g_odata[blockIdx.x] = myResult;
 }
 
+template <class ForwardIt, class Integral, class T, class BinaryOp, class UnaryOp>
+__global__ void cuda_simd_reduce(ForwardIt first, T* g_odata, Integral n, T init, BinaryOp binop, UnaryOp unop) {
+  constexpr int blockSize = 64;
+  T* sdata = cuda_shared_memory<T>();
+  // perform first level of reduction,
+  // reading from global memory, writing to shared memory
+  int tid = threadIdx.x;
+  Integral i = blockIdx.x * blockSize + threadIdx.x;
+  auto const mask = simd_mask<T, simd_abi::scalar>(i < n);
+  auto const simd_value = unop(i, mask);
+  T myResult = reduce(where(mask, simd_value), init, binop);
+  // each thread puts its local sum into shared memory
+  sdata[tid] = myResult;
+  __syncthreads();
+  if (tid < 32) {
+    // Fetch final intermediate sum from 2nd warp
+    myResult = binop(myResult, sdata[tid + 32]);
+    // Reduce final warp using shuffle
+    for (unsigned int offset = 32 / 2; offset > 0; offset /= 2) {
+      myResult = binop(myResult, cuda_shuffle_down(myResult, offset));
+    }
+  }
+  // write result for this block to global mem
+  if (tid == 0) g_odata[blockIdx.x] = myResult;
+}
+
 template <class T, class BinaryOp, class UnaryOp>
 __global__ void cuda_grid_reduce(
     vector3<int> first, vector3<int> last,
@@ -349,6 +375,18 @@ class reducer<T, cuda_execution> {
       smemSize,
       cuda_stream>>>(first, d_odata, size, init, binop, unop);
   }
+  template <class ForwardIt, class BinaryOp, class UnaryOp, class Integral>
+  void simd_reduction_pass(Integral size, int blocks, ForwardIt first, T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
+    dim3 const dimBlock(64, 1, 1);
+    dim3 const dimGrid(blocks, 1, 1);
+    int const smemSize = 64 * sizeof(T);
+    cudaStream_t const cuda_stream = nullptr;
+    details::cuda_simd_reduce<<<
+      dimGrid,
+      dimBlock,
+      smemSize,
+      cuda_stream>>>(first, d_odata, size, init, binop, unop);
+  }
   template <class BinaryOp, class UnaryOp>
   void grid_reduction_pass(
       vector3<int> first, vector3<int> last, vector3<int> block_grid,
@@ -382,6 +420,22 @@ class reducer<T, cuda_execution> {
       int n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
     int blocks = get_num_blocks(n);
     this->reduction_pass(n, blocks, first, m_scratch2, init, binop, unop);
+    int s = blocks;
+    T* tmp_d_idata = m_scratch1;
+    T* tmp_d_odata = m_scratch2;
+    while (s > 1) {
+      std::swap(tmp_d_idata, tmp_d_odata);
+      blocks = get_num_blocks(s);
+      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity<T>());
+      s = (s + (threads_per_block * 2 - 1)) / (threads_per_block * 2);
+    }
+    return tmp_d_odata;
+  }
+  template <class ForwardIt, class BinaryOp, class UnaryOp, class Integral>
+  T* simd_reduce_on_device(
+      Integral n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
+    int blocks = int((n + 64 - 1) / 64);
+    this->simd_reduction_pass(n, blocks, first, m_scratch2, init, binop, unop);
     int s = blocks;
     T* tmp_d_idata = m_scratch1;
     T* tmp_d_odata = m_scratch2;
@@ -438,6 +492,19 @@ class reducer<T, cuda_execution> {
     m_scratch2 = nullptr;
     return host_result;
   }
+  template <class ForwardIt, class BinaryOp, class UnaryOp, class Integral>
+  T simd_reduce_to_host(Integral n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
+    m_storage.resize(2 * n);
+    m_scratch1 = m_storage.data();
+    m_scratch2 = m_storage.data() + n;
+    T host_result = init;
+    T const* device_result_ptr = this->simd_reduce_on_device(n, first, init, binop, unop);
+    cudaMemcpy(&host_result, device_result_ptr, sizeof(T), cudaMemcpyDefault);
+    m_storage.resize(0);
+    m_scratch1 = nullptr;
+    m_scratch2 = nullptr;
+    return host_result;
+  }
   template <class BinaryOp, class UnaryOp>
   T grid_reduce_to_host(vector3<int> first, vector3<int> last, T init, BinaryOp binop, UnaryOp unop) {
     auto const n = (last - first).volume();
@@ -481,6 +548,13 @@ class reducer<T, cuda_execution> {
       ForwardIt first, ForwardIt last,
       T init, BinaryOp binop, UnaryOp unop) {
     return this->reduce_to_host(last - first, first, init, binop, unop);
+  }
+  template <class ForwardIt, class BinaryOp, class UnaryOp>
+  [[nodiscard]]
+  T simd_transform_reduce(
+      ForwardIt first, ForwardIt last,
+      T init, BinaryOp binop, UnaryOp unop) {
+    return this->simd_reduce_to_host(last - first, first, init, binop, unop);
   }
   template <class BinaryOp, class UnaryOp>
   [[nodiscard]]
