@@ -5,7 +5,7 @@
 namespace p3a {
 
 template <class T>
-class view_simd {
+class simd_view {
  private:
   using layout = Kokkos::LayoutLeft;
   using value_t = typename Kokkos::View<T, layout>::value_type;
@@ -19,8 +19,8 @@ class view_simd {
   map_t m_map;
   value_t* m_data = nullptr;
  public:
-  view_simd() = default;
-  view_simd(Kokkos::View<T, layout> view)
+  simd_view() = default;
+  simd_view(Kokkos::View<T, layout> view)
     : m_view(view), m_map(view.impl_map()), m_data(view.data())
   {}
   template <class Abi>
