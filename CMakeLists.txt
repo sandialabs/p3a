@@ -79,6 +79,7 @@ set(P3A_HEADERS
   p3a_axis_angle.hpp
   p3a_search.hpp
   p3a_cg.hpp
+  p3a_view_simd.hpp
   )
 
 set(P3A_SOURCES
