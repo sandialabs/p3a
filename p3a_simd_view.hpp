@@ -35,21 +35,21 @@ class simd_view {
   [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
   typename std::enable_if<2 == Kokkos::View<T, layout>::Rank, simd_t<Abi>>::type
   load(int i, int j, mask_t<Abi> const& mask) const {
-    int const idx = m_map.impl_offset(i,j);
+    int const idx = m_map.m_impl_offset(i,j);
     return p3a::load(m_data, idx, mask);
   }
   template <class Abi>
   [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
   typename std::enable_if<3 == Kokkos::View<T, layout>::Rank, simd_t<Abi>>::type
   load(int i, int j, int k, mask_t<Abi> const& mask) const {
-    int const idx = m_map.impl_offset(i,j,k);
+    int const idx = m_map.m_impl_offset(i,j,k);
     return p3a::load(m_data, idx, mask);
   }
   template <class Abi>
   [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
   typename std::enable_if<4 == Kokkos::View<T, layout>::Rank, simd_t<Abi>>::type
   load(int i, int j, int k, int l, mask_t<Abi> const& mask) const {
-    int const idx = m_map.impl_offset(i,j,k,l);
+    int const idx = m_map.m_impl_offset(i,j,k,l);
     return p3a::load(m_data, idx, mask);
   }
   template <class Abi, class U = T>
@@ -62,21 +62,21 @@ class simd_view {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
   typename std::enable_if<2 == Kokkos::View<U, layout>::Rank>::type
   store(simd_t<Abi> const& val, int i, int j, mask_t<Abi> const& mask) const {
-    int const idx = m_map.impl_offset(i,j);
+    int const idx = m_map.m_impl_offset(i,j);
     p3a::store(val, m_data, idx, mask);
   }
   template <class Abi, class U = T>
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
   typename std::enable_if<3 == Kokkos::View<U, layout>::Rank>::type
   store(simd_t<Abi> const& val, int i, int j, int k, mask_t<Abi> const& mask) const {
-    int const idx = m_map.impl_offset(i,j,k);
+    int const idx = m_map.m_impl_offset(i,j,k);
     p3a::store(val, m_data, idx, mask);
   }
   template <class Abi, class U = T>
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
   typename std::enable_if<4 == Kokkos::View<U, layout>::Rank>::type
   store(simd_t<Abi> const& val, int i, int j, int k, int l, mask_t<Abi> const& mask) const {
-    int const idx = m_map.impl_offset(i,j,k,l);
+    int const idx = m_map.m_impl_offset(i,j,k,l);
     p3a::store(val, m_data, idx, mask);
   }
 };
