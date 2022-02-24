@@ -1,6 +1,8 @@
-#include "p3a_for_each.hpp"
+#pragma once
 
 #include "Kokkos_Core.hpp"
+
+#include "p3a_for_each.hpp"
 
 namespace p3a {
 
