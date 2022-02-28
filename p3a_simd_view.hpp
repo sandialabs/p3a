@@ -79,6 +79,38 @@ class simd_view {
     int const idx = m_map.m_impl_offset(i,j,k,l);
     p3a::store(val, m_data, idx, mask);
   }
+  template <class Abi, class U = T>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  typename std::enable_if<1 == Kokkos::View<U, layout>::Rank>::type
+  sum_store(simd_t<Abi> const& val, int i, mask_t<Abi> const& mask) const {
+    simd_t<Abi> sum = load(i, mask);
+    sum += val;
+    store(sum, i, mask);
+  }
+  template <class Abi, class U = T>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  typename std::enable_if<2 == Kokkos::View<U, layout>::Rank>::type
+  sum_store(simd_t<Abi> const& val, int i, int j, mask_t<Abi> const& mask) const {
+    simd_t<Abi> sum = load(i, j, mask);
+    sum += val;
+    store(sum, i, j, mask);
+  }
+  template <class Abi, class U = T>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  typename std::enable_if<3 == Kokkos::View<U, layout>::Rank>::type
+  sum_store(simd_t<Abi> const& val, int i, int j, int k, mask_t<Abi> const& mask) const {
+    simd_t<Abi> sum = load(i, j, k, mask);
+    sum += val;
+    store(sum, i, j, k, mask);
+  }
+  template <class Abi, class U = T>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  typename std::enable_if<4 == Kokkos::View<U, layout>::Rank>::type
+  sum_store(simd_t<Abi> const& val, int i, int j, int k, int l, mask_t<Abi> const& mask) const {
+    simd_t<Abi> sum = load(i, j, k, l, mask);
+    sum += val;
+    store(sum, i, j, k, l, mask);
+  }
 };
 
 }
