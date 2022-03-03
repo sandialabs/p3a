@@ -113,6 +113,9 @@ class simd<std::int32_t, simd_abi::avx512_fixed_size<8>> {
   P3A_ALWAYS_INLINE inline void copy_to(value_type* ptr, element_aligned_tag) const {
     _mm256_mask_storeu_epi32(ptr, mask_type(true).get(), m_value);
   }
+  P3A_ALWAYS_INLINE inline void copy_from(value_type const* ptr, element_aligned_tag) {
+    m_value = _mm256_mask_loadu_epi32(_mm256_set1_epi32(0), mask_type(true).get(), ptr);
+  }
   P3A_ALWAYS_INLINE inline constexpr __m256i get() const { return m_value; }
   P3A_ALWAYS_INLINE inline mask_type operator<(simd const& other) const {
     return mask_type(_mm256_cmplt_epi32_mask(m_value, other.m_value));
@@ -646,6 +649,23 @@ class const_where_expression<simd_mask<std::int32_t, simd_abi::avx512_fixed_size
   mask_type const& mask() const { return m_mask; }
   [[nodiscard]] P3A_ALWAYS_INLINE inline constexpr
   value_type const& value() const { return m_value; }
+  P3A_ALWAYS_INLINE inline
+  void copy_to(std::int32_t* mem, element_aligned_tag) const {
+    _mm256_mask_storeu_epi32(mem, m_mask.get(), m_value.get());
+  }
+};
+
+template <>
+class where_expression<simd_mask<std::int32_t, simd_abi::avx512_fixed_size<8>>, simd<std::int32_t, simd_abi::avx512_fixed_size<8>>>
+ : public const_where_expression<simd_mask<std::int32_t, simd_abi::avx512_fixed_size<8>>, simd<std::int32_t, simd_abi::avx512_fixed_size<8>>> {
+ public:
+  where_expression(simd_mask<std::int32_t, simd_abi::avx512_fixed_size<8>> const& mask_arg, simd<std::int32_t, simd_abi::avx512_fixed_size<8>>& value_arg)
+    :const_where_expression(mask_arg, value_arg)
+  {}
+  P3A_ALWAYS_INLINE inline
+  void copy_from(std::int32_t const* mem, element_aligned_tag) {
+    m_value = value_type(_mm256_mask_loadu_epi32(_mm256_set1_epi32(0), m_mask.get(), mem));
+  }
 };
 
 template <>

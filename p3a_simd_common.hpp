@@ -184,7 +184,9 @@ template <class T, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
     simd<T, Abi> const& value,
-    T* ptr, int offset, simd_mask<T, Abi> const& mask)
+    T* ptr,
+    int offset,
+    no_deduce_t<simd_mask<T, Abi>> const& mask)
 {
   where(mask, value).copy_to(ptr + offset, element_aligned_tag());
 }
@@ -194,7 +196,9 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 std::enable_if_t<std::is_integral_v<Integral>, void>
 store(
     simd<T, Abi> const& value,
-    T* ptr, simd<Integral, Abi> const& offset, simd_mask<T, Abi> const& mask)
+    T* ptr,
+    simd<Integral, Abi> const& offset,
+    no_deduce_t<simd_mask<T, Abi>> const& mask)
 {
   where(mask, value).scatter_to(ptr, offset);
 }
