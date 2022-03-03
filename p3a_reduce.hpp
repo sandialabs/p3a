@@ -983,6 +983,49 @@ extern template class fixed_point_double_sum<hip_device_allocator<double>, hip_e
 template <class T, class Allocator, class ExecutionPolicy>
 class associative_sum;
 
+namespace details {
+
+template <class Iterator, class SizeType, class UnaryOp>
+class associative_sum_iterator_functor {
+  Iterator first;
+  double* values;
+  UnaryOp unary_op;
+ public:
+  associative_sum_iterator_functor(
+      Iterator first_arg,
+      double* values_arg,
+      UnaryOp unary_op_arg)
+    :first(first_arg)
+    ,values(values_arg)
+    ,unary_op(unary_op_arg)
+  {}
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE void operator()(SizeType i) const {
+    values[i] = unary_op(first[i]);
+  }
+};
+
+template <class UnaryOp>
+class associative_sum_subgrid_functor {
+  subgrid3 grid;
+  double* values;
+  UnaryOp unary_op;
+ public:
+  associative_sum_subgrid_functor(
+      subgrid3 grid_arg,
+      double* values_arg,
+      UnaryOp unary_op_arg)
+    :grid(grid_arg)
+    ,values(values_arg)
+    ,unary_op(unary_op_arg)
+  {}
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE void operator()(vector3<int> const& grid_point) const {
+    int const index = grid.index(grid_point);
+    values[index] = unary_op(grid_point);
+  }
+};
+
+}
+
 template <
   class Allocator,
   class ExecutionPolicy>
@@ -1016,11 +1059,9 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
     auto const values = m_fixed_point.values().begin();
     using size_type = std::remove_const_t<decltype(n)>;
     for_each(policy,
-        counting_iterator<size_type>(0),
-        counting_iterator<size_type>(n),
-    [=] P3A_HOST P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
-      values[i] = unary_op(first[i]);
-    });
+    counting_iterator<size_type>(0),
+    counting_iterator<size_type>(n),
+    details::associative_sum_iterator_functor<Iterator, size_type, UnaryOp>(first, values, unary_op));
     return m_fixed_point.compute();
   }
   template <class UnaryOp>
@@ -1032,11 +1073,7 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
     m_fixed_point.values().resize(grid.size());
     auto const policy = m_fixed_point.values().get_execution_policy();
     auto const values = m_fixed_point.values().begin();
-    for_each(policy, grid,
-    [=] P3A_HOST P3A_DEVICE (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
-      int const index = grid.index(grid_point);
-      values[index] = unary_op(grid_point);
-    });
+    for_each(policy, grid, details::associative_sum_subgrid_functor<UnaryOp>(grid, values, unary_op));
     return m_fixed_point.compute();
   }
 };
