@@ -86,66 +86,61 @@ using dimension_root = typename details::dimension_root_helper<Dimension, Root>:
 using no_dimension = dimension<>;
 
 // base dimensions
-using time_dimension = dimension<1>;
-using length_dimension = dimension<0, 1>;
-using mass_dimension = dimension<0, 0, 1>;
-using electric_current_dimension = dimension<0, 0, 0, 1>;
-using temperature_dimension = dimension<0, 0, 0, 0, 1>;
-using amount_of_substance_dimension = dimension<0, 0, 0, 0, 0, 1>;
-using luminous_intensity_dimension = dimension<0, 0, 0, 0, 0, 0, 1>;
-
-// per unit time
-using rate_dimension = dimension<-1>;
-// per unit length
-using gradient_dimension = dimension<0, -1>;
+using time = dimension<1>;
+using length = dimension<0, 1>;
+using mass = dimension<0, 0, 1>;
+using electric_current = dimension<0, 0, 0, 1>;
+using temperature = dimension<0, 0, 0, 0, 1>;
+using amount_of_substance = dimension<0, 0, 0, 0, 0, 1>;
+using luminous_intensity = dimension<0, 0, 0, 0, 0, 0, 1>;
 
 // same dimension as velocity
-using speed_dimension = dimension<-1, 1, 0>;
-using acceleration_dimension = dimension<-2, 1, 0>;
+using speed = dimension<-1, 1, 0>;
+using acceleration = dimension<-2, 1, 0>;
 
-using area_dimension = dimension<0, 2>;
-using volume_dimension = dimension<0, 3>;
+using area = dimension<0, 2>;
+using volume = dimension<0, 3>;
 
 // per unit area
-using area_density_dimension = dimension<0, -2, 0>;
+using area_density = dimension<0, -2, 0>;
 // per unit volume
-using volumetric_density_dimension = dimension<0, -3, 0>;
+using volumetric_density = dimension<0, -3, 0>;
 
 // mass per unit volume
-using volumetric_mass_density_dimension = dimension<0, -3, 1>;
+using volumetric_mass_density = dimension<0, -3, 1>;
 
-using energy_dimension = dimension<-2, 2, 1>;
+using energy = dimension<-2, 2, 1>;
 // energy per unit time
-using power_dimension = dimension<-3, 2, 1>;
+using power = dimension<-3, 2, 1>;
 // energy per unit volume
-using volumetric_energy_density_dimension = dimension<-2, -1, 1>;
+using volumetric_energy_density = dimension<-2, -1, 1>;
 // energy per unit mass
-using specific_energy_dimension = dimension<-2, 2, 0>;
+using specific_energy = dimension<-2, 2, 0>;
 // energy per unit mass per unit time
-using specific_energy_rate_dimension = dimension<-3, 2, 0>;
+using specific_energy_rate = dimension<-3, 2, 0>;
 
-using force_dimension = dimension<-2, 1, 1>;
+using force = dimension<-2, 1, 1>;
 // force per unit area
-using pressure_dimension = dimension<-2, -1, 1>;
+using pressure = dimension<-2, -1, 1>;
 
-using momentum_dimension = dimension<-1, 1, 1>;
+using momentum = dimension<-1, 1, 1>;
 // momentum per unit volume
-using volumetric_momentum_density_dimension = dimension<-1, -2, 1>;
+using volumetric_momentum_density = dimension<-1, -2, 1>;
 
-using kinematic_viscosity_dimension = dimension<-1, 2, 0>;
-using dynamic_viscosity_dimension = dimension<-1, -1, 1>;
+using kinematic_viscosity = dimension<-1, 2, 0>;
+using dynamic_viscosity = dimension<-1, -1, 1>;
 
-using specific_heat_dimension = dimension<-2, 2, 0, 0, -1>;
+using specific_heat = dimension<-2, 2, 0, 0, -1>;
 
 // electromagnetic dimensions
 
-using electric_charge_dimension = dimension<1, 0, 0, 1>;
-using electric_potential_dimension = dimension<-3, 2, 1, -1>;
-using electrical_resistance_dimension = dimension<-3, 2, 1, -2>;
-using electrical_conductance_dimension = dimension<3, -2, -1, 2>;
-using electrical_resistivity_dimension = dimension<-3, 3, 1, -2>;
-using electrical_conductivity_dimension = dimension<3, -3, -1, 2>;
-using inductance_dimension = dimension<-2, 2, 1, -2>;
-using capacitance_dimension = dimension<4, -2, -1, 2>;
+using electric_charge = dimension<1, 0, 0, 1>;
+using electric_potential = dimension<-3, 2, 1, -1>;
+using electrical_resistance = dimension<-3, 2, 1, -2>;
+using electrical_conductance = dimension<3, -2, -1, 2>;
+using electrical_resistivity = dimension<-3, 3, 1, -2>;
+using electrical_conductivity = dimension<3, -3, -1, 2>;
+using inductance = dimension<-2, 2, 1, -2>;
+using capacitance = dimension<4, -2, -1, 2>;
 
 }

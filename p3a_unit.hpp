@@ -25,4 +25,6 @@ class unit {
   using magnitude_in_si = MagnitudeInSI; 
 };
 
+using meter = unit<length_dimension, 
+
 }
