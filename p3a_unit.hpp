@@ -104,6 +104,9 @@ using mega = typename details::mega<T>::type;
 template <class T>
 using giga = typename details::giga<T>::type;
 
+// the unit of a unitless quantity
+using no_unit = unit<no_dimension>;
+
 // some common SI units
 
 using second = unit<p3a::time>;
@@ -127,5 +130,24 @@ using kelvin = unit<temperature>;
 using mole = unit<amount_of_substance>;
 
 using candela = unit<luminous_intensity>;
+
+// variations of dimensionless quantities
+
+using radian = no_unit;
+
+namespace details {
+
+using pi_ratio = std::ratio<
+  31415926535897932,
+  10000000000000000>;
+
+}
+
+// the degree unit for measuring circular arc has no dimension,
+// but it does have a magnitude that is not one: it is pi over 180
+using arc_degree = unit<no_dimension,
+      std::ratio_divide<details::pi_ratio, std::ratio<180>>>;
+
+using percent = unit<no_dimension, std::ratio<1, 100>>;
 
 }
