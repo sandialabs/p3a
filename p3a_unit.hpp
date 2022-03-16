@@ -13,22 +13,52 @@ namespace p3a {
  * That rational number should be the magnitude of the unit
  * being described, as measured in the corresponding SI unit.
  * For example, if describing the kilometer unit of length,
- * the MagnitudeInSI parameter should be std::ratio<1000, 1>
+ * the Magnitude parameter should be std::ratio<1000, 1>
  * because one kilometer equals 1000 meters and the meter
  * is the SI unit of length.
  */
 
-template <class Dimension, class MagnitudeInSI = std::ratio<1>>
+template <class Dimension, class Magnitude = std::ratio<1>>
 class unit {
  public:
   using dimension = Dimension;
-  using magnitude_in_si = MagnitudeInSI; 
+  using magnitude = Magnitude; 
 };
 
+template <class A, class B>
+using unit_multiply = unit<
+    dimension_multiply<typename A::dimension, typename B::dimension>,
+    std::ratio_multiply<typename A::magnitude, typename B::magnitude>>;
+
+template <class A, class B>
+using unit_divide = unit<
+    dimension_divide<typename A::dimension, typename B::dimension>,
+    std::ratio_divide<typename A::magnitude, typename B::magnitude>>;
+
+namespace details {
+
+template <class Ratio>
+class ratio_root {
+  static_assert(std::is_same_v<typename Ratio::type, std::ratio<1>>,
+      "taking roots of std::ratio other than one is not supported yet"); 
+ public:
+  using type = std::ratio<1>;
+};
+
+}
+
+template <class Ratio>
+using ratio_root = typename details::ratio_root<Ratio>::type;
+
+template <class A, int Root>
+using unit_root = unit<
+    dimension_root<typename A::dimension, Root>,
+    ratio_root<typename A::magnitude, Root>>;
+
 template <class Prefix, class Unit>
-using prefix_unit = unit<
+using unit_prefix = unit<
     typename Unit::dimension,
-    std::ratio_multiply<Prefix, typename Unit::magnitude_in_si>>;
+    std::ratio_multiply<Prefix, typename Unit::magnitude>>;
 
 namespace details {
 
@@ -43,46 +73,46 @@ template <class T> class kilo;
 template <class T> class mega;
 template <class T> class giga;
 
-template <class Dimension, class MagnitudeInSI>
-class nano<unit<Dimension, MagnitudeInSI>> {
+template <class Dimension, class Magnitude>
+class nano<unit<Dimension, Magnitude>> {
  public:
-  using type = prefix_unit<std::nano, unit<Dimension, MagnitudeInSI>>;
+  using type = unit_prefix<std::nano, unit<Dimension, Magnitude>>;
 };
 
-template <class Dimension, class MagnitudeInSI>
-class micro<unit<Dimension, MagnitudeInSI>> {
+template <class Dimension, class Magnitude>
+class micro<unit<Dimension, Magnitude>> {
  public:
-  using type = prefix_unit<std::micro, unit<Dimension, MagnitudeInSI>>;
+  using type = unit_prefix<std::micro, unit<Dimension, Magnitude>>;
 };
 
-template <class Dimension, class MagnitudeInSI>
-class milli<unit<Dimension, MagnitudeInSI>> {
+template <class Dimension, class Magnitude>
+class milli<unit<Dimension, Magnitude>> {
  public:
-  using type = prefix_unit<std::milli, unit<Dimension, MagnitudeInSI>>;
+  using type = unit_prefix<std::milli, unit<Dimension, Magnitude>>;
 };
 
-template <class Dimension, class MagnitudeInSI>
-class centi<unit<Dimension, MagnitudeInSI>> {
+template <class Dimension, class Magnitude>
+class centi<unit<Dimension, Magnitude>> {
  public:
-  using type = prefix_unit<std::centi, unit<Dimension, MagnitudeInSI>>;
+  using type = unit_prefix<std::centi, unit<Dimension, Magnitude>>;
 };
 
-template <class Dimension, class MagnitudeInSI>
-class kilo<unit<Dimension, MagnitudeInSI>> {
+template <class Dimension, class Magnitude>
+class kilo<unit<Dimension, Magnitude>> {
  public:
-  using type = prefix_unit<std::kilo, unit<Dimension, MagnitudeInSI>>;
+  using type = unit_prefix<std::kilo, unit<Dimension, Magnitude>>;
 };
 
-template <class Dimension, class MagnitudeInSI>
-class mega<unit<Dimension, MagnitudeInSI>> {
+template <class Dimension, class Magnitude>
+class mega<unit<Dimension, Magnitude>> {
  public:
-  using type = prefix_unit<std::mega, unit<Dimension, MagnitudeInSI>>;
+  using type = unit_prefix<std::mega, unit<Dimension, Magnitude>>;
 };
 
-template <class Dimension, class MagnitudeInSI>
-class giga<unit<Dimension, MagnitudeInSI>> {
+template <class Dimension, class Magnitude>
+class giga<unit<Dimension, Magnitude>> {
  public:
-  using type = prefix_unit<std::giga, unit<Dimension, MagnitudeInSI>>;
+  using type = unit_prefix<std::giga, unit<Dimension, Magnitude>>;
 };
 
 }
@@ -125,11 +155,37 @@ using kilogram = kilo<gram>;
 
 using ampere = unit<electric_current>;
 
-using kelvin = unit<temperature>;
+using degree_kelvin = unit<temperature>;
+using degree_celcius = unit<temperature>;
 
 using mole = unit<amount_of_substance>;
 
 using candela = unit<luminous_intensity>;
+
+using meter_per_second = unit<speed>;
+using meter_per_second_squared = unit<acceleration>;
+
+using square_meter = unit<area>;
+using cubic_meter = unit<volume>;
+
+using per_square_meter = unit<area_density>;
+using per_cubic_meter = unit<volumetric_density>;
+
+using kilogram_per_cubic_meter = unit<volumetric_mass_density>;
+
+using joule = unit<energy>;
+using watt = unit<power>;
+using joule_per_cubic_meter = unit<volumetric_energy_density>;
+using joule_per_kilogram = unit<specific_energy>;
+
+using newton = unit<force>;
+using pascal = unit<pressure>;
+
+using kilogram_meter_per_second = unit<momentum>;
+
+// some common Imperial units
+
+using degree_fahrenheit = unit<temperature, std::ratio<9, 5>>;
 
 // variations of dimensionless quantities
 
