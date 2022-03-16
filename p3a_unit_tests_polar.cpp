@@ -27,9 +27,9 @@ P3A_HOST P3A_DEVICE void print_bug1()
 {
   printf("det(1 -2 4; -5 2 0; 1 0 3) = %.7e\n",
       determinant(
-        matrix3x3<adimensional_quantity<double>>(
+        matrix3x3<unitless<double>>(
           1, -2, 4, -5, 2, 0, 1, 0, 3)).value());
-  auto const F = matrix3x3<adimensional_quantity<double>>(
+  auto const F = matrix3x3<unitless<double>>(
     -2.04085437594717629e+07, -1.24461560189389233e+07, -1.80950325823258795e+07,
     1.97281075824120641e+07, 1.20311933035031799e+07, 1.74917295885286182e+07,
     1.01192179273702446e+07, 6.17120657124425564e+06, 8.97210491989786923e+06);

@@ -2,6 +2,8 @@
 
 #include <ratio>
 
+#include "p3a_dimension.hpp"
+
 namespace p3a {
 
 /* This class represents, as a C++ type, a unit of measurement.
@@ -37,7 +39,7 @@ using unit_divide = unit<
 
 namespace details {
 
-template <class Ratio>
+template <class Ratio, int Root>
 class ratio_root {
   static_assert(std::is_same_v<typename Ratio::type, std::ratio<1>>,
       "taking roots of std::ratio other than one is not supported yet"); 
@@ -47,8 +49,8 @@ class ratio_root {
 
 }
 
-template <class Ratio>
-using ratio_root = typename details::ratio_root<Ratio>::type;
+template <class Ratio, int Root>
+using ratio_root = typename details::ratio_root<Ratio, Root>::type;
 
 template <class A, int Root>
 using unit_root = unit<

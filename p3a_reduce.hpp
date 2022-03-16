@@ -2,7 +2,6 @@
 
 #include "mpicpp.hpp"
 
-#include "p3a_quantity.hpp"
 #include "p3a_execution.hpp"
 #include "p3a_grid3.hpp"
 #include "p3a_dynamic_array.hpp"

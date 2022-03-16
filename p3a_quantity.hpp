@@ -1,6 +1,7 @@
 #pragma once
 
 #include "p3a_macros.hpp"
+#include "p3a_unit.hpp"
 
 namespace p3a {
 
@@ -63,25 +64,25 @@ class quantity {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   value_type& value() { return m_value; }
   // converting constructor for converting only ValueType
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   template <class OtherValueType>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   explicit quantity(quantity<unit, OtherValueType, origin> const& other)
     :m_value(other.value())
   {
   }
   // converting constructor for different magnitude and/or origin
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   template <class OtherUnit, class OtherValueType, class OtherOrigin>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   explicit quantity(quantity<OtherUnit, OtherValueType, OtherOrigin> const& other)
     :m_value(0)
   {
     using other_dimension = typename OtherUnit::dimension;
-    using other_magnitude = typename OtherUnit::magnitude;
+    using other_unit_magnitude = typename OtherUnit::magnitude;
     static_assert(std::is_same_v<dimension, other_dimension>,
         "not allowed to convert between quantities of different dimensions");
     OtherValueType other_si_value =
-      other.value() * OtherValueType(other_magnitude::num)
-      / OtherValueType(other_magnitude::den);
+      other.value() * OtherValueType(other_unit_magnitude::num)
+      / OtherValueType(other_unit_magnitude::den);
     if constexpr (!std::is_same_v<OtherOrigin, void>) {
       other_si_value += OtherValueType(OtherOrigin::num)
         / OtherValueType(OtherOrigin::den);
@@ -91,8 +92,67 @@ class quantity {
       si_value -= value_type(origin::num)
         / value_type(origin::den);
     }
-    m_value = si_value * value_type(magnitude::den)
-      / value_type(magnitude::num);
+    m_value = si_value * value_type(unit_magnitude::den)
+      / value_type(unit_magnitude::num);
+  }
+};
+
+template <class ValueType>
+class quantity<no_unit, ValueType, void> {
+ public:
+  using value_type = ValueType;
+  using unit = no_unit;
+  using dimension = typename unit::dimension;
+  using unit_magnitude = typename unit::magnitude;
+  using origin = void;
+ private:
+  value_type m_value;
+ public:
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  quantity(value_type const& r)
+    :m_value(r)
+  {}
+  P3A_ALWAYS_INLINE inline
+  quantity() = default;
+  P3A_ALWAYS_INLINE inline constexpr
+  quantity(quantity const&) = default;
+  P3A_ALWAYS_INLINE inline constexpr
+  quantity(quantity&&) = default;
+  P3A_ALWAYS_INLINE inline constexpr
+  quantity& operator=(quantity const&) = default;
+  P3A_ALWAYS_INLINE inline constexpr
+  quantity& operator=(quantity&&) = default;
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  value_type const& value() const { return m_value; }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  value_type& value() { return m_value; }
+  // converting constructor for converting only ValueType
+  template <class OtherValueType>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  explicit quantity(quantity<unit, OtherValueType, origin> const& other)
+    :m_value(other.value())
+  {
+  }
+  // converting constructor for different magnitude and/or origin
+  template <class OtherUnit, class OtherValueType, class OtherOrigin>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  explicit quantity(quantity<OtherUnit, OtherValueType, OtherOrigin> const& other)
+    :m_value(0)
+  {
+    using other_dimension = typename OtherUnit::dimension;
+    using other_unit_magnitude = typename OtherUnit::magnitude;
+    static_assert(std::is_same_v<dimension, other_dimension>,
+        "not allowed to convert between quantities of different dimensions");
+    OtherValueType other_si_value =
+      other.value() * OtherValueType(other_unit_magnitude::num)
+      / OtherValueType(other_unit_magnitude::den);
+    if constexpr (!std::is_same_v<OtherOrigin, void>) {
+      other_si_value += OtherValueType(OtherOrigin::num)
+        / OtherValueType(OtherOrigin::den);
+    }
+    value_type si_value = value_type(other_si_value);
+    m_value = si_value * value_type(unit_magnitude::den)
+      / value_type(unit_magnitude::num);
   }
 };
 
@@ -100,7 +160,6 @@ class quantity {
 
 template <class ValueType = double>
 using unitless = quantity<no_unit, ValueType>;
-using meters_per_second = quantity<meter_per_second, ValueType>;
 
 template <class ValueType = double>
 using seconds = quantity<second, ValueType>;
