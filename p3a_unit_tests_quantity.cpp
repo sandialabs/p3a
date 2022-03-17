@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+
 #include "p3a_quantity.hpp"
 
 TEST(quantity, multiply) {
@@ -63,4 +64,14 @@ TEST(quantity, thou) {
   auto one_thou_in_micrometers =
     p3a::micrometers<double>(one_thou);
   EXPECT_FLOAT_EQ(one_thou_in_micrometers.value(), 25.4);
+}
+
+TEST(quantity, electronvolt) {
+  auto const fusion_plasma_temp_in_eV =
+    p3a::electronvolt_temperature<double>(15.0e3);
+  auto const fusion_plasma_temp_in_K =
+    p3a::degrees_kelvin<double>(fusion_plasma_temp_in_eV);
+  EXPECT_FLOAT_EQ(
+      fusion_plasma_temp_in_K.value(),
+      1.74067771800000012e+08);
 }

@@ -161,6 +161,8 @@ using ampere = unit<electric_current>;
 using degree_kelvin = unit<temperature>;
 using degree_celcius = unit<temperature>;
 using degree_fahrenheit = unit<temperature, std::ratio<5, 9>>;
+using electronvolt_temperature_unit = unit<temperature,
+      std::ratio<1160451812, 100000>>;
 
 using mole = unit<amount_of_substance>;
 
@@ -178,12 +180,16 @@ using per_cubic_meter = unit<volumetric_density>;
 using kilogram_per_cubic_meter = unit<volumetric_mass_density>;
 
 using joule = unit<energy>;
+using megajoule = mega<joule>;
+
 using watt = unit<power>;
 using joule_per_cubic_meter = unit<volumetric_energy_density>;
 using joule_per_kilogram = unit<specific_energy>;
 
 using newton = unit<force>;
+
 using pascal = unit<pressure>;
+using gigapascal = giga<pascal>;
 
 using kilogram_meter_per_second = unit<momentum>;
 

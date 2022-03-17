@@ -198,6 +198,9 @@ using degrees_celcius = quantity<degree_celcius, ValueType, std::ratio<27315, 10
 template <class ValueType = double>
 using degrees_fahrenheit = quantity<degree_fahrenheit, ValueType,
       std::ratio_multiply<std::ratio<5, 9>, std::ratio<45967, 100>>>;
+template <class ValueType = double>
+using electronvolt_temperature =
+  quantity<electronvolt_temperature_unit, ValueType, std::ratio<0>>;
 
 template <class ValueType = double>
 using meters_per_second = quantity<meter_per_second, ValueType>;
