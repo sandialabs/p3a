@@ -50,3 +50,9 @@ TEST(quantity, temperature) {
     p3a::degrees_fahrenheit<double>(water_freezing_point_celcius);
   EXPECT_FLOAT_EQ(water_freezing_point_fahrenheit.value(), 32.0);
 }
+
+TEST(quantity, percent) {
+  auto eighty_percent = p3a::percentage<double>(80.0);
+  auto point_eight = p3a::unitless<double>(eighty_percent);
+  EXPECT_FLOAT_EQ(point_eight.value(), 0.80);
+}

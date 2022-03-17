@@ -139,8 +139,6 @@ using giga = typename details::giga<T>::type;
 // the unit of a unitless quantity
 using no_unit = unit<no_dimension>;
 
-// some common SI units
-
 using second = unit<p3a::time>;
 using millisecond = milli<second>;
 using microsecond = micro<second>;
@@ -159,6 +157,7 @@ using ampere = unit<electric_current>;
 
 using degree_kelvin = unit<temperature>;
 using degree_celcius = unit<temperature>;
+using degree_fahrenheit = unit<temperature, std::ratio<5, 9>>;
 
 using mole = unit<amount_of_substance>;
 
@@ -184,12 +183,6 @@ using newton = unit<force>;
 using pascal = unit<pressure>;
 
 using kilogram_meter_per_second = unit<momentum>;
-
-// some common Imperial units
-
-using degree_fahrenheit = unit<temperature, std::ratio<5, 9>>;
-
-// variations of dimensionless quantities
 
 using radian = no_unit;
 
