@@ -56,3 +56,11 @@ TEST(quantity, percent) {
   auto point_eight = p3a::unitless<double>(eighty_percent);
   EXPECT_FLOAT_EQ(point_eight.value(), 0.80);
 }
+
+TEST(quantity, thou) {
+  using thou = p3a::milli<p3a::inch>;
+  auto one_thou = p3a::quantity<thou, double>(1.0);
+  auto one_thou_in_micrometers =
+    p3a::micrometers<double>(one_thou);
+  EXPECT_FLOAT_EQ(one_thou_in_micrometers.value(), 25.4);
+}

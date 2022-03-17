@@ -150,6 +150,9 @@ using millimeter = milli<meter>;
 using micrometer = micro<meter>;
 using nanometer = nano<meter>;
 
+using inch = unit<length,
+      std::ratio_multiply<std::ratio<254, 10>, millimeter::magnitude>>;
+
 using gram = unit<mass, std::ratio<1, 1000>>;
 using kilogram = kilo<gram>;
 
