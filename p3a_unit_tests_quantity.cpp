@@ -85,3 +85,32 @@ TEST(quantity, cgs) {
       p3a::gram_per_cubic_centimeter>,
       "Mg/m^3 should be the same as g/cm^3");
 }
+
+// test that relative and absolute quantities behave
+// like points and vectors of an affine space of
+// dimension one
+//
+// https://en.wikipedia.org/wiki/Affine_space
+
+TEST(quantity, affine) {
+  using point = p3a::absolute_quantity<p3a::meter>;
+  using vector = p3a::quantity<p3a::meter>;
+  auto a = point(1.0);
+  auto b = point(2.0);
+  auto c = point(3.0);
+  auto ab = b - a;
+  static_assert(std::is_same_v<decltype(ab), vector>,
+      "subtracting points should give a vector");
+  EXPECT_FLOAT_EQ(ab.value(), 1.0);
+  auto b2 = a + ab;
+  static_assert(std::is_same_v<decltype(b2), point>,
+      "adding a vector to a point should yield a point");
+  EXPECT_TRUE(b == b2);
+  auto bc = c - b;
+  // Weyl's second axiom
+  auto ac = ab + bc;
+  static_assert(std::is_same_v<decltype(ac), vector>,
+      "adding two vectors should yield a vector");
+  auto c2 = a + ac;
+  EXPECT_TRUE(c == c2);
+}

@@ -95,6 +95,30 @@ class quantity {
     m_value = si_value * value_type(unit_magnitude::den)
       / value_type(unit_magnitude::num);
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  auto operator==(quantity const& other) const {
+    return value() == other.value();
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  auto operator!=(quantity const& other) const {
+    return value() != other.value();
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  auto operator<=(quantity const& other) const {
+    return value() <= other.value();
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  auto operator>=(quantity const& other) const {
+    return value() >= other.value();
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  auto operator<(quantity const& other) const {
+    return value() < other.value();
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  auto operator>(quantity const& other) const {
+    return value() > other.value();
+  }
 };
 
 template <class ValueType>
