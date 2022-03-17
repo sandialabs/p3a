@@ -187,7 +187,7 @@ using kilogram_meter_per_second = unit<momentum>;
 
 // some common Imperial units
 
-using degree_fahrenheit = unit<temperature, std::ratio<9, 5>>;
+using degree_fahrenheit = unit<temperature, std::ratio<5, 9>>;
 
 // variations of dimensionless quantities
 

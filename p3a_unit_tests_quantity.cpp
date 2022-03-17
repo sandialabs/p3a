@@ -36,4 +36,8 @@ TEST(quantity, temperature) {
   auto absolute_zero_in_celcius =
     p3a::degrees_celcius<double>(absolute_zero_in_kelvin);
   EXPECT_FLOAT_EQ(absolute_zero_in_celcius.value(), -273.15);
+  auto absolute_zero_in_fahrenheit =
+    p3a::degrees_fahrenheit<double>(absolute_zero_in_kelvin);
+  printf("absolute zero in Fahrenheit is %f\n",
+      absolute_zero_in_fahrenheit.value());
 }
