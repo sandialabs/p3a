@@ -38,6 +38,15 @@ TEST(quantity, temperature) {
   EXPECT_FLOAT_EQ(absolute_zero_in_celcius.value(), -273.15);
   auto absolute_zero_in_fahrenheit =
     p3a::degrees_fahrenheit<double>(absolute_zero_in_kelvin);
-  printf("absolute zero in Fahrenheit is %f\n",
-      absolute_zero_in_fahrenheit.value());
+  EXPECT_FLOAT_EQ(absolute_zero_in_fahrenheit.value(), -459.67);
+  auto const human_fever_temperature_fahrenheit =
+    p3a::degrees_fahrenheit<double>(100.4);
+  auto const human_fever_temperature_celcius =
+    p3a::degrees_celcius<double>(human_fever_temperature_fahrenheit);
+  EXPECT_FLOAT_EQ(human_fever_temperature_celcius.value(), 38.0);
+  auto const water_freezing_point_celcius =
+    p3a::degrees_celcius<double>(0.0);
+  auto const water_freezing_point_fahrenheit =
+    p3a::degrees_fahrenheit<double>(water_freezing_point_celcius);
+  EXPECT_FLOAT_EQ(water_freezing_point_fahrenheit.value(), 32.0);
 }
