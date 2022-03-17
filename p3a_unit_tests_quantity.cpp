@@ -30,3 +30,10 @@ TEST(quantity, divide) {
       "meters times seconds should be meters per second");
   EXPECT_FLOAT_EQ(a.value(), 0.5);
 }
+
+TEST(quantity, temperature) {
+  auto absolute_zero_in_kelvin = p3a::degrees_kelvin<double>(0.0);
+  auto absolute_zero_in_celcius =
+    p3a::degrees_celcius<double>(absolute_zero_in_kelvin);
+  EXPECT_FLOAT_EQ(absolute_zero_in_celcius.value(), -273.15);
+}
