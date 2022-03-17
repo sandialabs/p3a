@@ -172,12 +172,16 @@ using meter_per_second = unit<speed>;
 using meter_per_second_squared = unit<acceleration>;
 
 using square_meter = unit<area>;
+using square_centimeter = unit_multiply<centimeter, centimeter>;
+
 using cubic_meter = unit<volume>;
+using cubic_centimeter = unit_multiply<centimeter, square_centimeter>;
 
 using per_square_meter = unit<area_density>;
 using per_cubic_meter = unit<volumetric_density>;
 
 using kilogram_per_cubic_meter = unit<volumetric_mass_density>;
+using gram_per_cubic_centimeter = unit_divide<gram, cubic_centimeter>;
 
 using joule = unit<energy>;
 using megajoule = mega<joule>;

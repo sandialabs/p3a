@@ -75,3 +75,13 @@ TEST(quantity, electronvolt) {
       fusion_plasma_temp_in_K.value(),
       1.74067771800000012e+08);
 }
+
+TEST(quantity, cgs) {
+  using megagram = p3a::mega<p3a::gram>;
+  using megagram_per_cubic_meter =
+    p3a::unit_divide<megagram, p3a::cubic_meter>;
+  static_assert(std::is_same_v<
+      megagram_per_cubic_meter,
+      p3a::gram_per_cubic_centimeter>,
+      "Mg/m^3 should be the same as g/cm^3");
+}

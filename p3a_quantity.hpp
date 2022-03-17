@@ -156,6 +156,9 @@ class quantity<no_unit, ValueType, void> {
   }
 };
 
+template <class Unit, class ValueType = double>
+using absolute_quantity = quantity<Unit, ValueType, std::ratio<0>>;
+
 // some common quantities
 
 template <class ValueType = double>
@@ -192,7 +195,7 @@ using amperes = quantity<ampere, ValueType>;
 // relative zero offsets
 
 template <class ValueType = double>
-using degrees_kelvin = quantity<degree_kelvin, ValueType, std::ratio<0>>;
+using degrees_kelvin = absolute_quantity<degree_kelvin, ValueType>;
 template <class ValueType = double>
 using degrees_celcius = quantity<degree_celcius, ValueType, std::ratio<27315, 100>>;
 template <class ValueType = double>
@@ -200,7 +203,7 @@ using degrees_fahrenheit = quantity<degree_fahrenheit, ValueType,
       std::ratio_multiply<std::ratio<5, 9>, std::ratio<45967, 100>>>;
 template <class ValueType = double>
 using electronvolt_temperature =
-  quantity<electronvolt_temperature_unit, ValueType, std::ratio<0>>;
+  absolute_quantity<electronvolt_temperature_unit, ValueType>;
 
 template <class ValueType = double>
 using meters_per_second = quantity<meter_per_second, ValueType>;
@@ -214,6 +217,8 @@ using cubic_meters = quantity<cubic_meter, ValueType>;
 
 template <class ValueType = double>
 using kilograms_per_cubic_meter = quantity<kilogram_per_cubic_meter, ValueType>;
+template <class ValueType = double>
+using grams_per_cubic_centimeter = quantity<gram_per_cubic_centimeter, ValueType>;
 
 template <class ValueType = double>
 using joules = quantity<joule, ValueType>;
