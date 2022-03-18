@@ -263,6 +263,11 @@ using arc_degrees = quantity<arc_degree, ValueType>;
 template <class ValueType = double>
 using percentage = quantity<percent, ValueType>;
 
+template <class ValueType = double>
+using siemens_quantity = quantity<siemens, ValueType>;
+template <class ValueType = double>
+using siemens_per_meter_quantity = quantity<siemens_per_meter, ValueType>;
+
 // four arithmetic binary operators
 
 template <

@@ -214,4 +214,7 @@ using arc_degree = unit<no_dimension,
 
 using percent = unit<no_dimension, std::ratio<1, 100>>;
 
+using siemens = unit<electrical_conductance>;
+using siemens_per_meter = unit<electrical_conductivity>;
+
 }
