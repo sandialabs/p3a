@@ -68,7 +68,7 @@ TEST(quantity, thou) {
 
 TEST(quantity, electronvolt) {
   auto const fusion_plasma_temp_in_eV =
-    p3a::electronvolt_temperature<double>(15.0e3);
+    p3a::temperature_electronvolts<double>(15.0e3);
   auto const fusion_plasma_temp_in_K =
     p3a::degrees_kelvin<double>(fusion_plasma_temp_in_eV);
   EXPECT_FLOAT_EQ(

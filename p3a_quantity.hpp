@@ -226,8 +226,8 @@ template <class ValueType = double>
 using degrees_fahrenheit = quantity<degree_fahrenheit, ValueType,
       std::ratio_multiply<std::ratio<5, 9>, std::ratio<45967, 100>>>;
 template <class ValueType = double>
-using electronvolt_temperature =
-  absolute_quantity<electronvolt_temperature_unit, ValueType>;
+using temperature_electronvolts =
+  absolute_quantity<temperature_electronvolt, ValueType>;
 
 template <class ValueType = double>
 using meters_per_second = quantity<meter_per_second, ValueType>;

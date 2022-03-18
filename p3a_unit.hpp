@@ -161,7 +161,7 @@ using ampere = unit<electric_current>;
 using degree_kelvin = unit<temperature>;
 using degree_celcius = unit<temperature>;
 using degree_fahrenheit = unit<temperature, std::ratio<5, 9>>;
-using electronvolt_temperature_unit = unit<temperature,
+using temperature_electronvolt = unit<temperature,
       std::ratio<1160451812, 100000>>;
 
 using mole = unit<amount_of_substance>;
