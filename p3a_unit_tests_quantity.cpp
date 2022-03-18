@@ -114,3 +114,11 @@ TEST(quantity, affine) {
   auto c2 = a + ac;
   EXPECT_TRUE(c == c2);
 }
+
+TEST(quantity, gaussian) {
+  using gaussian_inverse_seconds =
+    p3a::quantity<p3a::gaussian_electrical_conductivity_unit, double>;
+  auto a = p3a::siemens_per_meter_quantity<double>(1.0);
+  auto b = gaussian_inverse_seconds(a);
+  EXPECT_FLOAT_EQ(b.value(), 8.98755178736817551e+09);
+}

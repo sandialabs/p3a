@@ -219,5 +219,26 @@ using percent = unit<no_dimension, std::ratio<1, 100>>;
 
 using siemens = unit<electrical_conductance>;
 using siemens_per_meter = unit<electrical_conductivity>;
+using ohm = unit<electrical_resistance>;
+using ohm_meter = unit<electrical_resistivity>;
+
+namespace details {
+  using speed_of_light_in_centimeters_per_second = std::ratio<29979245800>;
+}
+
+// The so-called "second" of electrical resistivity used in Gaussian units
+// is equivalent to c^2 / 10^11 Ohm-meters
+// where c is the speed of light in centimeters per second
+// https://en.wikipedia.org/wiki/Centimetre%E2%80%93gram%E2%80%93second_system_of_units#Electromagnetic_units_in_various_CGS_systems
+using gaussian_electrical_resistivity_unit =
+  unit<electrical_resistivity,
+    std::ratio_multiply<
+      details::speed_of_light_in_centimeters_per_second,
+      std::ratio_divide<
+        details::speed_of_light_in_centimeters_per_second,
+        std::ratio<100000000000>>>>;
+
+using gaussian_electrical_conductivity_unit =
+  unit_divide<no_unit, gaussian_electrical_resistivity_unit>;
 
 }
