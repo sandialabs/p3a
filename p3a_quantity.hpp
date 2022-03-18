@@ -248,10 +248,13 @@ template <class ValueType = double>
 using joules = quantity<joule, ValueType>;
 template <class ValueType = double>
 using watts = quantity<watt, ValueType>;
+
 template <class ValueType = double>
 using joules_per_cubic_meter = quantity<joule_per_cubic_meter, ValueType>;
 template <class ValueType = double>
 using joules_per_kilogram = quantity<joule_per_kilogram, ValueType>;
+template <class ValueType = double>
+using joules_per_kilogram_per_kelvin = quantity<joule_per_kilogram_per_kelvin, ValueType>;
 
 template <class ValueType = double>
 using newtons = quantity<newton, ValueType>;

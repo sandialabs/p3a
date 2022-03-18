@@ -187,8 +187,10 @@ using joule = unit<energy>;
 using megajoule = mega<joule>;
 
 using watt = unit<power>;
+
 using joule_per_cubic_meter = unit<volumetric_energy_density>;
 using joule_per_kilogram = unit<specific_energy>;
+using joule_per_kilogram_per_kelvin = unit<specific_heat>;
 
 using newton = unit<force>;
 
