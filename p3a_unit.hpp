@@ -190,6 +190,7 @@ using watt = unit<power>;
 
 using joule_per_cubic_meter = unit<volumetric_energy_density>;
 using joule_per_kilogram = unit<specific_energy>;
+using megajoule_per_kilogram = unit_divide<megajoule, kilogram>;
 using joule_per_kilogram_per_kelvin = unit<specific_heat>;
 
 using newton = unit<force>;
