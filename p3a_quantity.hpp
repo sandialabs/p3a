@@ -480,4 +480,28 @@ operator*(
   return quantity<unit<Dimension, Magnitude>, ValueType, void>(left);
 }
 
+// allow multiplying quantities by raw arithmetic types.
+// this is equivalent to multiplying them by a unitless quantity,
+// for convenience.
+
+template <class Arithmetic, class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
+operator*(
+    Arithmetic const& left,
+    quantity<Unit, ValueType, Origin> const& right)
+{
+  return quantity<Unit, ValueType, Origin>(left * right.value());
+}
+
+template <class Arithmetic, class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
+operator*(
+    quantity<Unit, ValueType, Origin> const& left,
+    Arithmetic const& right)
+{
+  return quantity<Unit, ValueType, Origin>(left.value() * right);
+}
+
 }
