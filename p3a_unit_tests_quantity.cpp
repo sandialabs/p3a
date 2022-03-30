@@ -122,3 +122,11 @@ TEST(quantity, gaussian) {
   auto b = gaussian_inverse_seconds(a);
   EXPECT_FLOAT_EQ(b.value(), 8.98755178736817551e+09);
 }
+
+TEST(quantity, literals) {
+  using namespace p3a::quantity_literals;
+  auto v = 3.0_m / 1.0_s;
+  static_assert(std::is_same_v<p3a::meters_per_second<double>, decltype(v)>,
+      "dividing literal meters by literal seconds should yield meters per second");
+  EXPECT_FLOAT_EQ(v.value(), 3.0);
+}

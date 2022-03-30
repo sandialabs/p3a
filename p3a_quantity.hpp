@@ -511,24 +511,60 @@ namespace quantity_literals {
 // to avoid polluting the namespace excessively, these have their own
 // namespace and should be used by adding
 //
-// using namespace quantity_literals;
+// using namespace p3a::quantity_literals;
 //
 // to the relevant user function
+//
+// C++11 user-defined literals are quite hard to understand
+// how to use, as far as I can see floating-point literals
+// just have to use long double as the argument type
 
-template <class T>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-std::enable_if_t<std::is_arithmetic_v<T>, p3a::meters<T>>>
-operator "" _m(T v)
+p3a::seconds<double> operator""_s(long double v)
 {
-  return p3a::meters<T>(v);
+  return p3a::seconds<double>(v);
 }
 
-template <class T>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-std::enable_if_t<std::is_arithmetic_v<T>, p3a::degrees_kelvin<T>>>
-operator "" _K(T v)
+p3a::meters<double> operator""_m(long double v)
 {
-  return p3a::degrees_kelvin<T>(v);
+  return p3a::meters<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::kilograms<double> operator""_kg(long double v)
+{
+  return p3a::kilograms<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::amperes<double> operator""_A(long double v)
+{
+  return p3a::amperes<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::degrees_kelvin<double> operator""_K(long double v)
+{
+  return p3a::degrees_kelvin<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::pascals<double> operator""_Pa(long double v)
+{
+  return p3a::pascals<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::kilograms_per_cubic_meter<double> operator""_kg_per_m3(long double v)
+{
+  return p3a::kilograms_per_cubic_meter<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::joules_per_kilogram<double> operator""_J_per_kg(long double v)
+{
+  return p3a::joules_per_kilogram<double>(v);
 }
 
 }
