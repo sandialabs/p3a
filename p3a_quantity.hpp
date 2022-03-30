@@ -504,4 +504,33 @@ operator*(
   return quantity<Unit, ValueType, Origin>(left.value() * right);
 }
 
+namespace quantity_literals {
+
+// C++11 user-defined literals for common units
+//
+// to avoid polluting the namespace excessively, these have their own
+// namespace and should be used by adding
+//
+// using namespace quantity_literals;
+//
+// to the relevant user function
+
+template <class T>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<T>, p3a::meters<T>>>
+operator "" _m(T v)
+{
+  return p3a::meters<T>(v);
+}
+
+template <class T>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<T>, p3a::degrees_kelvin<T>>>
+operator "" _K(T v)
+{
+  return p3a::degrees_kelvin<T>(v);
+}
+
+}
+
 }
