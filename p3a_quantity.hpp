@@ -401,6 +401,21 @@ operator+=(
 }
 
 template <
+  class Unit,
+  class ValueType,
+  class Origin,
+  class Arithmetic>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>&>
+operator+=(
+    quantity<Unit, ValueType, Origin>& left,
+    Arithmetic const& right)
+{
+  left = left + unitless<Arithmetic>(right);
+  return left;
+}
+
+template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin,
@@ -414,6 +429,21 @@ operator-=(
     quantity<RightUnit, RightValueType, RightOrigin> const& right)
 {
   left = left - right;
+  return left;
+}
+
+template <
+  class Unit,
+  class ValueType,
+  class Origin,
+  class Arithmetic>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>&>
+operator-=(
+    quantity<Unit, ValueType, Origin>& left,
+    Arithmetic const& right)
+{
+  left = left - unitless<Arithmetic>(right);
   return left;
 }
 
@@ -454,17 +484,17 @@ operator/=(
 // build a quantity by multiplying a number by a unit
 
 template <
-  class ValueType,
+  class Arithmetic,
   class Dimension,
   class Magnitude>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-std::enable_if_t<std::is_arithmetic_v<ValueType>,
-  quantity<unit<Dimension, Magnitude>, ValueType, void>>
+std::enable_if_t<std::is_arithmetic_v<Arithmetic>,
+  quantity<unit<Dimension, Magnitude>, Arithmetic, void>>
 operator*(
-    ValueType const& left,
+    Arithmetic const& left,
     unit<Dimension, Magnitude>)
 {
-  return quantity<unit<Dimension, Magnitude>, ValueType, void>(left);
+  return quantity<unit<Dimension, Magnitude>, Arithmetic, void>(left);
 }
 
 // allow multiplying quantities by raw arithmetic types.
@@ -478,7 +508,7 @@ operator*(
     Arithmetic const& left,
     quantity<Unit, ValueType, Origin> const& right)
 {
-  return quantity<Unit, ValueType, Origin>(left * right.value());
+  return unitless<Arithmetic>(left) * right;
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
@@ -488,7 +518,27 @@ operator*(
     quantity<Unit, ValueType, Origin> const& left,
     Arithmetic const& right)
 {
-  return quantity<Unit, ValueType, Origin>(left.value() * right);
+  return left * unitless<Arithmetic>(right);
+}
+
+template <class Arithmetic, class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<unit_inverse<Unit>, ValueType, Origin>>
+operator/(
+    Arithmetic const& left,
+    quantity<Unit, ValueType, Origin> const& right)
+{
+  return unitless<Arithmetic>(left) / right;
+}
+
+template <class Arithmetic, class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
+operator/(
+    quantity<Unit, ValueType, Origin> const& left,
+    Arithmetic const& right)
+{
+  return left / unitless<Arithmetic>(right);
 }
 
 namespace quantity_literals {

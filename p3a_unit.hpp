@@ -139,6 +139,9 @@ using giga = typename details::giga<T>::type;
 // the unit of a unitless quantity
 using no_unit = unit<no_dimension>;
 
+template <class A>
+using unit_inverse = unit_divide<no_unit, A>;
+
 using second = unit<p3a::time>;
 using millisecond = milli<second>;
 using microsecond = micro<second>;
