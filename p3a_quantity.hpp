@@ -551,6 +551,15 @@ operator/(
   return left / unitless<Arithmetic>(right);
 }
 
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+auto square_root(quantity<Unit, ValueType, Origin> const& q)
+{
+  static_assert(std::is_same_v<Origin, void>,
+      "not allowed to take square roots of absolute quantities");
+  return quantity<unit_root<Unit, 2>, ValueType, Origin>(square_root(q.value()));
+}
+
 namespace quantity_literals {
 
 // C++11 user-defined literals for common units
