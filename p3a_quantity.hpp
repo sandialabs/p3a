@@ -45,9 +45,25 @@ class quantity {
  private:
   value_type m_value;
  public:
+  // constructor from a plain arithmetic type is explicit for non-unitless quantities
+  template <class T,
+      typename std::enable_if<
+         (!std::is_same_v<quantity<Unit, ValueType, Origin>, quantity<no_unit, ValueType, void>>) &&
+         std::is_arithmetic_v<T>,
+         bool>::type = false>
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-  explicit quantity(value_type const& r)
-    :m_value(r)
+  explicit quantity(T const& v)
+    :m_value(v)
+  {}
+  // constructor from a plain arithmetic type is implicit for unitless quantities
+  template <class T,
+      typename std::enable_if<
+         std::is_same_v<quantity<Unit, ValueType, Origin>, quantity<no_unit, ValueType, void>> &&
+         std::is_arithmetic_v<T>,
+         bool>::type = false>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  quantity(T const& v)
+    :m_value(v)
   {}
   P3A_ALWAYS_INLINE inline
   quantity() = default;
@@ -84,16 +100,27 @@ class quantity {
       other.value() * OtherValueType(other_unit_magnitude::num)
       / OtherValueType(other_unit_magnitude::den);
     if constexpr (!std::is_same_v<OtherOrigin, void>) {
+      static_assert(!std::is_same_v<origin, void>,
+          "not allowed to convert from an absolute quantity to a relative one");
       other_si_value += OtherValueType(OtherOrigin::num)
         / OtherValueType(OtherOrigin::den);
     }
     value_type si_value = value_type(other_si_value);
     if constexpr (!std::is_same_v<origin, void>) {
+      static_assert(!std::is_same_v<OtherOrigin, void>,
+          "not allowed to convert from a relative quantity to an absolute one");
       si_value -= value_type(origin::num)
         / value_type(origin::den);
     }
     m_value = si_value * value_type(unit_magnitude::den)
       / value_type(unit_magnitude::num);
+  }
+  // converting assignment operator
+  template <class OtherUnit, class OtherValueType, class OtherOrigin>
+  P3A_ALWAYS_INLINE inline constexpr
+  quantity& operator=(quantity<OtherUnit, OtherValueType, OtherOrigin> const& other) {
+    // attempt converting constructor then regular assign
+    return operator=(quantity<unit, value_type, origin>(other));
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   auto operator==(quantity const& other) const {
@@ -118,65 +145,6 @@ class quantity {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   auto operator>(quantity const& other) const {
     return value() > other.value();
-  }
-};
-
-template <class ValueType>
-class quantity<no_unit, ValueType, void> {
- public:
-  using value_type = ValueType;
-  using unit = no_unit;
-  using dimension = typename unit::dimension;
-  using unit_magnitude = typename unit::magnitude;
-  using origin = void;
- private:
-  value_type m_value;
- public:
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-  quantity(value_type const& r)
-    :m_value(r)
-  {}
-  P3A_ALWAYS_INLINE inline
-  quantity() = default;
-  P3A_ALWAYS_INLINE inline constexpr
-  quantity(quantity const&) = default;
-  P3A_ALWAYS_INLINE inline constexpr
-  quantity(quantity&&) = default;
-  P3A_ALWAYS_INLINE inline constexpr
-  quantity& operator=(quantity const&) = default;
-  P3A_ALWAYS_INLINE inline constexpr
-  quantity& operator=(quantity&&) = default;
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-  value_type const& value() const { return m_value; }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-  value_type& value() { return m_value; }
-  // converting constructor for converting only ValueType
-  template <class OtherValueType>
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-  explicit quantity(quantity<unit, OtherValueType, origin> const& other)
-    :m_value(other.value())
-  {
-  }
-  // converting constructor for different magnitude and/or origin
-  template <class OtherUnit, class OtherValueType, class OtherOrigin>
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-  explicit quantity(quantity<OtherUnit, OtherValueType, OtherOrigin> const& other)
-    :m_value(0)
-  {
-    using other_dimension = typename OtherUnit::dimension;
-    using other_unit_magnitude = typename OtherUnit::magnitude;
-    static_assert(std::is_same_v<dimension, other_dimension>,
-        "not allowed to convert between quantities of different dimensions");
-    OtherValueType other_si_value =
-      other.value() * OtherValueType(other_unit_magnitude::num)
-      / OtherValueType(other_unit_magnitude::den);
-    if constexpr (!std::is_same_v<OtherOrigin, void>) {
-      other_si_value += OtherValueType(OtherOrigin::num)
-        / OtherValueType(OtherOrigin::den);
-    }
-    value_type si_value = value_type(other_si_value);
-    m_value = si_value * value_type(unit_magnitude::den)
-      / value_type(unit_magnitude::num);
   }
 };
 
@@ -254,12 +222,16 @@ using joules_per_cubic_meter = quantity<joule_per_cubic_meter, ValueType>;
 template <class ValueType = double>
 using joules_per_kilogram = quantity<joule_per_kilogram, ValueType>;
 template <class ValueType = double>
+using megajoules_per_kilogram = quantity<megajoule_per_kilogram, ValueType>;
+template <class ValueType = double>
 using joules_per_kilogram_per_kelvin = quantity<joule_per_kilogram_per_kelvin, ValueType>;
 
 template <class ValueType = double>
 using newtons = quantity<newton, ValueType>;
 template <class ValueType = double>
 using pascals = quantity<pascal, ValueType>;
+template <class ValueType = double>
+using gigapascals = quantity<gigapascal, ValueType>;
 
 template <class ValueType = double>
 using arc_degrees = quantity<arc_degree, ValueType>;
@@ -270,6 +242,21 @@ template <class ValueType = double>
 using siemens_quantity = quantity<siemens, ValueType>;
 template <class ValueType = double>
 using siemens_per_meter_quantity = quantity<siemens_per_meter, ValueType>;
+
+template <class ValueType = double>
+using gaussian_electrical_conductivity_quantity = quantity<gaussian_electrical_conductivity_unit, ValueType>;
+
+template <
+  class Unit,
+  class ValueType,
+  class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<Unit, ValueType, Origin> operator-(quantity<Unit, ValueType, Origin> const& q)
+{
+  static_assert(std::is_same_v<Origin, void>,
+      "not allowed to negate absolute quantities");
+  return quantity<Unit, ValueType, Origin>(-(q.value()));
+}
 
 // four arithmetic binary operators
 
@@ -565,6 +552,12 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 p3a::joules_per_kilogram<double> operator""_J_per_kg(long double v)
 {
   return p3a::joules_per_kilogram<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::siemens_per_meter_quantity<double> operator""_S_per_m(long double v)
+{
+  return p3a::siemens_per_meter_quantity<double>(v);
 }
 
 }
