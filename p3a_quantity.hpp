@@ -147,6 +147,10 @@ class quantity {
   auto operator>(quantity const& other) const {
     return value() > other.value();
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline static constexpr
+  quantity zero() {
+    return quantity(0);
+  }
 };
 
 namespace details {
