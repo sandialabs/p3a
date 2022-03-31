@@ -254,6 +254,9 @@ template <class ValueType = double>
 using gigapascals = quantity<gigapascal, ValueType>;
 
 template <class ValueType = double>
+using kilogram_meters_per_second = quantity<kilogram_meter_per_second, ValueType>;
+
+template <class ValueType = double>
 using arc_degrees = quantity<arc_degree, ValueType>;
 template <class ValueType = double>
 using percentage = quantity<percent, ValueType>;
