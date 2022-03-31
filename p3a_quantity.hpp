@@ -597,6 +597,13 @@ unitless<ValueType> natural_exponential(unitless<ValueType> const& q)
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+unitless<ValueType> arcsin(unitless<ValueType> const& q)
+{
+  return unitless<ValueType>(arcsin(q.value()));
+}
+
+template <class ValueType>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 unitless<ValueType> exponentiate(unitless<ValueType> const& a, unitless<ValueType> const& b)
 {
   return unitless<ValueType>(exponentiate(a.value(), b.value()));
