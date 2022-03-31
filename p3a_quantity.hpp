@@ -553,6 +553,8 @@ operator/(
   return left / unitless<Arithmetic>(right);
 }
 
+// roots functions
+
 template <class Unit, class ValueType, class Origin>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 auto square_root(quantity<Unit, ValueType, Origin> const& q)
@@ -560,6 +562,15 @@ auto square_root(quantity<Unit, ValueType, Origin> const& q)
   static_assert(std::is_same_v<Origin, void>,
       "not allowed to take square roots of absolute quantities");
   return quantity<unit_root<Unit, 2>, ValueType, Origin>(square_root(q.value()));
+}
+
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+auto cube_root(quantity<Unit, ValueType, Origin> const& q)
+{
+  static_assert(std::is_same_v<Origin, void>,
+      "not allowed to take cube roots of absolute quantities");
+  return quantity<unit_root<Unit, 3>, ValueType, Origin>(cube_root(q.value()));
 }
 
 namespace quantity_literals {

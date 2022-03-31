@@ -1,6 +1,9 @@
 #include "gtest/gtest.h"
 
+#include <sstream>
+
 #include "p3a_quantity.hpp"
+#include "p3a_iostream.hpp"
 
 TEST(quantity, multiply) {
   static_assert(std::is_same_v<
@@ -129,4 +132,11 @@ TEST(quantity, literals) {
   static_assert(std::is_same_v<p3a::meters_per_second<double>, decltype(v)>,
       "dividing literal meters by literal seconds should yield meters per second");
   EXPECT_FLOAT_EQ(v.value(), 3.0);
+}
+
+TEST(quantity, iostream) {
+  std::stringstream ss;
+  ss << p3a::meters_per_second<double>(3.5);
+  auto s = ss.str();
+  EXPECT_EQ(s, "3.5 m / s");
 }
