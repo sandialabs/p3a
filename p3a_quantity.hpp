@@ -3,6 +3,7 @@
 #include "p3a_macros.hpp"
 #include "p3a_unit.hpp"
 #include "p3a_scalar.hpp"
+#include "p3a_constants.hpp"
 
 namespace p3a {
 
@@ -149,7 +150,11 @@ class quantity {
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline static constexpr
   quantity zero() {
-    return quantity(0);
+    return quantity(zero_value<ValueType>());
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline static constexpr
+  quantity epsilon() {
+    return quantity(epsilon_value<ValueType>());
   }
 };
 
@@ -575,6 +580,15 @@ auto cube_root(quantity<Unit, ValueType, Origin> const& q)
   static_assert(std::is_same_v<Origin, void>,
       "not allowed to take cube roots of absolute quantities");
   return quantity<unit_root<Unit, 3>, ValueType, Origin>(cube_root(q.value()));
+}
+
+// transcendental functions act on unitless quantities
+
+template <class ValueType>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+unitless<ValueType> natural_exponential(unitless<ValueType> const& q)
+{
+  return unitless<ValueType>(natural_exponential(q.value()));
 }
 
 namespace quantity_literals {
