@@ -2,6 +2,7 @@
 
 #include "p3a_macros.hpp"
 #include "p3a_unit.hpp"
+#include "p3a_scalar.hpp"
 
 namespace p3a {
 
@@ -147,6 +148,15 @@ class quantity {
     return value() > other.value();
   }
 };
+
+namespace details {
+
+template <class Unit, class ValueType, class Origin>
+struct is_scalar<quantity<Unit, ValueType, Origin>> {
+  inline static constexpr bool value = true;
+};
+
+}
 
 template <class Unit, class ValueType = double>
 using absolute_quantity = quantity<Unit, ValueType, std::ratio<0>>;
