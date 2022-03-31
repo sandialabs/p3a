@@ -397,78 +397,42 @@ template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin,
-  class RightUnit,
-  class RightValueType,
-  class RightOrigin>
+  class Right>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator+=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
-    quantity<RightUnit, RightValueType, RightOrigin> const& right)
+    Right const& right)
 {
   left = left + right;
   return left;
 }
 
 template <
-  class Unit,
-  class ValueType,
-  class Origin,
-  class Arithmetic>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>&>
-operator+=(
-    quantity<Unit, ValueType, Origin>& left,
-    Arithmetic const& right)
-{
-  left = left + unitless<Arithmetic>(right);
-  return left;
-}
-
-template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin,
-  class RightUnit,
-  class RightValueType,
-  class RightOrigin>
+  class Right>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator-=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
-    quantity<RightUnit, RightValueType, RightOrigin> const& right)
+    Right const& right)
 {
   left = left - right;
   return left;
 }
 
 template <
-  class Unit,
-  class ValueType,
-  class Origin,
-  class Arithmetic>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>&>
-operator-=(
-    quantity<Unit, ValueType, Origin>& left,
-    Arithmetic const& right)
-{
-  left = left - unitless<Arithmetic>(right);
-  return left;
-}
-
-template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin,
-  class RightUnit,
-  class RightValueType,
-  class RightOrigin>
+  class Right>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator*=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
-    quantity<RightUnit, RightValueType, RightOrigin> const& right)
+    Right const& right)
 {
   left = left * right;
   return left;
@@ -478,14 +442,12 @@ template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin,
-  class RightUnit,
-  class RightValueType,
-  class RightOrigin>
+  class Right>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator/=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
-    quantity<RightUnit, RightValueType, RightOrigin> const& right)
+    Right const& right)
 {
   left = left / right;
   return left;
@@ -505,6 +467,30 @@ operator*(
     unit<Dimension, Magnitude>)
 {
   return quantity<unit<Dimension, Magnitude>, Arithmetic, void>(left);
+}
+
+// binary math operators that promote an operand of a built-in arithmetic
+// type into a unitless quantity, as long as the other operand is already
+// a physical quantity
+
+template <class Arithmetic, class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
+operator+(
+    Arithmetic const& left,
+    quantity<Unit, ValueType, Origin> const& right)
+{
+  return unitless<Arithmetic>(left) + right;
+}
+
+template <class Arithmetic, class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
+operator+(
+    quantity<Unit, ValueType, Origin> const& left,
+    Arithmetic const& right)
+{
+  return left + unitless<Arithmetic>(right);
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
