@@ -591,6 +591,32 @@ unitless<ValueType> natural_exponential(unitless<ValueType> const& q)
   return unitless<ValueType>(natural_exponential(q.value()));
 }
 
+template <class ValueType>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+unitless<ValueType> exponentiate(unitless<ValueType> const& a, unitless<ValueType> const& b)
+{
+  return unitless<ValueType>(exponentiate(a.value(), b.value()));
+}
+
+// allow the exponent to be a raw arithmetic type
+
+template <class ValueType, class Arithmetic>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<Arithmetic>, unitless<ValueType>>
+exponentiate(unitless<ValueType> const& a, Arithmetic const& b)
+{
+  return unitless<ValueType>(exponentiate(a.value(), b));
+}
+
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<Unit, ValueType, Origin> absolute_value(quantity<Unit, ValueType, Origin> const& q)
+{
+  static_assert(std::is_same_v<Origin, void>,
+      "not allowed to take absolute values of absolute quantities");
+  return quantity<Unit, ValueType, Origin>(absolute_value(q.value()));
+}
+
 namespace quantity_literals {
 
 // C++11 user-defined literals for common units
