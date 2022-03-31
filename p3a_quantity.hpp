@@ -4,6 +4,7 @@
 #include "p3a_unit.hpp"
 #include "p3a_scalar.hpp"
 #include "p3a_constants.hpp"
+#include "p3a_functions.hpp"
 
 namespace p3a {
 
@@ -605,7 +606,7 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, unitless<ValueType>>
 exponentiate(unitless<ValueType> const& a, Arithmetic const& b)
 {
-  return unitless<ValueType>(exponentiate(a.value(), b));
+  return unitless<ValueType>(exponentiate(a.value(), ValueType(b)));
 }
 
 template <class Unit, class ValueType, class Origin>
