@@ -68,6 +68,11 @@ class quantity {
   quantity(T const& v)
     :m_value(v)
   {}
+  // can always explicitly construct from value type
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  explicit quantity(value_type const& v)
+    :m_value(v)
+  {}
   P3A_ALWAYS_INLINE inline
   quantity() = default;
   P3A_ALWAYS_INLINE inline constexpr
