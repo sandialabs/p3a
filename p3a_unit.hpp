@@ -220,10 +220,13 @@ using arc_degree = unit<no_dimension,
 
 using percent = unit<no_dimension, std::ratio<1, 100>>;
 
+using volt = unit<electric_potential>;
 using siemens = unit<electrical_conductance>;
 using siemens_per_meter = unit<electrical_conductivity>;
 using ohm = unit<electrical_resistance>;
 using ohm_meter = unit<electrical_resistivity>;
+using henry = unit<inductance>;
+using farad = unit<capacitance>;
 
 namespace details {
   using speed_of_light_in_centimeters_per_second = std::ratio<29979245800>;

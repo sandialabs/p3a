@@ -267,6 +267,15 @@ template <class ValueType = double>
 using siemens_per_meter_quantity = quantity<siemens_per_meter, ValueType>;
 
 template <class ValueType = double>
+using volts = quantity<volt, ValueType>;
+template <class ValueType = double>
+using ohms = quantity<ohm, ValueType>;
+template <class ValueType = double>
+using henries = quantity<henry, ValueType>;
+template <class ValueType = double>
+using farads = quantity<farad, ValueType>;
+
+template <class ValueType = double>
 using gaussian_electrical_conductivity_quantity = quantity<gaussian_electrical_conductivity_unit, ValueType>;
 
 template <
