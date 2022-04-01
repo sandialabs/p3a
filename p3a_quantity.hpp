@@ -730,9 +730,18 @@ template <class ValueType, class Abi, class Unit, class Origin>
 quantity<Unit, simd<ValueType, Abi>, Origin> load(
     quantity<Unit, ValueType, Origin> const* ptr, int offset, simd_mask<ValueType, Abi> const& mask)
 {
-  simd<ValueType, Abi> result;
-  where(mask, result).copy_from(ptr + offset, element_aligned_tag());
-  return quantity<Unit, ValueType, Origin>(result);
+  return quantity<Unit, ValueType, Origin>(load(&(ptr->value()), offset, mask));
+}
+
+template <class ValueType, class Abi, class Unit, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
+    quantity<Unit, simd<ValueType, Abi>, Origin> const& value,
+    quantity<Unit, ValueType, Origin>* ptr,
+    int offset,
+    no_deduce_t<simd_mask<ValueType, Abi>> const& mask)
+{
+  store(value.value(), &(ptr->value()), offset, mask);
 }
 
 }
