@@ -218,6 +218,8 @@ using temperature_electronvolts =
   absolute_quantity<temperature_electronvolt, ValueType>;
 
 template <class ValueType = double>
+using hertz_quantity = quantity<hertz, ValueType>;
+template <class ValueType = double>
 using meters_per_second = quantity<meter_per_second, ValueType>;
 template <class ValueType = double>
 using meters_per_second_squared = quantity<meter_per_second_squared, ValueType>;
@@ -255,6 +257,11 @@ using gigapascals = quantity<gigapascal, ValueType>;
 
 template <class ValueType = double>
 using kilogram_meters_per_second = quantity<kilogram_meter_per_second, ValueType>;
+
+template <class ValueType = double>
+using square_meters_per_second = quantity<square_meter_per_second, ValueType>;
+template <class ValueType = double>
+using pascal_seconds = quantity<pascal_second, ValueType>;
 
 template <class ValueType = double>
 using arc_degrees = quantity<arc_degree, ValueType>;

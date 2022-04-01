@@ -94,6 +94,7 @@ using temperature = dimension<0, 0, 0, 0, 1>;
 using amount_of_substance = dimension<0, 0, 0, 0, 0, 1>;
 using luminous_intensity = dimension<0, 0, 0, 0, 0, 0, 1>;
 
+using frequency = dimension<-1>;
 // same dimension as velocity
 using speed = dimension<-1, 1, 0>;
 using acceleration = dimension<-2, 1, 0>;
