@@ -171,10 +171,12 @@ using mole = unit<amount_of_substance>;
 
 using candela = unit<luminous_intensity>;
 
+using reciprocal_second = unit<reciprocal_time>;
 using hertz = unit<frequency>;
 using meter_per_second = unit<speed>;
 using meter_per_second_squared = unit<acceleration>;
 
+using reciprocal_meter = unit<reciprocal_length>;
 using square_meter = unit<area>;
 using square_centimeter = unit_multiply<centimeter, centimeter>;
 
@@ -202,7 +204,7 @@ using newton = unit<force>;
 using pascal = unit<pressure>;
 using gigapascal = giga<pascal>;
 
-using kilogram_meter_per_second = unit<momentum>;
+using newton_second = unit<momentum>;
 
 using square_meter_per_second = unit<kinematic_viscosity>;
 using pascal_second = unit<dynamic_viscosity>;

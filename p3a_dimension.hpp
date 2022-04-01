@@ -94,11 +94,13 @@ using temperature = dimension<0, 0, 0, 0, 1>;
 using amount_of_substance = dimension<0, 0, 0, 0, 0, 1>;
 using luminous_intensity = dimension<0, 0, 0, 0, 0, 0, 1>;
 
+using reciprocal_time = dimension<-1>;
 using frequency = dimension<-1>;
 // same dimension as velocity
 using speed = dimension<-1, 1, 0>;
 using acceleration = dimension<-2, 1, 0>;
 
+using reciprocal_length = dimension<0, -1>;
 using area = dimension<0, 2>;
 using volume = dimension<0, 3>;
 
