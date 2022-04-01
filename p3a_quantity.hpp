@@ -5,6 +5,7 @@
 #include "p3a_scalar.hpp"
 #include "p3a_constants.hpp"
 #include "p3a_functions.hpp"
+#include "p3a_simd_common.hpp"
 
 namespace p3a {
 
@@ -722,6 +723,16 @@ p3a::siemens_per_meter_quantity<double> operator""_S_per_m(long double v)
   return p3a::siemens_per_meter_quantity<double>(v);
 }
 
+}
+
+template <class ValueType, class Abi, class Unit, class Origin>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+quantity<Unit, simd<ValueType, Abi>, Origin> load(
+    quantity<Unit, ValueType, Origin> const* ptr, int offset, simd_mask<ValueType, Abi> const& mask)
+{
+  simd<ValueType, Abi> result;
+  where(mask, result).copy_from(ptr + offset, element_aligned_tag());
+  return quantity<Unit, ValueType, Origin>(result);
 }
 
 }
