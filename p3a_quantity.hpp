@@ -749,9 +749,11 @@ p3a::siemens_per_meter_quantity<double> operator""_S_per_m(long double v)
 template <class ValueType, class Abi, class Unit, class Origin>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 quantity<Unit, simd<ValueType, Abi>, Origin> load(
-    quantity<Unit, ValueType, Origin> const* ptr, int offset, simd_mask<ValueType, Abi> const& mask)
+    quantity<Unit, ValueType, Origin> const* ptr,
+    int offset,
+    simd_mask<ValueType, Abi> const& mask)
 {
-  return quantity<Unit, ValueType, Origin>(load(&(ptr->value()), offset, mask));
+  return quantity<Unit, simd<ValueType, Abi>, Origin>(load(&(ptr->value()), offset, mask));
 }
 
 template <class ValueType, class Abi, class Unit, class Origin>
