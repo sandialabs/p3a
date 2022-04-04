@@ -744,4 +744,14 @@ void store(
   store(value.value(), &(ptr->value()), offset, mask);
 }
 
+template <class T, class Abi, class Unit, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<Unit, simd<T, Abi>, Origin> condition(
+    simd_mask<T, Abi> const& a,
+    quantity<Unit, simd<T, Abi>, Origin> const& b,
+    quantity<Unit, simd<T, Abi>, Origin> const& c)
+{
+  return quantity<Unit, simd<T, Abi>, Origin>(condition(a, b.value(), c.value()));
+}
+
 }
