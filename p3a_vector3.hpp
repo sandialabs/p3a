@@ -288,6 +288,18 @@ auto load_vector3(
   return vector3<component_type>(a, b, c);
 }
 
+template <class T, class I, class U, class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+auto load_vector3(
+    T const* ptr, int stride, simd<I, Abi> const& offset, simd_mask<U, Abi> const& mask)
+{
+  auto const a = load(ptr + 0 * stride, offset, mask);
+  auto const b = load(ptr + 1 * stride, offset, mask);
+  auto const c = load(ptr + 2 * stride, offset, mask);
+  using component_type = std::remove_const_t<decltype(a)>;
+  return vector3<component_type>(a, b, c);
+}
+
 template <class T>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
