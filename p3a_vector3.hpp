@@ -276,15 +276,16 @@ vector3<T> load_vector3(
       load(ptr, 2 * stride + offset));
 }
 
-template <class T, class Abi>
+template <class T, class U, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-vector3<simd<T, Abi>> load_vector3(
-    T const* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
+auto load_vector3(
+    T const* ptr, int stride, int offset, simd_mask<U, Abi> const& mask)
 {
-  return vector3<simd<T, Abi>>(
-      simd<T, Abi>::masked_load(ptr + 0 * stride + offset, mask),
-      simd<T, Abi>::masked_load(ptr + 1 * stride + offset, mask),
-      simd<T, Abi>::masked_load(ptr + 2 * stride + offset, mask));
+  auto const a = load(ptr + 0 * stride, offset, mask);
+  auto const b = load(ptr + 1 * stride, offset, mask);
+  auto const c = load(ptr + 2 * stride, offset, mask);
+  using component_type = std::remove_const_t<decltype(a)>;
+  return vector3<component_type>(a, b, c);
 }
 
 template <class T>
