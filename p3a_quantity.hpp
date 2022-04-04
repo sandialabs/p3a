@@ -53,7 +53,7 @@ class quantity {
   template <class T,
       typename std::enable_if<
          (!std::is_same_v<quantity<Unit, ValueType, Origin>, quantity<no_unit, ValueType, void>>) &&
-         std::is_arithmetic_v<T>,
+         (std::is_arithmetic_v<T> || std::is_same_v<T, ValueType>),
          bool>::type = false>
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   explicit quantity(T const& v)
@@ -63,15 +63,10 @@ class quantity {
   template <class T,
       typename std::enable_if<
          std::is_same_v<quantity<Unit, ValueType, Origin>, quantity<no_unit, ValueType, void>> &&
-         std::is_arithmetic_v<T>,
+         (std::is_arithmetic_v<T> || std::is_same_v<T, ValueType>),
          bool>::type = false>
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   quantity(T const& v)
-    :m_value(v)
-  {}
-  // can always explicitly construct from value type
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-  explicit quantity(value_type const& v)
     :m_value(v)
   {}
   P3A_ALWAYS_INLINE inline
@@ -436,14 +431,29 @@ template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin,
-  class Right>
+  class RightUnit,
+  class RightValueType>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator+=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
-    Right const& right)
+    quantity<RightUnit, RightValueType, void> const& right)
 {
-  left = left + right;
+  left = left + quantity<LeftUnit, LeftValueType, void>(right);
+  return left;
+}
+
+template <
+  class LeftUnit,
+  class LeftValueType,
+  class LeftOrigin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<LeftUnit, LeftValueType, LeftOrigin>&
+operator+=(
+    quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
+    LeftValueType const& right)
+{
+  left = left + unitless<LeftValueType>(right);
   return left;
 }
 
@@ -451,14 +461,29 @@ template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin,
-  class Right>
+  class RightUnit,
+  class RightValueType>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator-=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
-    Right const& right)
+    quantity<RightUnit, RightValueType, void> const& right)
 {
-  left = left - right;
+  left = left - quantity<LeftUnit, LeftValueType, void>(right);
+  return left;
+}
+
+template <
+  class LeftUnit,
+  class LeftValueType,
+  class LeftOrigin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<LeftUnit, LeftValueType, LeftOrigin>&
+operator-=(
+    quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
+    LeftValueType const& right)
+{
+  left = left - unitless<LeftValueType>(right);
   return left;
 }
 
@@ -466,12 +491,14 @@ template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin,
-  class Right>
+  class RightUnit,
+  class RightValueType,
+  class RightOrigin>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator*=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
-    Right const& right)
+    quantity<RightUnit, RightValueType, RightOrigin> const& right)
 {
   left = left * right;
   return left;
@@ -481,12 +508,14 @@ template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin,
-  class Right>
+  class RightUnit,
+  class RightValueType,
+  class RightOrigin>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator/=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
-    Right const& right)
+    quantity<RightUnit, RightValueType, RightOrigin> const& right)
 {
   left = left / right;
   return left;
@@ -495,22 +524,41 @@ operator/=(
 // build a quantity by multiplying a number by a unit
 
 template <
-  class Arithmetic,
+  class T,
   class Dimension,
   class Magnitude>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-std::enable_if_t<std::is_arithmetic_v<Arithmetic>,
-  quantity<unit<Dimension, Magnitude>, Arithmetic, void>>
+quantity<unit<Dimension, Magnitude>, T, void>
 operator*(
-    Arithmetic const& left,
+    T const& left,
     unit<Dimension, Magnitude>)
 {
-  return quantity<unit<Dimension, Magnitude>, Arithmetic, void>(left);
+  return quantity<unit<Dimension, Magnitude>, T, void>(left);
 }
 
 // binary math operators that promote an operand of a built-in arithmetic
 // type into a unitless quantity, as long as the other operand is already
 // a physical quantity
+
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<Unit, ValueType, Origin>
+operator+(
+    ValueType const& left,
+    quantity<Unit, ValueType, Origin> const& right)
+{
+  return unitless<ValueType>(left) + right;
+}
+
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<Unit, ValueType, Origin>
+operator+(
+    quantity<Unit, ValueType, Origin> const& left,
+    ValueType const& right)
+{
+  return left + unitless<ValueType>(right);
+}
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
@@ -530,6 +578,26 @@ operator+(
     Arithmetic const& right)
 {
   return left + unitless<Arithmetic>(right);
+}
+
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<Unit, ValueType, Origin>
+operator-(
+    ValueType const& left,
+    quantity<Unit, ValueType, Origin> const& right)
+{
+  return unitless<ValueType>(left) - right;
+}
+
+template <class Arithmetic, class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<Unit, ValueType, Origin>
+operator-(
+    quantity<Unit, ValueType, Origin> const& left,
+    ValueType const& right)
+{
+  return left - unitless<ValueType>(right);
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
@@ -552,6 +620,26 @@ operator-(
   return left - unitless<Arithmetic>(right);
 }
 
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<Unit, ValueType, Origin>
+operator*(
+    ValueType const& left,
+    quantity<Unit, ValueType, Origin> const& right)
+{
+  return unitless<ValueType>(left) * right;
+}
+
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<Unit, ValueType, Origin>
+operator*(
+    quantity<Unit, ValueType, Origin> const& left,
+    ValueType const& right)
+{
+  return left * unitless<ValueType>(right);
+}
+
 template <class Arithmetic, class Unit, class ValueType, class Origin>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
@@ -570,6 +658,26 @@ operator*(
     Arithmetic const& right)
 {
   return left * unitless<Arithmetic>(right);
+}
+
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<unit_inverse<Unit>, ValueType, Origin>
+operator/(
+    ValueType const& left,
+    quantity<Unit, ValueType, Origin> const& right)
+{
+  return unitless<ValueType>(left) / right;
+}
+
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<Unit, ValueType, Origin>
+operator/(
+    quantity<Unit, ValueType, Origin> const& left,
+    ValueType const& right)
+{
+  return left / unitless<ValueType>(right);
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
@@ -751,6 +859,16 @@ template <class ValueType, class Abi, class Unit, class Origin>
 quantity<Unit, simd<ValueType, Abi>, Origin> load(
     quantity<Unit, ValueType, Origin> const* ptr,
     int offset,
+    simd_mask<ValueType, Abi> const& mask)
+{
+  return quantity<Unit, simd<ValueType, Abi>, Origin>(load(&(ptr->value()), offset, mask));
+}
+
+template <class ValueType, class Integral, class Abi, class Unit, class Origin>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+quantity<Unit, simd<ValueType, Abi>, Origin> load(
+    quantity<Unit, ValueType, Origin> const* ptr,
+    simd<Integral, Abi> const& offset,
     simd_mask<ValueType, Abi> const& mask)
 {
   return quantity<Unit, simd<ValueType, Abi>, Origin>(load(&(ptr->value()), offset, mask));
