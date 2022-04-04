@@ -306,20 +306,37 @@ void store(
     vector3<T> const& value,
     T* ptr, int stride, int offset)
 {
-  store(value.x(), ptr, 0 * stride + offset);
-  store(value.y(), ptr, 1 * stride + offset);
-  store(value.z(), ptr, 2 * stride + offset);
+  store(value.x(), ptr + 0 * stride, offset);
+  store(value.y(), ptr + 1 * stride, offset);
+  store(value.z(), ptr + 2 * stride, offset);
 }
 
-template <class T, class Abi>
+template <class T, class U, class V, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
-    vector3<simd<T, Abi>> const& value,
-    T* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
+    vector3<T> const& value,
+    U* ptr,
+    int stride,
+    int offset,
+    simd_mask<V, Abi> const& mask)
 {
-  store(value.x(), ptr, 0 * stride + offset, mask);
-  store(value.y(), ptr, 1 * stride + offset, mask);
-  store(value.z(), ptr, 2 * stride + offset, mask);
+  store(value.x(), ptr + 0 * stride, offset, mask);
+  store(value.y(), ptr + 1 * stride, offset, mask);
+  store(value.z(), ptr + 2 * stride, offset, mask);
+}
+
+template <class T, class U, class V, class Integral, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
+    vector3<T> const& value,
+    U* ptr,
+    int stride,
+    simd<Integral, Abi> const& offset,
+    simd_mask<V, Abi> const& mask)
+{
+  store(value.x(), ptr + 0 * stride, offset, mask);
+  store(value.y(), ptr + 1 * stride, offset, mask);
+  store(value.z(), ptr + 2 * stride, offset, mask);
 }
 
 template <class T, class Mask>
