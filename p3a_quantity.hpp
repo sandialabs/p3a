@@ -86,7 +86,7 @@ class quantity {
   // converting constructor for converting only ValueType
   template <class OtherValueType>
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-  explicit quantity(quantity<unit, OtherValueType, origin> const& other)
+  quantity(quantity<unit, OtherValueType, origin> const& other)
     :m_value(other.value())
   {
   }
