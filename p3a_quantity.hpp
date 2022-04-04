@@ -623,9 +623,30 @@ unitless<ValueType> natural_exponential(unitless<ValueType> const& q)
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+unitless<ValueType> sine(unitless<ValueType> const& q)
+{
+  return unitless<ValueType>(sine(q.value()));
+}
+
+template <class ValueType>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+unitless<ValueType> cosine(unitless<ValueType> const& q)
+{
+  return unitless<ValueType>(cosine(q.value()));
+}
+
+template <class ValueType>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 unitless<ValueType> arcsin(unitless<ValueType> const& q)
 {
   return unitless<ValueType>(arcsin(q.value()));
+}
+
+template <class ValueType>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+unitless<ValueType> arccos(unitless<ValueType> const& q)
+{
+  return unitless<ValueType>(arccos(q.value()));
 }
 
 template <class ValueType>
