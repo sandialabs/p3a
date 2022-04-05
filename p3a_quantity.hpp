@@ -521,6 +521,35 @@ operator/=(
   return left;
 }
 
+template <
+  class LeftUnit,
+  class LeftValueType,
+  class LeftOrigin>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<LeftUnit, LeftValueType, LeftOrigin>&
+operator/=(
+    quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
+    LeftValueType const& right)
+{
+  left /= unitless<LeftValueType>(right);
+  return left;
+}
+
+template <
+  class LeftUnit,
+  class LeftValueType,
+  class LeftOrigin,
+  class Arithmetic>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<LeftUnit, LeftValueType, LeftOrigin>&>
+operator/=(
+    quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
+    Arithmetic const& right)
+{
+  left /= unitless<Arithmetic>(right);
+  return left;
+}
+
 // build a quantity by multiplying a number by a unit
 
 template <
