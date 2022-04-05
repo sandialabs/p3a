@@ -760,6 +760,13 @@ unitless<ValueType> natural_exponential(unitless<ValueType> const& q)
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+unitless<ValueType> natural_logarithm(unitless<ValueType> const& q)
+{
+  return unitless<ValueType>(natural_logarithm(q.value()));
+}
+
+template <class ValueType>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 unitless<ValueType> sine(unitless<ValueType> const& q)
 {
   return unitless<ValueType>(sine(q.value()));
