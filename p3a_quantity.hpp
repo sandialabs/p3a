@@ -871,6 +871,24 @@ p3a::pascals<double> operator""_Pa(long double v)
 }
 
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::joules<double> operator""_J(long double v)
+{
+  return p3a::joules<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::meters_per_second<double> operator""_m_per_s(long double v)
+{
+  return p3a::meters_per_second<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::meters_per_second_squared<double> operator""_m_per_s2(long double v)
+{
+  return p3a::meters_per_second_squared<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 p3a::kilograms_per_cubic_meter<double> operator""_kg_per_m3(long double v)
 {
   return p3a::kilograms_per_cubic_meter<double>(v);
