@@ -565,6 +565,19 @@ operator*(
   return quantity<unit<Dimension, Magnitude>, T, void>(left);
 }
 
+template <
+  class T,
+  class Dimension,
+  class Magnitude>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+quantity<unit<Dimension, Magnitude>, T, void>
+operator*(
+    unit<Dimension, Magnitude>,
+    T const& right)
+{
+  return quantity<unit<Dimension, Magnitude>, T, void>(right);
+}
+
 // binary math operators that promote an operand of a built-in arithmetic
 // type into a unitless quantity, as long as the other operand is already
 // a physical quantity
@@ -892,6 +905,12 @@ P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 p3a::kilograms_per_cubic_meter<double> operator""_kg_per_m3(long double v)
 {
   return p3a::kilograms_per_cubic_meter<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::pascal_seconds<double> operator""_Pa_s(long double v)
+{
+  return p3a::pascal_seconds<double>(v);
 }
 
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
