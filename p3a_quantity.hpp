@@ -158,6 +158,14 @@ class quantity {
   quantity epsilon() {
     return quantity(epsilon_value<ValueType>());
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline static constexpr
+  quantity maximum() {
+    return quantity(maximum_value<ValueType>());
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline static constexpr
+  quantity minimum() {
+    return quantity(minimum_value<ValueType>());
+  }
 };
 
 namespace details {
