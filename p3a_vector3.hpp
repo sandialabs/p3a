@@ -30,6 +30,21 @@ class vector3 {
     :vector3(T(other.x()), T(other.y()), T(other.z()))
   {
   }
+  template <
+    class U,
+    class V,
+    class W,
+    typename std::enable_if<
+      std::is_constructible_v<T, U const&> &&
+      std::is_constructible_v<T, V const&> &&
+      std::is_constructible_v<T, W const&>,
+      bool>::type = false>
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE explicit constexpr
+  vector3(U const& a, V const& b, W const& c)
+    :m_x(a)
+    ,m_y(a)
+    ,m_z(a)
+  {}
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   reference x() { return m_x; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
