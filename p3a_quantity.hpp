@@ -910,6 +910,12 @@ p3a::meters_per_second_squared<double> operator""_m_per_s2(long double v)
 }
 
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+p3a::cubic_meters<double> operator""_m3(long double v)
+{
+  return p3a::cubic_meters<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 p3a::kilograms_per_cubic_meter<double> operator""_kg_per_m3(long double v)
 {
   return p3a::kilograms_per_cubic_meter<double>(v);
