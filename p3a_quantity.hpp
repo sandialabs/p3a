@@ -804,6 +804,13 @@ unitless<ValueType> cosine(unitless<ValueType> const& q)
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+unitless<ValueType> tangent(unitless<ValueType> const& q)
+{
+  return unitless<ValueType>(tangent(q.value()));
+}
+
+template <class ValueType>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 unitless<ValueType> arcsin(unitless<ValueType> const& q)
 {
   return unitless<ValueType>(arcsin(q.value()));
