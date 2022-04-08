@@ -27,6 +27,18 @@ class vector2 {
     :vector2(T(other.x()), T(other.y()))
   {
   }
+  template <
+    class U,
+    class V,
+    typename std::enable_if<
+      std::is_constructible_v<T, U const&> &&
+      std::is_constructible_v<T, V const&>,
+      bool>::type = false>
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE explicit constexpr
+  vector2(U const& a, V const& b)
+    :m_x(a)
+    ,m_y(b)
+  {}
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   reference x() { return m_x; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
