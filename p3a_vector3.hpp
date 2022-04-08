@@ -42,8 +42,8 @@ class vector3 {
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE explicit constexpr
   vector3(U const& a, V const& b, W const& c)
     :m_x(a)
-    ,m_y(a)
-    ,m_z(a)
+    ,m_y(b)
+    ,m_z(c)
   {}
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   reference x() { return m_x; }
