@@ -57,10 +57,10 @@ using unit_root = unit<
     dimension_root<typename A::dimension, Root>,
     ratio_root<typename A::magnitude, Root>>;
 
-template <class Prefix, class Unit>
-using unit_prefix = unit<
+template <class Ratio, class Unit>
+using unit_scale = unit<
     typename Unit::dimension,
-    std::ratio_multiply<Prefix, typename Unit::magnitude>>;
+    std::ratio_multiply<Ratio, typename Unit::magnitude>>;
 
 namespace details {
 
@@ -78,43 +78,43 @@ template <class T> class giga;
 template <class Dimension, class Magnitude>
 class nano<unit<Dimension, Magnitude>> {
  public:
-  using type = unit_prefix<std::nano, unit<Dimension, Magnitude>>;
+  using type = unit_scale<std::nano, unit<Dimension, Magnitude>>;
 };
 
 template <class Dimension, class Magnitude>
 class micro<unit<Dimension, Magnitude>> {
  public:
-  using type = unit_prefix<std::micro, unit<Dimension, Magnitude>>;
+  using type = unit_scale<std::micro, unit<Dimension, Magnitude>>;
 };
 
 template <class Dimension, class Magnitude>
 class milli<unit<Dimension, Magnitude>> {
  public:
-  using type = unit_prefix<std::milli, unit<Dimension, Magnitude>>;
+  using type = unit_scale<std::milli, unit<Dimension, Magnitude>>;
 };
 
 template <class Dimension, class Magnitude>
 class centi<unit<Dimension, Magnitude>> {
  public:
-  using type = unit_prefix<std::centi, unit<Dimension, Magnitude>>;
+  using type = unit_scale<std::centi, unit<Dimension, Magnitude>>;
 };
 
 template <class Dimension, class Magnitude>
 class kilo<unit<Dimension, Magnitude>> {
  public:
-  using type = unit_prefix<std::kilo, unit<Dimension, Magnitude>>;
+  using type = unit_scale<std::kilo, unit<Dimension, Magnitude>>;
 };
 
 template <class Dimension, class Magnitude>
 class mega<unit<Dimension, Magnitude>> {
  public:
-  using type = unit_prefix<std::mega, unit<Dimension, Magnitude>>;
+  using type = unit_scale<std::mega, unit<Dimension, Magnitude>>;
 };
 
 template <class Dimension, class Magnitude>
 class giga<unit<Dimension, Magnitude>> {
  public:
-  using type = unit_prefix<std::giga, unit<Dimension, Magnitude>>;
+  using type = unit_scale<std::giga, unit<Dimension, Magnitude>>;
 };
 
 }
