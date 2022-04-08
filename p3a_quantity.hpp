@@ -279,6 +279,8 @@ using pascal_seconds = quantity<pascal_second, ValueType>;
 template <class ValueType = double>
 using arc_degrees = quantity<arc_degree, ValueType>;
 template <class ValueType = double>
+using radians = quantity<radian, ValueType>;
+template <class ValueType = double>
 using percentage = quantity<percent, ValueType>;
 
 template <class ValueType = double>
