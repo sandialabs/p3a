@@ -100,6 +100,13 @@ maximum(T const& a, T const& b)
   return condition(a < b, b, a);
 }
 
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr auto
+clamp(T const& v, T const& lo, T const& hi)
+{
+  return minimum(maximum(v, lo), hi);
+}
+
 template <class Head, class... Tail>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr auto
 recursive_maximum(Head const& head, Tail... tail)

@@ -10,7 +10,7 @@ include(CMakePackageConfigHelpers)
 option(p3a_ENABLE_AVX512 "Enable AVX-512" OFF)
 set(p3a_ARCHITECTURES "" CACHE STRING "GPU architectures (either CUDA_ARCHITECTURES or HIP_ARCHITECTURES)")
 
-find_package(MPI REQUIRED)
+find_package(mpicpp REQUIRED)
 find_package(Kokkos REQUIRED COMPONENTS separable_compilation)
 
 set(p3a_ENABLE_CUDA "${Kokkos_ENABLE_CUDA}")
@@ -57,7 +57,6 @@ set(P3A_HEADERS
   p3a_dimension.hpp
   p3a_unit.hpp
   p3a_cstring.hpp
-  p3a_mpi.hpp
   p3a_avx512.hpp
   p3a_simd.hpp
   p3a_simd_common.hpp
@@ -80,11 +79,11 @@ set(P3A_HEADERS
   p3a_search.hpp
   p3a_cg.hpp
   p3a_simd_view.hpp
+  p3a_iostream.hpp
   )
 
 set(P3A_SOURCES
   p3a_execution.cpp
-  p3a_mpi.cpp
   p3a_fixed_point.cpp
   p3a_opts.cpp
   )
@@ -105,7 +104,7 @@ if (p3a_ENABLE_AVX512)
   target_compile_options(p3a PUBLIC -mavx512f -mavx512vl -mavx512dq)
 endif()
 
-target_link_libraries(p3a PUBLIC MPI::MPI_CXX)
+target_link_libraries(p3a PUBLIC mpicpp::mpicpp)
 target_link_libraries(p3a PUBLIC Kokkos::kokkoscore)
 
 install(
@@ -120,6 +119,7 @@ install(
 if (BUILD_TESTING)
   set(unit_test_sources
     p3a_unit_tests_main.cpp
+    p3a_unit_tests_quantity.cpp
     p3a_unit_tests_fixed_point.cpp
     p3a_unit_tests_mandel.cpp
     p3a_unit_tests_polar.cpp

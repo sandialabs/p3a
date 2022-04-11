@@ -1,7 +1,7 @@
 #pragma once
 
-#include "p3a_mpi.hpp"
-#include "p3a_quantity.hpp"
+#include "mpicpp.hpp"
+
 #include "p3a_execution.hpp"
 #include "p3a_grid3.hpp"
 #include "p3a_dynamic_array.hpp"
@@ -36,6 +36,25 @@ class reducer<T, serial_execution> {
     }
     return init;
   }
+  template <class Iterator, class BinaryOp, class UnaryOp>
+  [[nodiscard]] P3A_NEVER_INLINE
+  T simd_transform_reduce(
+      Iterator first,
+      Iterator last,
+      T init,
+      BinaryOp binary_op,
+      UnaryOp unary_op)
+  {
+    using reference_type = typename std::iterator_traits<Iterator>::reference;
+    auto const identity_value = init;
+    simd_for_each<T>(m_policy, first, last,
+    [&] (reference_type ref, host_simd_mask<T> const& mask) P3A_ALWAYS_INLINE {
+      auto const simd_value = unary_op(ref, mask);
+      auto const scalar_value = reduce(where(mask, simd_value), identity_value, binary_op);
+      init = binary_op(init, scalar_value);
+    });
+    return init;
+  }
   template <class BinaryOp, class UnaryOp>
   [[nodiscard]] P3A_NEVER_INLINE
   T transform_reduce(
@@ -61,7 +80,7 @@ class reducer<T, serial_execution> {
     T const identity_value = init;
     simd_for_each<T>(m_policy, grid,
     [&] (vector3<int> const& item, host_simd_mask<T> const& mask) P3A_ALWAYS_INLINE {
-      simd<T, simd_abi::host_native> const simd_value = unary_op(item, mask);
+      auto const simd_value = unary_op(item, mask);
       T const scalar_value = reduce(where(mask, simd_value), identity_value, binary_op);
       init = binary_op(init, scalar_value);
     });
@@ -216,6 +235,32 @@ __global__ void cuda_reduce(ForwardIt first, T* g_odata, int n, T init, BinaryOp
   if (tid == 0) g_odata[blockIdx.x] = myResult;
 }
 
+template <class ForwardIt, class Integral, class T, class BinaryOp, class UnaryOp>
+__global__ void cuda_simd_reduce(ForwardIt first, T* g_odata, Integral n, T init, BinaryOp binop, UnaryOp unop) {
+  constexpr int blockSize = 64;
+  T* sdata = cuda_shared_memory<T>();
+  // perform first level of reduction,
+  // reading from global memory, writing to shared memory
+  int tid = threadIdx.x;
+  Integral i = blockIdx.x * blockSize + threadIdx.x;
+  auto const mask = simd_mask<T, simd_abi::scalar>(i < n);
+  auto const simd_value = unop(i, mask);
+  T myResult = reduce(where(mask, simd_value), init, binop);
+  // each thread puts its local sum into shared memory
+  sdata[tid] = myResult;
+  __syncthreads();
+  if (tid < 32) {
+    // Fetch final intermediate sum from 2nd warp
+    myResult = binop(myResult, sdata[tid + 32]);
+    // Reduce final warp using shuffle
+    for (unsigned int offset = 32 / 2; offset > 0; offset /= 2) {
+      myResult = binop(myResult, cuda_shuffle_down(myResult, offset));
+    }
+  }
+  // write result for this block to global mem
+  if (tid == 0) g_odata[blockIdx.x] = myResult;
+}
+
 template <class T, class BinaryOp, class UnaryOp>
 __global__ void cuda_grid_reduce(
     vector3<int> first, vector3<int> last,
@@ -275,7 +320,7 @@ __global__ void cuda_simd_grid_reduce(
   int const z_i = block_idx.z();
   vector3<int> const xyz(x_i, y_i, z_i);
   auto const mask = simd_mask<T, simd_abi::scalar>(x_i < user_extents.x());
-  simd<T, simd_abi::scalar> const simd_value = unop(xyz + first, mask);
+  auto const simd_value = unop(xyz + first, mask);
   T myResult = reduce(where(mask, simd_value), init, binop);
   // each thread puts its local sum into shared memory
   sdata[tid] = myResult;
@@ -329,6 +374,18 @@ class reducer<T, cuda_execution> {
       smemSize,
       cuda_stream>>>(first, d_odata, size, init, binop, unop);
   }
+  template <class ForwardIt, class BinaryOp, class UnaryOp, class Integral>
+  void simd_reduction_pass(Integral size, int blocks, ForwardIt first, T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
+    dim3 const dimBlock(64, 1, 1);
+    dim3 const dimGrid(blocks, 1, 1);
+    int const smemSize = 64 * sizeof(T);
+    cudaStream_t const cuda_stream = nullptr;
+    details::cuda_simd_reduce<<<
+      dimGrid,
+      dimBlock,
+      smemSize,
+      cuda_stream>>>(first, d_odata, size, init, binop, unop);
+  }
   template <class BinaryOp, class UnaryOp>
   void grid_reduction_pass(
       vector3<int> first, vector3<int> last, vector3<int> block_grid,
@@ -362,6 +419,22 @@ class reducer<T, cuda_execution> {
       int n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
     int blocks = get_num_blocks(n);
     this->reduction_pass(n, blocks, first, m_scratch2, init, binop, unop);
+    int s = blocks;
+    T* tmp_d_idata = m_scratch1;
+    T* tmp_d_odata = m_scratch2;
+    while (s > 1) {
+      std::swap(tmp_d_idata, tmp_d_odata);
+      blocks = get_num_blocks(s);
+      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity<T>());
+      s = (s + (threads_per_block * 2 - 1)) / (threads_per_block * 2);
+    }
+    return tmp_d_odata;
+  }
+  template <class ForwardIt, class BinaryOp, class UnaryOp, class Integral>
+  T* simd_reduce_on_device(
+      Integral n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
+    int blocks = int((n + 64 - 1) / 64);
+    this->simd_reduction_pass(n, blocks, first, m_scratch2, init, binop, unop);
     int s = blocks;
     T* tmp_d_idata = m_scratch1;
     T* tmp_d_odata = m_scratch2;
@@ -418,6 +491,19 @@ class reducer<T, cuda_execution> {
     m_scratch2 = nullptr;
     return host_result;
   }
+  template <class ForwardIt, class BinaryOp, class UnaryOp, class Integral>
+  T simd_reduce_to_host(Integral n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
+    m_storage.resize(2 * n);
+    m_scratch1 = m_storage.data();
+    m_scratch2 = m_storage.data() + n;
+    T host_result = init;
+    T const* device_result_ptr = this->simd_reduce_on_device(n, first, init, binop, unop);
+    cudaMemcpy(&host_result, device_result_ptr, sizeof(T), cudaMemcpyDefault);
+    m_storage.resize(0);
+    m_scratch1 = nullptr;
+    m_scratch2 = nullptr;
+    return host_result;
+  }
   template <class BinaryOp, class UnaryOp>
   T grid_reduce_to_host(vector3<int> first, vector3<int> last, T init, BinaryOp binop, UnaryOp unop) {
     auto const n = (last - first).volume();
@@ -461,6 +547,13 @@ class reducer<T, cuda_execution> {
       ForwardIt first, ForwardIt last,
       T init, BinaryOp binop, UnaryOp unop) {
     return this->reduce_to_host(last - first, first, init, binop, unop);
+  }
+  template <class ForwardIt, class BinaryOp, class UnaryOp>
+  [[nodiscard]]
+  T simd_transform_reduce(
+      ForwardIt first, ForwardIt last,
+      T init, BinaryOp binop, UnaryOp unop) {
+    return this->simd_reduce_to_host(last - first, first, init, binop, unop);
   }
   template <class BinaryOp, class UnaryOp>
   [[nodiscard]]
@@ -856,13 +949,13 @@ class fixed_point_double_sum {
  public:
   using values_type = dynamic_array<double, Allocator, ExecutionPolicy>;
  private:
-  mpi::comm m_comm;
+  mpicpp::comm m_comm;
   values_type m_values;
   reducer<int, ExecutionPolicy> m_exponent_reducer;
   reducer<int128, ExecutionPolicy> m_int128_reducer;
  public:
   fixed_point_double_sum() = default;
-  explicit fixed_point_double_sum(mpi::comm&& comm_arg)
+  explicit fixed_point_double_sum(mpicpp::comm&& comm_arg)
     :m_comm(std::move(comm_arg))
   {}
   fixed_point_double_sum(fixed_point_double_sum&&) = default;
@@ -889,6 +982,49 @@ extern template class fixed_point_double_sum<hip_device_allocator<double>, hip_e
 template <class T, class Allocator, class ExecutionPolicy>
 class associative_sum;
 
+namespace details {
+
+template <class Iterator, class SizeType, class UnaryOp>
+class associative_sum_iterator_functor {
+  Iterator first;
+  double* values;
+  UnaryOp unary_op;
+ public:
+  associative_sum_iterator_functor(
+      Iterator first_arg,
+      double* values_arg,
+      UnaryOp unary_op_arg)
+    :first(first_arg)
+    ,values(values_arg)
+    ,unary_op(unary_op_arg)
+  {}
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE void operator()(SizeType i) const {
+    values[i] = unary_op(first[i]);
+  }
+};
+
+template <class UnaryOp>
+class associative_sum_subgrid_functor {
+  subgrid3 grid;
+  double* values;
+  UnaryOp unary_op;
+ public:
+  associative_sum_subgrid_functor(
+      subgrid3 grid_arg,
+      double* values_arg,
+      UnaryOp unary_op_arg)
+    :grid(grid_arg)
+    ,values(values_arg)
+    ,unary_op(unary_op_arg)
+  {}
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE void operator()(vector3<int> const& grid_point) const {
+    int const index = grid.index(grid_point);
+    values[index] = unary_op(grid_point);
+  }
+};
+
+}
+
 template <
   class Allocator,
   class ExecutionPolicy>
@@ -896,7 +1032,7 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
   details::fixed_point_double_sum<Allocator, ExecutionPolicy> m_fixed_point;
  public:
   associative_sum() = default;
-  explicit associative_sum(mpi::comm&& comm_arg)
+  explicit associative_sum(mpicpp::comm&& comm_arg)
     :m_fixed_point(std::move(comm_arg))
   {}
   associative_sum(associative_sum&&) = default;
@@ -922,11 +1058,9 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
     auto const values = m_fixed_point.values().begin();
     using size_type = std::remove_const_t<decltype(n)>;
     for_each(policy,
-        counting_iterator<size_type>(0),
-        counting_iterator<size_type>(n),
-    [=] P3A_HOST P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
-      values[i] = unary_op(first[i]);
-    });
+    counting_iterator<size_type>(0),
+    counting_iterator<size_type>(n),
+    details::associative_sum_iterator_functor<Iterator, size_type, UnaryOp>(first, values, unary_op));
     return m_fixed_point.compute();
   }
   template <class UnaryOp>
@@ -938,11 +1072,7 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
     m_fixed_point.values().resize(grid.size());
     auto const policy = m_fixed_point.values().get_execution_policy();
     auto const values = m_fixed_point.values().begin();
-    for_each(policy, grid,
-    [=] P3A_HOST P3A_DEVICE (vector3<int> const& grid_point) P3A_ALWAYS_INLINE {
-      int const index = grid.index(grid_point);
-      values[index] = unary_op(grid_point);
-    });
+    for_each(policy, grid, details::associative_sum_subgrid_functor<UnaryOp>(grid, values, unary_op));
     return m_fixed_point.compute();
   }
 };

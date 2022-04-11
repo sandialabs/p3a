@@ -34,9 +34,29 @@ for_each(
     counting_iterator<Integral> last,
     UnaryFunction f)
 {
-  Kokkos::parallel_for("p3a_serial",
-      Kokkos::RangePolicy<Kokkos::Serial, Kokkos::IndexType<Integral>>(*first, *last),
-      f);
+  for (Integral i = *first; i < *last; ++i) {
+    f(i);
+  }
+}
+
+template <class T, class Integral, class UnaryFunction>
+P3A_NEVER_INLINE
+std::enable_if_t<std::is_integral_v<Integral>>
+simd_for_each(
+    serial_execution,
+    counting_iterator<Integral> first,
+    counting_iterator<Integral> last,
+    UnaryFunction f)
+{
+  using mask_type = host_simd_mask<T>;
+  auto constexpr width = Integral(mask_type::size());
+  auto const quotient = (*last - *first) / width;
+  for (Integral qi = 0; qi < quotient + 1; ++qi) {
+    auto const i = *first + qi * width;
+    auto const lanes = minimum(width, *last - i);
+    auto const mask = mask_type::first_n(lanes);
+    f(i, mask);
+  }
 }
 
 template <class ForwardIt, class UnaryFunction>
@@ -47,14 +67,28 @@ void for_each(
     ForwardIt last,
     UnaryFunction f)
 {
+  for (; first != last; ++first) {
+    f(*first);
+  }
+}
+
+template <class T, class ForwardIt, class UnaryFunction>
+P3A_NEVER_INLINE
+void
+simd_for_each(
+    serial_execution policy,
+    ForwardIt first,
+    ForwardIt last,
+    UnaryFunction f)
+{
   auto const n = last - first;
-  using integral_type = std::remove_const_t<decltype(n)>;
-  for_each(policy,
-      counting_iterator<integral_type>(0),
-      counting_iterator<integral_type>(n),
-      [=] (integral_type i) P3A_ALWAYS_INLINE {
-        f(first[i]);
-      });
+  using Integral = std::remove_const_t<decltype(n)>;
+  simd_for_each<T>(policy,
+      counting_iterator<Integral>(0),
+      counting_iterator<Integral>(n),
+  [&] (Integral const i) P3A_ALWAYS_INLINE {
+    f(first[i]);
+  });
 }
 
 #ifdef __CUDACC__
@@ -198,6 +232,23 @@ P3A_ALWAYS_INLINE constexpr void for_each(
   }
 }
 
+template <class Functor, class Integral>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+void for_each(
+    local_execution,
+    counting_iterator3<Integral> const& first,
+    counting_iterator3<Integral> const& last,
+    Functor const& functor)
+{
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
+        functor(vector3<Integral>(i, j, k));
+      }
+    }
+  }
+}
+
 template <class Functor>
 P3A_ALWAYS_INLINE constexpr void for_each(
     serial_local_execution policy,
@@ -213,6 +264,19 @@ P3A_ALWAYS_INLINE constexpr void for_each(
 template <class Functor>
 P3A_ALWAYS_INLINE constexpr void for_each(
     serial_local_execution policy,
+    grid3 const& grid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
+}
+
+template <class Functor>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+void for_each(
+    local_execution policy,
     grid3 const& grid,
     Functor const& functor)
 {
@@ -275,24 +339,18 @@ P3A_NEVER_INLINE void simd_for_each(
     Functor functor)
 {
   using mask_type = host_simd_mask<T>;
-  Integral constexpr width = Integral(mask_type::size());
-  vector3<Integral> const extents = last.vector - first.vector;
-  Integral const quotient = extents.x() / width;
-  Integral const remainder = extents.x() % width;
-  mask_type const all_mask(true);
-  mask_type const remainder_mask = mask_type::first_n(remainder);
+  auto constexpr width = Integral(mask_type::size());
+  auto const quotient = (last.vector.x() - first.vector.x()) / width;
+  // This doesn't use Kokkos MDRangePolicy because doing so slows
+  // down a user application by 10%
   for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
     for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = 0; i < quotient; ++i) {
-        functor(
-            vector3<Integral>(
-              first.vector.x() + i * width, j, k),
-            all_mask);
+      for (Integral qi = 0; qi < quotient + 1; ++qi) {
+        auto const i = first.vector.x() + qi * width;
+        auto const lanes = minimum(width, last.vector.x() - i);
+        auto const mask = mask_type::first_n(lanes);
+        functor(vector3<Integral>(i, j, k), mask);
       }
-      functor(
-          vector3<Integral>(
-            first.vector.x() + quotient * width, j, k),
-          remainder_mask);
     }
   }
 }

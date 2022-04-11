@@ -51,37 +51,44 @@ template <
 double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
 {
   int constexpr minimum_exponent = -1075;
+  int const value_count = int(m_values.size());
+  auto const values = m_values.cbegin();
+  using simd_abi_type = typename ExecutionPolicy::simd_abi_type;
   int const local_max_exponent =
-    m_exponent_reducer.transform_reduce(
-        m_values.cbegin(), m_values.cend(),
+    m_exponent_reducer.simd_transform_reduce(
+        counting_iterator<int>(0),
+        counting_iterator<int>(value_count),
         minimum_exponent,
         maximizes<int>,
-  [=] P3A_HOST P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
-    std::int64_t significand;
-    int exponent;
+  [=] P3A_HOST P3A_DEVICE (int i, simd_mask<std::int32_t, simd_abi_type> const& mask) P3A_ALWAYS_INLINE {
+    auto const value = load(values, i, simd_mask<double, simd_abi_type>(mask));
+    simd<std::int64_t, simd_abi_type> significand;
+    simd<std::int32_t, simd_abi_type> exponent;
     decompose_double(value, significand, exponent);
     return exponent;
   });
   int global_max_exponent = local_max_exponent;
   m_comm.iallreduce(
-      &global_max_exponent, 1, mpi::op::max());
+      &global_max_exponent, 1, mpicpp::op::max());
   int128 const local_sum =
-    m_int128_reducer.transform_reduce(
-        m_values.cbegin(), m_values.cend(),
+    m_int128_reducer.simd_transform_reduce(
+        counting_iterator<int>(0),
+        counting_iterator<int>(value_count),
         int128(0),
         adds<int128>,
-  [=] P3A_HOST P3A_DEVICE (double const& value) P3A_ALWAYS_INLINE {
-    std::int64_t significand_64 = decompose_double(value, global_max_exponent);
-    return int128(significand_64);
+  [=] P3A_HOST P3A_DEVICE (int i, simd_mask<int128, simd_abi_type> const& mask) P3A_ALWAYS_INLINE {
+    auto const value = load(values, i, simd_mask<double, simd_abi_type>(mask));
+    auto significand_64 = decompose_double(value, global_max_exponent);
+    return significand_64;
   });
   int128 global_sum = local_sum;
   auto const int128_mpi_sum_op = 
-    mpi::op::create(p3a_mpi_int128_sum);
+    mpicpp::op::create(p3a_mpi_int128_sum);
   m_comm.iallreduce(
       MPI_IN_PLACE,
       &global_sum,
       sizeof(int128),
-      mpi::datatype::predefined_packed(),
+      mpicpp::datatype::predefined_packed(),
       int128_mpi_sum_op);
   return compose_double(global_sum, global_max_exponent);
 }

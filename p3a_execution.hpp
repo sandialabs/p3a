@@ -1,6 +1,7 @@
 #pragma once
 
 #include "p3a_macros.hpp"
+#include "p3a_simd.hpp"
 
 #include <exception>
 #include <string>
@@ -17,6 +18,7 @@ namespace p3a {
 class serial_execution {
  public:
   void synchronize() const {}
+  using simd_abi_type = simd_abi::host_native;
 };
 
 inline constexpr serial_execution serial = {};
@@ -24,9 +26,19 @@ inline constexpr serial_execution serial = {};
 class serial_local_execution {
  public:
   P3A_ALWAYS_INLINE constexpr void synchronize() const {}
+  using simd_abi_type = simd_abi::scalar;
 };
 
 inline constexpr serial_local_execution serial_local = {};
+
+class local_execution {
+ public:
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  void synchronize() const {}
+  using simd_abi_type = simd_abi::scalar;
+};
+
+inline constexpr local_execution local = {};
 
 #ifdef __CUDACC__
 
@@ -48,6 +60,7 @@ class cuda_execution {
  cudaStream_t stream{nullptr};
  public:
   void synchronize() const;
+  using simd_abi_type = simd_abi::scalar;
 };
 
 inline constexpr cuda_execution cuda = {};
@@ -57,6 +70,7 @@ class cuda_local_execution {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr void synchronize() const
   {
   }
+  using simd_abi_type = simd_abi::scalar;
 };
 
 inline constexpr cuda_local_execution cuda_local = {};
@@ -80,9 +94,10 @@ void handle_hip_error(hipError_t error);
 }
 
 class hip_execution {
- hipStream_t stream{nullptr};
+  hipStream_t stream{nullptr};
  public:
   void synchronize() const;
+  using simd_abi_type = simd_abi::scalar;
 };
 
 inline constexpr hip_execution hip = {};
@@ -92,6 +107,7 @@ class hip_local_execution {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr void synchronize() const
   {
   }
+  using simd_abi_type = simd_abi::scalar;
 };
 
 inline constexpr hip_local_execution hip_local = {};

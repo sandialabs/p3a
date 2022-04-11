@@ -249,10 +249,10 @@ void decompose_singular_values(
 template <class T>
 P3A_HOST P3A_DEVICE
 void decompose_singular_values(
-    matrix3x3<adimensional_quantity<T>> const& A,
-    matrix3x3<adimensional_quantity<T>>& U,
-    diagonal3x3<adimensional_quantity<T>>& S,
-    matrix3x3<adimensional_quantity<T>>& V)
+    matrix3x3<unitless<T>> const& A,
+    matrix3x3<unitless<T>>& U,
+    diagonal3x3<unitless<T>>& S,
+    matrix3x3<unitless<T>>& V)
 {
   static_matrix<T, 3, 3> A2;
   A2(0, 0) = A.xx().value();

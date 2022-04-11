@@ -4,6 +4,7 @@
 #include "p3a_scaled_identity3x3.hpp"
 #include "p3a_diagonal3x3.hpp"
 #include "p3a_vector3.hpp"
+#include "p3a_simd_common.hpp"
 
 namespace p3a {
 
@@ -384,22 +385,37 @@ inline int constexpr symmetric3x3_component_count = 6;
 
 template <class T>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-symmetric3x3<T> load_symmetric3x3(T const* ptr, int stride, int offset)
+auto load_symmetric3x3(T const* ptr, int stride, int offset)
 {
-  return symmetric3x3<T>(
-      load(ptr, 0 * stride + offset),
-      load(ptr, 1 * stride + offset),
-      load(ptr, 2 * stride + offset),
-      load(ptr, 3 * stride + offset),
-      load(ptr, 4 * stride + offset),
-      load(ptr, 5 * stride + offset));
+  auto const a = load(ptr, 0 * stride + offset);
+  auto const b = load(ptr, 1 * stride + offset);
+  auto const c = load(ptr, 2 * stride + offset);
+  auto const d = load(ptr, 3 * stride + offset);
+  auto const e = load(ptr, 4 * stride + offset);
+  auto const f = load(ptr, 5 * stride + offset);
+  using loaded_scalar_type = std::remove_const_t<decltype(a)>;
+  return symmetric3x3<loaded_scalar_type>(a, b, c, d, e, f);
 }
 
-template <class T>
+template <class T, class U, class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+auto load_symmetric3x3(T const* ptr, int stride, int offset, simd_mask<U, Abi> const& mask)
+{
+  auto const a = load(ptr, 0 * stride + offset, mask);
+  auto const b = load(ptr, 1 * stride + offset, mask);
+  auto const c = load(ptr, 2 * stride + offset, mask);
+  auto const d = load(ptr, 3 * stride + offset, mask);
+  auto const e = load(ptr, 4 * stride + offset, mask);
+  auto const f = load(ptr, 5 * stride + offset, mask);
+  using loaded_scalar_type = std::remove_const_t<decltype(a)>;
+  return symmetric3x3<loaded_scalar_type>(a, b, c, d, e, f);
+}
+
+template <class T, class U>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
     symmetric3x3<T> const& value,
-    T* ptr, int stride, int offset)
+    U* ptr, int stride, int offset)
 {
   store(value.xx(), ptr, 0 * stride + offset);
   store(value.xy(), ptr, 1 * stride + offset);
@@ -407,6 +423,20 @@ void store(
   store(value.yy(), ptr, 3 * stride + offset);
   store(value.yz(), ptr, 4 * stride + offset);
   store(value.zz(), ptr, 5 * stride + offset);
+}
+
+template <class T, class U, class V, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
+    symmetric3x3<T> const& value,
+    U* ptr, int stride, int offset, simd_mask<V, Abi> const& mask)
+{
+  store(value.xx(), ptr, 0 * stride + offset, mask);
+  store(value.xy(), ptr, 1 * stride + offset, mask);
+  store(value.xz(), ptr, 2 * stride + offset, mask);
+  store(value.yy(), ptr, 3 * stride + offset, mask);
+  store(value.yz(), ptr, 4 * stride + offset, mask);
+  store(value.zz(), ptr, 5 * stride + offset, mask);
 }
 
 template <class T, class Mask>

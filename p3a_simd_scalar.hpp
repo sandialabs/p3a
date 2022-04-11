@@ -39,6 +39,9 @@ class simd_mask<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask operator!() const {
     return !m_value;
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline bool operator==(simd_mask const& other) const {
+    return m_value == other.m_value;
+  }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline
   simd_mask first_n(int n)
   {
@@ -74,8 +77,12 @@ class simd<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE inline simd& operator=(simd const&) = default;
   P3A_ALWAYS_INLINE inline simd& operator=(simd&&) = default;
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static constexpr int size() { return 1; }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd(T value)
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd(value_type value)
     :m_value(value)
+  {}
+  template <class U>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline explicit simd(simd<U, abi_type> const& other)
+    :m_value(value_type(other.get()))
   {}
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator*(simd const& other) const {
     return simd(m_value * other.m_value);
@@ -104,24 +111,30 @@ class simd<T, simd_abi::scalar> {
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator<<(simd<std::uint32_t, abi_type> const& rhs) const {
     return simd(m_value << rhs.get());
   }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator&(simd const& other) const {
+    return m_value & other.get();
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd operator|(simd const& other) const {
+    return m_value | other.get();
+  }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr T get() const { return m_value; }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator<(simd const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value < other.m_value);
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline mask_type operator<(simd const& other) const {
+    return mask_type(m_value < other.m_value);
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator>(simd const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value > other.m_value);
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline mask_type operator>(simd const& other) const {
+    return mask_type(m_value > other.m_value);
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator<=(simd const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value <= other.m_value);
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline mask_type operator<=(simd const& other) const {
+    return mask_type(m_value <= other.m_value);
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator>=(simd const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value >= other.m_value);
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline mask_type operator>=(simd const& other) const {
+    return mask_type(m_value >= other.m_value);
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator==(simd const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value == other.m_value);
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline mask_type operator==(simd const& other) const {
+    return mask_type(m_value == other.m_value);
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline simd_mask<T, simd_abi::scalar> operator!=(simd const& other) const {
-    return simd_mask<T, simd_abi::scalar>(m_value != other.m_value);
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline mask_type operator!=(simd const& other) const {
+    return mask_type(m_value != other.m_value);
   }
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void copy_from(T const* ptr, element_aligned_tag) {
     m_value = *ptr;
@@ -244,6 +257,13 @@ T reduce(
     BinaryOp)
 {
   return x.mask().get() ? x.value().get() : identity_element;
+}
+
+template <class To, class From>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+To bit_cast(simd<From, simd_abi::scalar> const& src)
+{
+  return To(p3a::bit_cast<typename To::value_type>(src.get()));
 }
 
 }

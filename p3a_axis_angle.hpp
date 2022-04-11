@@ -92,7 +92,7 @@ class axis_angle {
   [[nodiscard]] P3A_HOST P3A_DEVICE inline
   matrix3x3<T> tensor() const
   {
-    auto const halfnorm = T(0.5) * length(m_vector);
+    auto const halfnorm = T(0.5) * magnitude(m_vector);
     auto const temp = T(0.5) * sin_x_over_x(halfnorm);
     auto const qv = temp * m_vector;
     auto const qs = cosine(halfnorm);

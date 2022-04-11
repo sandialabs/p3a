@@ -23,10 +23,42 @@ class conjugate_gradient {
   using b_filler_type = std::function<
     void(array_type&)>;
   conjugate_gradient() = default;
-  conjugate_gradient(mpi::comm&& comm_arg)
+  conjugate_gradient(mpicpp::comm&& comm_arg)
     :m_adder(std::move(comm_arg))
   {}
   P3A_NEVER_INLINE int solve(
+      A_action_type const& A_action,
+      b_filler_type const& b_filler,
+      array_type& x,
+      T const& relative_tolerance);
+};
+
+template <
+  class T,
+  class Allocator = allocator<T>,
+  class ExecutionPolicy = serial_execution>
+class preconditioned_conjugate_gradient {
+ public:
+  using array_type = dynamic_array<T, Allocator, ExecutionPolicy>;
+ private:
+  array_type m_r;
+  array_type m_z;
+  array_type m_p;
+  array_type m_scratch;
+  associative_sum<T, Allocator, ExecutionPolicy> m_adder;
+ public:
+  using M_inv_action_type = std::function<
+    void(array_type const&, array_type&)>;
+  using A_action_type = std::function<
+    void(array_type const&, array_type&)>;
+  using b_filler_type = std::function<
+    void(array_type&)>;
+  preconditioned_conjugate_gradient() = default;
+  preconditioned_conjugate_gradient(mpicpp::comm&& comm_arg)
+    :m_adder(std::move(comm_arg))
+  {}
+  P3A_NEVER_INLINE int solve(
+      M_inv_action_type const& M_inv_action,
       A_action_type const& A_action,
       b_filler_type const& b_filler,
       array_type& x,
@@ -117,6 +149,57 @@ P3A_NEVER_INLINE int conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
     T const beta = r_dot_r_new / r_dot_r_old;
     axpy(beta, p, r, p); // p = r + beta * p
     r_dot_r_old = r_dot_r_new;
+  }
+}
+
+template <
+  class T,
+  class Allocator,
+  class ExecutionPolicy>
+P3A_NEVER_INLINE
+int preconditioned_conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
+      M_inv_action_type const& M_inv_action,
+      A_action_type const& A_action,
+      b_filler_type const& b_filler,
+      array_type& x,
+      T const& relative_tolerance)
+{
+  this->m_r.resize(x.size());
+  this->m_z.resize(x.size());
+  this->m_p.resize(x.size());
+  this->m_scratch.resize(x.size());
+  array_type& r = this->m_r;
+  array_type& z = this->m_z;
+  array_type& p = this->m_p;
+  array_type& b = this->m_scratch;
+  array_type& Ap = this->m_scratch;
+  array_type& Ax = this->m_r;
+  b_filler(b);
+  T const b_dot_b = dot_product(m_adder, b, b);
+  T const b_magnitude = square_root(b_dot_b);
+  T const absolute_tolerance = b_magnitude * relative_tolerance;
+  A_action(x, Ax); // Ax = A * x
+  axpy(T(-1), Ax, b, r); // r = A * x - b
+  T residual_magnitude = square_root(dot_product(m_adder, r, r));
+  if (residual_magnitude <= absolute_tolerance) return 0;
+  M_inv_action(r, z);  // z = M^-1 * r
+  T r_dot_z_old = dot_product(m_adder, r, z); // r^T * z
+  copy(device, z.cbegin(), z.cend(), p.begin()); // p = z
+  for (int k = 1; true; ++k) {
+    A_action(p, Ap);
+    T const pAp = dot_product(m_adder, p, Ap);
+    T const alpha = r_dot_z_old / pAp; // alpha = (r^T * z) / (p^T * A * p)
+    axpy(alpha, p, x, x); // x = x + alpha * p
+    axpy(-alpha, Ap, r, r); // r = r - alpha * (A * p)
+    residual_magnitude = square_root(dot_product(m_adder, r, r));
+    if (residual_magnitude <= absolute_tolerance) {
+      return k;
+    }
+    M_inv_action(r, z); // z = M^-1 r
+    T const r_dot_z_new = dot_product(m_adder, r, z);
+    T const beta = r_dot_z_new / r_dot_z_old;
+    axpy(beta, p, z, p); // p = z + beta * p;
+    r_dot_z_old = r_dot_z_new;
   }
 }
 
