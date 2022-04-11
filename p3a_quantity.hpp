@@ -109,14 +109,14 @@ class quantity {
       other_si_value += OtherValueType(OtherOrigin::num)
         / OtherValueType(OtherOrigin::den);
     }
-    value_type si_value = value_type(other_si_value);
+    value_type my_new_si_value = value_type(other_si_value);
     if constexpr (!std::is_same_v<origin, void>) {
       static_assert(!std::is_same_v<OtherOrigin, void>,
           "not allowed to convert from a relative quantity to an absolute one");
-      si_value -= value_type(origin::num)
+      my_new_si_value -= value_type(origin::num)
         / value_type(origin::den);
     }
-    m_value = si_value * value_type(unit_magnitude::den)
+    m_value = my_new_si_value * value_type(unit_magnitude::den)
       / value_type(unit_magnitude::num);
   }
   // converting assignment operator
