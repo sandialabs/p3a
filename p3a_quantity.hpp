@@ -121,7 +121,7 @@ class quantity {
   }
   // converting assignment operator
   template <class OtherUnit, class OtherValueType, class OtherOrigin>
-  P3A_ALWAYS_INLINE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   quantity& operator=(quantity<OtherUnit, OtherValueType, OtherOrigin> const& other) {
     // attempt converting constructor then regular assign
     return operator=(quantity<unit, value_type, origin>(other));
