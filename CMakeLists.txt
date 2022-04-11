@@ -11,7 +11,9 @@ option(p3a_ENABLE_AVX512 "Enable AVX-512" OFF)
 set(p3a_ARCHITECTURES "" CACHE STRING "GPU architectures (either CUDA_ARCHITECTURES or HIP_ARCHITECTURES)")
 
 find_package(mpicpp REQUIRED)
-find_package(Kokkos REQUIRED COMPONENTS separable_compilation)
+#find_package(Kokkos REQUIRED COMPONENTS separable_compilation)
+find_package(Kokkos 3.4 REQUIRED CONFIG)
+message(STATUS "Found Kokkos: ${Kokkos_DIR} (version \"${Kokkos_VERSION}\")")
 
 set(p3a_ENABLE_CUDA "${Kokkos_ENABLE_CUDA}")
 set(p3a_ENABLE_HIP "${Kokkos_ENABLE_HIP}")
@@ -20,7 +22,12 @@ if (p3a_ENABLE_CUDA AND p3a_ENABLE_HIP)
   message(FATAL_ERROR "CUDA and HIP cannot be simultaneously enabled")
 endif()
 
+
+set(Kokkos_COMPILE_LANGUAGE CXX)
+
 set(p3a_LANGUAGE "${Kokkos_COMPILE_LANGUAGE}")
+
+message(STATUS "p3a_LANGUAGE= ${p3a_LANGUAGE}")
 
 enable_language(${p3a_LANGUAGE})
 
@@ -104,7 +111,7 @@ if (p3a_ENABLE_AVX512)
 endif()
 
 target_link_libraries(p3a PUBLIC mpicpp::mpicpp)
-target_link_libraries(p3a PUBLIC Kokkos::kokkoscore)
+target_link_libraries(p3a PUBLIC Kokkos::kokkos)
 
 install(
   TARGETS p3a
