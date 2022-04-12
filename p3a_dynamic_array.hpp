@@ -91,6 +91,14 @@ class dynamic_array {
     m_size = size_type(init.size());
     uninitialized_copy(m_execution_policy, init.begin(), init.end(), m_begin);
   }
+  template <class Iterator>
+  dynamic_array(Iterator first, Iterator last)
+  {
+    auto const range_size = size_type(last - first);
+    reserve(range_size);
+    m_size = range_size;
+    uninitialized_copy(m_execution_policy, first, last, m_begin);
+  }
  private:
   P3A_NEVER_INLINE void increase_capacity(size_type new_capacity)
   {
