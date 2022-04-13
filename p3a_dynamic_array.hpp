@@ -86,6 +86,7 @@ class dynamic_array {
     resize(size_in);
   }
   dynamic_array(std::initializer_list<T> init)
+    :dynamic_array()
   {
     reserve(size_type(init.size()));
     m_size = size_type(init.size());
@@ -93,6 +94,7 @@ class dynamic_array {
   }
   template <class Iterator>
   dynamic_array(Iterator first, Iterator last)
+    :dynamic_array()
   {
     auto const range_size = size_type(last - first);
     reserve(range_size);
