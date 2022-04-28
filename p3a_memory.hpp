@@ -450,7 +450,7 @@ __device__ P3A_ALWAYS_INLINE void move(
 #endif
 
 template <class BidirIt1, class BidirIt2>
-P3A_NEVER_INLINE inline
+P3A_NEVER_INLINE
 void move_backward(
     serial_execution,
     BidirIt1 first,
