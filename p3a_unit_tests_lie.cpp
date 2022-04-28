@@ -93,7 +93,7 @@ TEST(tensor, exp)
   auto const C          = V * D * transpose(V);
   auto const F          = exp_taylor(A);
   auto const error_pade = norm(B - C) / norm(C);
-  auto const tol        = 3 * eps;
+  auto const tol        = 20 * eps;
   ASSERT_LE(error_pade, tol);
   auto const error_taylor = norm(F - C) / norm(C);
   ASSERT_LE(error_taylor, tol);
@@ -122,6 +122,6 @@ TEST(tensor, log)
   auto const a       = log(A);
   auto const b       = log_gregory(A);
   auto const error_a = norm(b - a);
-  auto const tol     = 20 * eps;
+  auto const tol     = 40 * eps;
   ASSERT_LE(error_a, tol);
 }
