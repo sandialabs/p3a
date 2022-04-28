@@ -27,7 +27,7 @@ class allocator {
  public:
   using size_type = std::int64_t;
   template <class U> struct rebind { using other = p3a::allocator<U>; };
-  P3A_NEVER_INLINE static T* allocate(size_type n)
+  static T* allocate(size_type n)
   {
     auto const result = std::malloc(std::size_t(n) * sizeof(T));
     if ((result == nullptr) && (n != 0)) {
@@ -35,7 +35,7 @@ class allocator {
     }
     return static_cast<T*>(result);
   }
-  P3A_NEVER_INLINE static void deallocate(T* p, size_type)
+  static void deallocate(T* p, size_type)
   {
     std::free(p);
   }
