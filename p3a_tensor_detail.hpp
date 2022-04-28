@@ -10,10 +10,10 @@ norm_1(matrix3x3<T> const& A)
 {
   // 1-norm of matrix is equivalent to max column sum
   // https://en.wikipedia.org/wiki/Matrix_norm
-  auto const v0 = std::abs(A(0, 0) + A(1, 0) + A(2, 0));
-  auto const v1 = std::abs(A(0, 1) + A(1, 1) + A(2, 1));
-  auto const v2 = std::abs(A(0, 2) + A(1, 2) + A(2, 2));
-  return std::max(std::max(v0, v1), v2);
+  auto const v0 = absolute_value(A(0, 0) + A(1, 0) + A(2, 0));
+  auto const v1 = absolute_value(A(0, 1) + A(1, 1) + A(2, 1));
+  auto const v2 = absolute_value(A(0, 2) + A(1, 2) + A(2, 2));
+  return maximum(maximum(v0, v1), v2);
 }
 
 // Scaling parameter theta for scaling and squaring exponential.
