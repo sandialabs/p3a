@@ -30,6 +30,21 @@ class vector3 {
     :vector3(T(other.x()), T(other.y()), T(other.z()))
   {
   }
+  template <
+    class U,
+    class V,
+    class W,
+    typename std::enable_if<
+      std::is_constructible_v<T, U const&> &&
+      std::is_constructible_v<T, V const&> &&
+      std::is_constructible_v<T, W const&>,
+      bool>::type = false>
+  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE explicit constexpr
+  vector3(U const& a, V const& b, W const& c)
+    :m_x(a)
+    ,m_y(b)
+    ,m_z(c)
+  {}
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
   reference x() { return m_x; }
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
@@ -249,20 +264,20 @@ auto scalar_triple_product(
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-auto length_squared(vector3<T> const& a) {
+auto magnitude_squared(vector3<T> const& a) {
   return dot_product(a, a);
 }
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-T length(vector3<T> const& a) {
-  return square_root(length_squared(a));
+T magnitude(vector3<T> const& a) {
+  return square_root(magnitude_squared(a));
 }
 
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto normalize(vector3<T> const& a) {
-  return a / length(a);
+  return a / magnitude(a);
 }
 
 template <class T>
@@ -276,15 +291,28 @@ vector3<T> load_vector3(
       load(ptr, 2 * stride + offset));
 }
 
-template <class T, class Abi>
+template <class T, class U, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-vector3<simd<T, Abi>> load_vector3(
-    T const* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
+auto load_vector3(
+    T const* ptr, int stride, int offset, simd_mask<U, Abi> const& mask)
 {
-  return vector3<simd<T, Abi>>(
-      simd<T, Abi>::masked_load(ptr + 0 * stride + offset, mask),
-      simd<T, Abi>::masked_load(ptr + 1 * stride + offset, mask),
-      simd<T, Abi>::masked_load(ptr + 2 * stride + offset, mask));
+  auto const a = load(ptr + 0 * stride, offset, mask);
+  auto const b = load(ptr + 1 * stride, offset, mask);
+  auto const c = load(ptr + 2 * stride, offset, mask);
+  using component_type = std::remove_const_t<decltype(a)>;
+  return vector3<component_type>(a, b, c);
+}
+
+template <class T, class I, class U, class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+auto load_vector3(
+    T const* ptr, int stride, simd<I, Abi> const& offset, simd_mask<U, Abi> const& mask)
+{
+  auto const a = load(ptr + 0 * stride, offset, mask);
+  auto const b = load(ptr + 1 * stride, offset, mask);
+  auto const c = load(ptr + 2 * stride, offset, mask);
+  using component_type = std::remove_const_t<decltype(a)>;
+  return vector3<component_type>(a, b, c);
 }
 
 template <class T>
@@ -293,20 +321,37 @@ void store(
     vector3<T> const& value,
     T* ptr, int stride, int offset)
 {
-  store(value.x(), ptr, 0 * stride + offset);
-  store(value.y(), ptr, 1 * stride + offset);
-  store(value.z(), ptr, 2 * stride + offset);
+  store(value.x(), ptr + 0 * stride, offset);
+  store(value.y(), ptr + 1 * stride, offset);
+  store(value.z(), ptr + 2 * stride, offset);
 }
 
-template <class T, class Abi>
+template <class T, class U, class V, class Abi>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void store(
-    vector3<simd<T, Abi>> const& value,
-    T* ptr, int stride, int offset, simd_mask<T, Abi> const& mask)
+    vector3<T> const& value,
+    U* ptr,
+    int stride,
+    int offset,
+    simd_mask<V, Abi> const& mask)
 {
-  store(value.x(), ptr, 0 * stride + offset, mask);
-  store(value.y(), ptr, 1 * stride + offset, mask);
-  store(value.z(), ptr, 2 * stride + offset, mask);
+  store(value.x(), ptr + 0 * stride, offset, mask);
+  store(value.y(), ptr + 1 * stride, offset, mask);
+  store(value.z(), ptr + 2 * stride, offset, mask);
+}
+
+template <class T, class U, class V, class Integral, class Abi>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void store(
+    vector3<T> const& value,
+    U* ptr,
+    int stride,
+    simd<Integral, Abi> const& offset,
+    simd_mask<V, Abi> const& mask)
+{
+  store(value.x(), ptr + 0 * stride, offset, mask);
+  store(value.y(), ptr + 1 * stride, offset, mask);
+  store(value.z(), ptr + 2 * stride, offset, mask);
 }
 
 template <class T, class Mask>

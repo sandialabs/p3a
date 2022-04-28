@@ -76,6 +76,7 @@ set(P3A_HEADERS
   p3a_eigen.hpp
   p3a_svd.hpp
   p3a_lie.hpp
+  p3a_exp.hpp
   p3a_opts.hpp
   p3a_mandel6x1.hpp
   p3a_mandel6x6.hpp
@@ -86,6 +87,7 @@ set(P3A_HEADERS
   p3a_search.hpp
   p3a_cg.hpp
   p3a_simd_view.hpp
+  p3a_iostream.hpp
   )
 
 set(P3A_SOURCES
@@ -125,6 +127,7 @@ install(
 if (BUILD_TESTING)
   set(unit_test_sources
     p3a_unit_tests_main.cpp
+    p3a_unit_tests_quantity.cpp
     p3a_unit_tests_fixed_point.cpp
     p3a_unit_tests_mandel.cpp
     p3a_unit_tests_polar.cpp

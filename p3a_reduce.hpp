@@ -2,7 +2,6 @@
 
 #include "mpicpp.hpp"
 
-#include "p3a_quantity.hpp"
 #include "p3a_execution.hpp"
 #include "p3a_grid3.hpp"
 #include "p3a_dynamic_array.hpp"
@@ -24,7 +23,7 @@ class reducer<T, serial_execution> {
   reducer(reducer const&) = delete;
   reducer& operator=(reducer const&) = delete;
   template <class Iterator, class BinaryOp, class UnaryOp>
-  [[nodiscard]] P3A_NEVER_INLINE
+  [[nodiscard]]
   T transform_reduce(
       Iterator first,
       Iterator last,
@@ -38,7 +37,7 @@ class reducer<T, serial_execution> {
     return init;
   }
   template <class Iterator, class BinaryOp, class UnaryOp>
-  [[nodiscard]] P3A_NEVER_INLINE
+  [[nodiscard]]
   T simd_transform_reduce(
       Iterator first,
       Iterator last,
@@ -57,7 +56,7 @@ class reducer<T, serial_execution> {
     return init;
   }
   template <class BinaryOp, class UnaryOp>
-  [[nodiscard]] P3A_NEVER_INLINE
+  [[nodiscard]]
   T transform_reduce(
       subgrid3 grid,
       T init,
@@ -71,7 +70,7 @@ class reducer<T, serial_execution> {
     return init;
   }
   template <class BinaryOp, class UnaryOp>
-  [[nodiscard]] P3A_NEVER_INLINE
+  [[nodiscard]]
   T simd_transform_reduce(
       subgrid3 grid,
       T init,
@@ -1047,7 +1046,7 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
 #endif
  public:
   template <class Iterator, class UnaryOp>
-  [[nodiscard]] P3A_NEVER_INLINE
+  [[nodiscard]]
   double transform_reduce(
       Iterator first,
       Iterator last,
@@ -1065,7 +1064,7 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
     return m_fixed_point.compute();
   }
   template <class UnaryOp>
-  [[nodiscard]] P3A_NEVER_INLINE
+  [[nodiscard]]
   double transform_reduce(
       subgrid3 grid,
       UnaryOp unary_op)

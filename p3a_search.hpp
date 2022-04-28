@@ -63,7 +63,7 @@ ForwardIt upper_bound(
     ForwardIt last,
     T const& value)
 {
-  return upper_bound(first, last, value, p3a::less<T>());
+  return p3a::upper_bound(first, last, value, p3a::less<T>());
 }
 
 template <class ForwardIt, class T>
@@ -73,7 +73,7 @@ ForwardIt lower_bound(
     ForwardIt last,
     T const& value)
 {
-  return lower_bound(first, last, value, p3a::less<T>());
+  return p3a::lower_bound(first, last, value, p3a::less<T>());
 }
 
 }

@@ -26,12 +26,12 @@ class dynamic_array {
   allocator_type m_allocator;
   execution_policy m_execution_policy;
  public:
-  P3A_NEVER_INLINE dynamic_array()
+  dynamic_array()
    :m_begin(nullptr)
    ,m_size(0)
    ,m_capacity(0)
   {}
-  P3A_NEVER_INLINE ~dynamic_array()
+  ~dynamic_array()
   {
     if (m_begin != nullptr) {
       destroy(m_execution_policy, m_begin, m_begin + m_size);
@@ -41,7 +41,7 @@ class dynamic_array {
       m_capacity = 0;
     }
   }
-  P3A_NEVER_INLINE dynamic_array(dynamic_array&& other)
+  dynamic_array(dynamic_array&& other)
     :m_begin(other.m_begin)
     ,m_size(other.m_size)
     ,m_capacity(other.m_capacity)
@@ -51,7 +51,7 @@ class dynamic_array {
     other.m_size = 0;
     other.m_capacity = 0;
   }
-  P3A_NEVER_INLINE dynamic_array& operator=(dynamic_array&& other)
+  dynamic_array& operator=(dynamic_array&& other)
   {
     m_begin = other.m_begin;
     m_size = other.m_size;
@@ -86,13 +86,23 @@ class dynamic_array {
     resize(size_in);
   }
   dynamic_array(std::initializer_list<T> init)
+    :dynamic_array()
   {
     reserve(size_type(init.size()));
     m_size = size_type(init.size());
     uninitialized_copy(m_execution_policy, init.begin(), init.end(), m_begin);
   }
+  template <class Iterator>
+  dynamic_array(Iterator first, Iterator last)
+    :dynamic_array()
+  {
+    auto const range_size = size_type(last - first);
+    reserve(range_size);
+    m_size = range_size;
+    uninitialized_copy(m_execution_policy, first, last, m_begin);
+  }
  private:
-  P3A_NEVER_INLINE void increase_capacity(size_type new_capacity)
+  void increase_capacity(size_type new_capacity)
   {
     T* const new_allocation = m_allocator.allocate(new_capacity);
     uninitialized_move(m_execution_policy, m_begin, m_begin + m_size, new_allocation);
@@ -153,13 +163,13 @@ class dynamic_array {
         d_first + init_size);
   }
  public:
-  P3A_NEVER_INLINE void reserve(size_type const count)
+  void reserve(size_type const count)
   {
     if (count <= m_capacity) return;
     size_type const new_capacity = maximum(count, 2 * m_capacity);
     increase_capacity(new_capacity);
   }
-  P3A_NEVER_INLINE void resize(size_type const count)
+  void resize(size_type const count)
   {
     if (m_size == count) return;
     reserve(count);
@@ -168,7 +178,12 @@ class dynamic_array {
     uninitialized_default_construct(m_execution_policy, m_begin + common_size, m_begin + count);
     m_size = count;
   }
-  P3A_NEVER_INLINE void resize(size_type const count, value_type const& value)
+  void clear()
+  {
+    destroy(m_execution_policy, m_begin, m_begin + m_size);
+    m_size = 0;
+  }
+  void resize(size_type const count, value_type const& value)
   {
     if (m_size == count) return;
     reserve(count);

@@ -15,6 +15,11 @@ struct is_scalar<int> {
 };
 
 template <>
+struct is_scalar<unsigned int> {
+  inline static constexpr bool value = true;
+};
+
+template <>
 struct is_scalar<float> {
   inline static constexpr bool value = true;
 };
