@@ -69,6 +69,7 @@ set(P3A_HEADERS
   p3a_eigen.hpp
   p3a_svd.hpp
   p3a_lie.hpp
+  p3a_exp.hpp
   p3a_opts.hpp
   p3a_mandel6x1.hpp
   p3a_mandel6x6.hpp

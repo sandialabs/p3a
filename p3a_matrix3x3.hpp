@@ -223,6 +223,13 @@ auto operator*(matrix3x3<A> const& a, vector3<B> const& b)
 }
 
 template <class A, class B>
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+void operator*=(matrix3x3<A> const& a, vector3<B> const& b)
+{
+  a = a * b;
+}
+
+template <class A, class B>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 auto outer_product(vector3<A> const& a, vector3<B> const& b)
 {
@@ -231,6 +238,36 @@ auto outer_product(vector3<A> const& a, vector3<B> const& b)
       a.x() * b.x(), a.x() * b.y(), a.x() * b.z(),
       a.y() * b.x(), a.y() * b.y(), a.y() * b.z(),
       a.z() * b.x(), a.z() * b.y(), a.z() * b.z());
+}
+
+template <class A, class B>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto inner_product(matrix3x3<A> const& a, matrix3x3<B> const& b)
+{
+  return
+      a.xx() * b.xx() +
+      a.xy() * b.xy() +
+      a.xz() * b.xz() +
+      a.yx() * b.yx() +
+      a.yy() * b.yy() +
+      a.yz() * b.yz() +
+      a.zx() * b.zx() +
+      a.zy() * b.zy() +
+      a.zz() * b.zz();
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto norm_square(matrix3x3<T> const& a)
+{
+  return inner_product(a, a);
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+auto norm(matrix3x3<T> const& a)
+{
+  return std::sqrt(norm_square(a));
 }
 
 template <class T>
@@ -488,6 +525,13 @@ operator*(
   return b * a;
 }
 
+template <class A, class B>
+P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+void operator*=(matrix3x3<A>& a, B const& b)
+{
+  a = a * b;
+}
+
 template <class T>
 [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
 T trace(matrix3x3<T> const& a)
@@ -571,6 +615,116 @@ matrix3x3<T> operator-(scaled_identity3x3<T> const& a, matrix3x3<T> const& b)
       a.zx(),
       a.zy(),
       a.zz() - b.zz());
+}
+
+// Inverse by full pivot. Since this is 3x3, can afford it, and avoids
+// cancellation errors as much as possible. This is important for an
+// explicit dynamics code that will perform a huge number of these
+// calculations.
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+matrix3x3<T> inverse_full_pivot(matrix3x3<T> const& A)
+{
+  auto         S           = A;
+  auto         B           = matrix3x3<T>::identity();
+  unsigned int intact_rows = (1U << 3) - 1;
+  unsigned int intact_cols = intact_rows;
+  // Gauss-Jordan elimination with full pivoting
+  for (auto k = 0; k < 3; ++k) {
+    // Determine full pivot
+    auto pivot     = 0.0;
+    auto pivot_row = 3;
+    auto pivot_col = 3;
+    for (auto row = 0; row < 3; ++row) {
+      if (!(intact_rows & (1 << row))) continue;
+      for (auto col = 0; col < 3; ++col) {
+        if (!(intact_cols & (1 << col))) continue;
+        auto s = std::abs(S(row, col));
+        if (s > pivot) {
+          pivot_row = row;
+          pivot_col = col;
+          pivot     = s;
+        }
+      }
+    }
+    assert(pivot_row < 3);
+    assert(pivot_col < 3);
+    // Gauss-Jordan elimination
+    auto const t = S(pivot_row, pivot_col);
+    assert(t != 0.0);
+    for (auto j = 0; j < 3; ++j) {
+      S(pivot_row, j) /= t;
+      B(pivot_row, j) /= t;
+    }
+
+    for (auto i = 0; i < 3; ++i) {
+      if (i == pivot_row) continue;
+      auto const c = S(i, pivot_col);
+      for (auto j = 0; j < 3; ++j) {
+        S(i, j) -= c * S(pivot_row, j);
+        B(i, j) -= c * B(pivot_row, j);
+      }
+    }
+    // Eliminate current row and col from intact rows and cols
+    intact_rows &= ~(1 << pivot_row);
+    intact_cols &= ~(1 << pivot_col);
+  }
+  return transpose(S) * B;
+}
+
+// Solve by full pivot. Since this is 3x3, can afford it, and avoids
+// cancellation errors as much as possible. This is important for an
+// explicit dynamics code that will perform a huge number of these
+// calculations.
+template <class T>
+[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+vector3<T> solve_full_pivot(matrix3x3<T> const& A, vector3<T> const& b)
+{
+  auto         S           = A;
+  auto         B           = b;
+  unsigned int intact_rows = (1U << 3) - 1;
+  unsigned int intact_cols = intact_rows;
+  // Gauss-Jordan elimination with full pivoting
+  for (auto k = 0; k < 3; ++k) {
+    // Determine full pivot
+    auto pivot     = 0.0;
+    auto pivot_row = 3;
+    auto pivot_col = 3;
+    for (auto row = 0; row < 3; ++row) {
+      if (!(intact_rows & (1 << row))) continue;
+      for (auto col = 0; col < 3; ++col) {
+        if (!(intact_cols & (1 << col))) continue;
+        auto s = std::abs(S(row, col));
+        if (s > pivot) {
+          pivot_row = row;
+          pivot_col = col;
+          pivot     = s;
+        }
+      }
+    }
+    assert(pivot_row < 3);
+    assert(pivot_col < 3);
+    // Gauss-Jordan elimination
+    auto const t = S(pivot_row, pivot_col);
+    assert(t != 0.0);
+    for (auto j = 0; j < 3; ++j) {
+      S(pivot_row, j) /= t;
+    }
+    B(pivot_row) /= t;
+
+    for (auto i = 0; i < 3; ++i) {
+      if (i == pivot_row) continue;
+      auto const c = S(i, pivot_col);
+      for (auto j = 0; j < 3; ++j) {
+        S(i, j) -= c * S(pivot_row, j);
+      }
+      B(i) -= c * B(pivot_row);
+    }
+    // Eliminate current row and col from intact rows and cols
+    intact_rows &= ~(1 << pivot_row);
+    intact_cols &= ~(1 << pivot_col);
+  }
+  return transpose(S) * B;
 }
 
 }
