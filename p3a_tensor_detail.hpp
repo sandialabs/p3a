@@ -93,7 +93,6 @@ template <typename T>
 [[nodiscard]] P3A_HOST P3A_DEVICE inline auto
 scaling_squaring_theta(int const order)
 {
-  assert(order > 0 && order < 22);
   T const theta[] = {0.0e-0, 3.7e-8, 5.3e-4, 1.5e-2, 8.5e-2, 2.5e-1, 5.4e-1, 9.5e-1, 1.5e-0, 2.1e-0, 2.8e-0, 3.6e-0,
                      4.5e-0, 5.4e-0, 6.3e-0, 7.3e-0, 8.4e-0, 9,      4e-0,   1.1e+1, 1.2e+1, 1.3e+1, 1.4e+1};
   return theta[order];
@@ -104,7 +103,6 @@ template <typename T>
 [[nodiscard]] P3A_HOST P3A_DEVICE inline auto
 polynomial_coefficient(int const order, int const index)
 {
-  assert(index <= order);
   T c = 0.0;
   switch (order) {
     case 3: {
@@ -142,7 +140,6 @@ polynomial_coefficient(int const order, int const index)
           1.0};
       c = b[index];
     } break;
-    default: auto const incorrect_order_in_pade_polynomial = false; assert(incorrect_order_in_pade_polynomial == true);
   }
   return c;
 }
@@ -151,7 +148,6 @@ template <typename T>
 [[nodiscard]] P3A_HOST P3A_DEVICE inline auto
 pade_coefficients(int n) noexcept
 {
-  assert(0 <= n && n < 64);
   T const c[] = {
       1.100343044625278e-05, 1.818617533662554e-03, 1.620628479501567e-02, 5.387353263138127e-02, 1.135280226762866e-01,
       1.866286061354130e-01, 2.642960831111435e-01, 3.402172331985299e-01, 4.108235000556820e-01, 4.745521256007768e-01,
@@ -173,7 +169,6 @@ template <typename T>
 [[nodiscard]] P3A_HOST P3A_DEVICE inline auto
 gauss_legendre_abscissae(int const m, int const n) noexcept
 {
-  assert(0 < m && m <= 64 && 0 <= n && n < m);
   T x = 0.0;
   switch (m) {
     default: break;
@@ -1826,7 +1821,6 @@ template <typename T>
 [[nodiscard]] P3A_HOST P3A_DEVICE inline auto
 gauss_legendre_weights(int const m, int const n) noexcept
 {
-  assert(0 < m && m <= 64 && n < m);
   T x = 0.0;
   switch (m) {
     default: break;
