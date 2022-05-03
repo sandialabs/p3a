@@ -41,6 +41,15 @@ class static_vector {
     }
     return r;
   }
+  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static
+  static_vector ones()
+  {
+    static_vector r;
+    for (int i = 0; i < N; ++i) {
+      r.m_data[i] = T(1);
+    }
+    return r;
+  }
   template <class U>
   P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
   static_vector& operator=(static_vector<U, N> const& other)
