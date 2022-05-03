@@ -298,6 +298,40 @@ kokkos_simd_transform_reduce(
 
 }
 
+template <
+  class ExecutionPolicy,
+  class Iterator,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] T transform_reduce(
+    ExecutionPolicy policy,
+    Iterator first, Iterator last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  return details::kokkos_transform_reduce<typename ExecutionPolicy::kokkos_execution_space>(
+      first, last, init, binary_op, unary_op);
+}
+
+template <
+  class ExecutionPolicy,
+  class Iterator,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] T simd_transform_reduce(
+    ExecutionPolicy policy,
+    Iterator first, Iterator last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  return details::kokkos_simd_transform_reduce<typename ExecutionPolicy::kokkos_execution_space>(
+      first, last, init, binary_op, unary_op);
+}
+
 namespace details {
 
 class int128 {
@@ -331,8 +365,6 @@ class fixed_point_double_sum {
  private:
   mpicpp::comm m_comm;
   values_type m_values;
-  reducer<int, ExecutionPolicy> m_exponent_reducer;
-  reducer<int128, ExecutionPolicy> m_int128_reducer;
  public:
   fixed_point_double_sum() = default;
   explicit fixed_point_double_sum(mpicpp::comm&& comm_arg)

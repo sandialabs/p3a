@@ -203,24 +203,22 @@ void kokkos_simd_for_each(
 
 }
 
-template <class ExecutionPolicy, class Integral, class Functor>
-std::enable_if_t<std::is_integral_v<Integral>>
-for_each(
+template <class ExecutionPolicy, class Iterator, class Functor>
+void for_each(
     ExecutionPolicy,
-    counting_iterator<Integral> first,
-    counting_iterator<Integral> last,
+    Iterator first,
+    Iterator last,
     Functor functor)
 {
   details::kokkos_for_each<typename ExecutionPolicy::kokkos_execution_space>(
       first, last, functor);
 }
 
-template <class T, class ExecutionPolicy, class Integral, class Functor>
-std::enable_if_t<std::is_integral_v<Integral>>
-simd_for_each(
+template <class T, class ExecutionPolicy, class Iterator, class Functor>
+void simd_for_each(
     ExecutionPolicy,
-    counting_iterator<Integral> first,
-    counting_iterator<Integral> last,
+    Iterator first,
+    Iterator last,
     Functor functor)
 {
   details::kokkos_simd_for_each<
