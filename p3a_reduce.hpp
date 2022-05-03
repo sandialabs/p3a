@@ -12,6 +12,90 @@ namespace p3a {
 
 namespace details {
 
+template <class T, class BinaryReductionOp>
+class kokkos_reducer {
+ public:
+  using reducer = kokkos_reducer<T, BinaryReductionOp>;
+  using value_type = T;
+  using result_view_type = Kokkos::View<value_type, Kokkos::HostSpace>;
+ private:
+  value_type m_init;
+  BinaryReductionOp m_binary_op;
+  result_view_type m_result_view;
+ public:
+  kokkos_reducer(
+      value_type init_arg,
+      BinaryReductionOp binary_op_arg,
+      value_type& result_arg)
+    :m_init(init_arg)
+    ,m_binary_op(binary_op_arg)
+    ,m_result_view(&result_arg)
+  {
+  }
+  // Required
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void join(value_type& dest, value_type const& src) const
+  {
+    dest = m_binary_op(dest, src);
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void init(value_type& val) const
+  {
+    val = m_init;
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  value_type& reference() const
+  {
+    return *m_result_view.data();
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  result_view_type view() const
+  {
+    return m_result_view;
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  bool references_scalar() const
+  {
+    return true;
+  }
+};
+
+template <class T, class BinaryReductionOp, class CountingTransformOp, class Integral>
+class kokkos_reduce_functor {
+  BinaryReductionOp m_binary_op;
+  CountingTransformOp m_unary_op;
+ public:
+  kokkos_reduce_functor(
+      BinaryReductionOp binary_op_arg,
+      CountingTransformOp unary_op_arg)
+    :m_binary_op(binary_op_arg)
+    ,m_unary_op(unary_op_arg)
+  {
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void operator()(Integral i, T& updated) const
+  {
+    updated = m_binary_op(updated, m_unary_op(i));
+  }
+};
+
+template <
+  class ExecutionSpace,
+  class Integral,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]]
+std::enable_if_t<std::is_integral_v<Integral>, T>
+kokkos_transform_reduce(
+    p3a::counting_iterator<Integral> first,
+    p3a::counting_iterator<Integral> last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  using counting_transform_type = kokkos_transform_reduce
+}
+
 template <
   class ExecutionSpace,
   class Iterator,
