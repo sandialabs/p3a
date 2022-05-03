@@ -273,7 +273,7 @@ kokkos_simd_transform_reduce(
   if (extents.volume() == 0) return;
   using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
   using transform_b = kokkos_3d_simd_functor<T, SimdAbi, Integral, transform_a>;
-  using functor = kokkos_reduce_functor<
+  using functor = kokkos_3d_reduce_functor<
     T, BinaryReductionOp, transform_b, Integral>;
   using reducer = kokkos_reducer<T, BinaryReductionOp>;
   using kokkos_policy =
@@ -334,6 +334,27 @@ template <
     typename ExecutionPolicy::simd_abi_type,
     typename ExecutionPolicy::kokkos_execution_space>(
       first, last, init, binary_op, unary_op);
+}
+
+template <
+  class ExecutionPolicy,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] T simd_transform_reduce(
+    ExecutionPolicy policy,
+    subgrid3 subgrid,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  return simd_transform_reduce(
+      policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      init,
+      binary_op,
+      unary_op);
 }
 
 namespace details {
