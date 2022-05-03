@@ -89,13 +89,13 @@ void kokkos_for_each(
 {
   auto const limits = last.vector - first.vector;
   if (limits.volume() == 0) return;
-  using kokkos_policy_type =
+  using kokkos_policy =
     Kokkos::MDRangePolicy<
       ExecutionSpace,
       Kokkos::IndexType<Integral>,
       Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
   Kokkos::parallel_for("p3a::details::kokkos_for_each(3D)",
-      kokkos_policy_type(
+      kokkos_policy(
         {first.vector.x(), first.vector.y(), first.vector.z()},
         {last.vector.x(), last.vector.y(), last.vector.z()}),
   kokkos_3d_functor<Integral, Functor>(functor));
@@ -138,22 +138,19 @@ void kokkos_simd_for_each(
 {
   auto const extents = last.vector - first.vector;
   if (extents.volume() == 0) return;
-  using kokkos_policy_type =
+  using new_functor = kokkos_3d_simd_functor<T, SimdAbi, Integral, Functor>;
+  using kokkos_policy =
     Kokkos::MDRangePolicy<
       ExecutionSpace,
       Kokkos::IndexType<Integral>,
       Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
-  Integral const first_i = first.vector.x();
-  Integral const last_i = last.vector.x();
-  Integral const i_extent = extents.x();
   Integral constexpr width = Integral(p3a::simd<T, SimdAbi>::size());
-  Integral const i_quotient = i_extent / width;
+  Integral const quotient = extents.x() / width;
   Kokkos::parallel_for("p3a::details::kokkos_simd_for_each(3D)",
-      kokkos_policy_type(
+      kokkos_policy(
         {Integral(0), first.vector.y(), first.vector.z()},
-        {Integral(i_quotient + 1), last.vector.y(), last.vector.z()}),
-  kokkos_3d_simd_functor<T, SimdAbi, Integral, Functor>(
-    functor, first_i, last_i));
+        {Integral(quotient + 1), last.vector.y(), last.vector.z()}),
+  new_functor(functor, first.vector.x(), last.vector.x()));
 }
 
 template <
@@ -193,14 +190,14 @@ void kokkos_simd_for_each(
 {
   Integral const extent = *last - *first;
   if (extent == 0) return;
-  using kokkos_policy_type =
+  using kokkos_policy =
     Kokkos::RangePolicy<
       ExecutionSpace,
       Kokkos::IndexType<Integral>>;
   Integral constexpr width = Integral(p3a::simd<T, SimdAbi>::size());
   Integral const quotient = extent / width;
   Kokkos::parallel_for("p3a::details::kokkos_simd_for_each(1D)",
-      kokkos_policy_type(0, quotient + 1),
+      kokkos_policy(0, quotient + 1),
   kokkos_simd_functor<T, SimdAbi, Integral, Functor>(functor, *first, *last));
 }
 

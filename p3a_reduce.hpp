@@ -32,7 +32,6 @@ class kokkos_reducer {
     ,m_result_view(&result_arg)
   {
   }
-  // Required
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
   void join(value_type& dest, value_type const& src) const
   {
@@ -60,14 +59,14 @@ class kokkos_reducer {
   }
 };
 
-template <class T, class BinaryReductionOp, class CountingTransformOp, class Integral>
+template <class T, class BinaryReductionOp, class UnaryTransformOp, class Integral>
 class kokkos_reduce_functor {
   BinaryReductionOp m_binary_op;
-  CountingTransformOp m_unary_op;
+  UnaryTransformOp m_unary_op;
  public:
   kokkos_reduce_functor(
       BinaryReductionOp binary_op_arg,
-      CountingTransformOp unary_op_arg)
+      UnaryTransformOp unary_op_arg)
     :m_binary_op(binary_op_arg)
     ,m_unary_op(unary_op_arg)
   {
@@ -93,7 +92,21 @@ kokkos_transform_reduce(
     BinaryReductionOp binary_op,
     UnaryTransformOp unary_op)
 {
-  using counting_transform_type = kokkos_transform_reduce
+  using functor = kokkos_reduce_functor<
+    T, BinaryReductionOp, UnaryTransformOp, Integral>;
+  using reducer_type = kokkos_reducer<T, BinaryReductionOp>;
+  using kokkos_policy_type =
+    Kokkos::RangePolicy<
+      ExecutionSpace,
+      Kokkos::IndexType<Integral>>;
+  T result = init;
+  reducer_type reducer(init, binary_op, result);
+  Kokkos::parallel_reduce(
+      "p3a::details::kokkos_transform_reduce(1D)",
+      kokkos_policy_type(*first, *last),
+      functor(binary_op, unary_op),
+      reducer);
+  return result;
 }
 
 template <
@@ -109,13 +122,178 @@ T kokkos_transform_reduce(
     BinaryReductionOp binary_op,
     UnaryTransformOp unary_op)
 {
-  auto n = last - first;
-  using difference_type = decltype(n);
+  using difference_type = typename std::iterator_traits<Iterator>::difference_type;
+  difference_type const n = last - first;
+  using new_transform_type = kokkos_iterator_functor<Iterator, UnaryTransformOp>;
   return kokkos_transform_reduce(
       p3a::counting_iterator<difference_type>(0),
       p3a::counting_iterator<difference_type>(n),
       init,
       binary_op,
+      new_transform_type(first, unary_op));
+}
+
+template <class T, class BinaryReductionOp, class UnaryTransformOp, class Integral>
+class kokkos_3d_reduce_functor {
+  BinaryReductionOp m_binary_op;
+  UnaryTransformOp m_unary_op;
+ public:
+  kokkos_3d_reduce_functor(
+      BinaryReductionOp binary_op_arg,
+      UnaryTransformOp unary_op_arg)
+    :m_binary_op(binary_op_arg)
+    ,m_unary_op(unary_op_arg)
+  {
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void operator()(Integral i, Integral j, Integral k, T& updated) const
+  {
+    updated = m_binary_op(updated, m_unary_op(i, j, k));
+  }
+};
+
+template <
+  class ExecutionSpace,
+  class Integral,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]]
+std::enable_if_t<std::is_integral_v<Integral>, T>
+kokkos_transform_reduce(
+    p3a::counting_iterator3<Integral> first,
+    p3a::counting_iterator3<Integral> last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  using new_transform = kokkos_3d_functor<Integral, UnaryTransformOp>;
+  using functor_type = kokkos_3d_reduce_functor<
+    T, BinaryReductionOp, new_transform, Integral>;
+  using reducer = kokkos_reducer<T, BinaryReductionOp>;
+  using kokkos_policy =
+    Kokkos::MDRangePolicy<
+      ExecutionSpace,
+      Kokkos::IndexType<Integral>,
+      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
+  T result = init;
+  Kokkos::parallel_reduce(
+      "p3a::details::kokkos_transform_reduce(3D)",
+      kokkos_policy(
+        {first.vector.x(), first.vector.y(), first.vector.z()},
+        {last.vector.x(), last.vector.y(), last.vector.z()}),
+      functor_type(binary_op, new_transform(unary_op)),
+      reducer(init, binary_op, result));
+  return result;
+}
+
+template <class T, class BinaryReductionOp, class UnaryTransformOp>
+class simd_reduce_wrapper {
+  T m_init;
+  BinaryReductionOp m_binary_op;
+  UnaryTransformOp m_unary_op;
+ public:
+  simd_reduce_wrapper(
+      T init_arg,
+      BinaryReductionOp binary_op_arg,
+      UnaryTransformOp unary_op_arg)
+    :m_init(init_arg)
+    ,m_binary_op(binary_op_arg)
+    ,m_unary_op(unary_op_arg)
+  {
+  }
+  template <class Indices, class Abi>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  auto operator()(Indices const& indices, p3a::simd_mask<T, Abi> const& mask)
+  {
+    auto const simd_result = m_unary_op(indices, mask);
+    return reduce(where(mask, simd_result), m_init, m_binary_op);
+  }
+};
+
+template <
+  class ExecutionSpace,
+  class Integral,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]]
+std::enable_if_t<std::is_integral_v<Integral>, T>
+kokkos_simd_transform_reduce(
+    p3a::counting_iterator<Integral> first,
+    p3a::counting_iterator<Integral> last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  Integral const extent = *last - *first;
+  if (extent == 0) return init;
+  using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
+  using transform_b = kokkos_simd_functor<T, SimdAbi, Integral, transform_type_a>;
+  using functor = kokkos_reduce_functor<
+    T, BinaryReductionOp, transform_type_b, Integral>;
+  using reducer = kokkos_reducer<T, BinaryReductionOp>;
+  using kokkos_policy =
+    Kokkos::RangePolicy<
+      ExecutionSpace,
+      Kokkos::IndexType<Integral>>;
+  T result = init;
+  Integral constexpr width = Integral(p3a::simd<T, SimdAbi>::size());
+  Integral const quotient = extent / width;
+  Kokkos::parallel_reduce(
+      "p3a::details::kokkos_simd_transform_reduce(1D)",
+      kokkos_policy(0, quotient + 1),
+      functor(binary_op,
+        transform_b(
+          transform_a(init, binary_op, unary_op),
+          *first,
+          *last)),
+      reducer(init, binary_op, result));
+  return result;
+}
+
+template <
+  class ExecutionSpace,
+  class Integral,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]]
+std::enable_if_t<std::is_integral_v<Integral>, T>
+kokkos_simd_transform_reduce(
+    p3a::counting_iterator3<Integral> first,
+    p3a::counting_iterator3<Integral> last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  auto const extents = last.vector - first.vector;
+  if (extents.volume() == 0) return;
+  using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
+  using transform_b = kokkos_3d_simd_functor<T, SimdAbi, Integral, transform_a>;
+  using functor = kokkos_reduce_functor<
+    T, BinaryReductionOp, transform_b, Integral>;
+  using reducer = kokkos_reducer<T, BinaryReductionOp>;
+  using kokkos_policy =
+    Kokkos::MDRangePolicy<
+      ExecutionSpace,
+      Kokkos::IndexType<Integral>,
+      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
+  T result = init;
+  Integral constexpr width = Integral(p3a::simd<T, SimdAbi>::size());
+  Integral const quotient = extents.x() / width;
+  Kokkos::parallel_reduce(
+      "p3a::details::kokkos_simd_transform_reduce(1D)",
+      kokkos_policy(
+        {Integral(0), first.vector.y(), first.vector.z()},
+        {Integral(quotient + 1), first.vector.y(), first.vector.z()}),
+      functor(binary_op,
+        transform_b(
+          transform_a(init, binary_op, unary_op),
+          first.vector.x(),
+          last.vector.x())),
+      reducer(init, binary_op, result));
+  return result;
 }
 
 }
