@@ -29,7 +29,7 @@ void kokkos_for_each(
 {
   Kokkos::parallel_for("p3a::details::kokkos_for_each(1D)",
       Kokkos::RangePolicy<
-        ExecutionPolicy,
+        ExecutionSpace,
         Kokkos::IndexType<Integral>>(*first, *last),
       functor);
 }

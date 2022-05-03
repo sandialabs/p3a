@@ -204,7 +204,7 @@ class simd_reduce_wrapper {
   }
   template <class Indices, class Abi>
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-  auto operator()(Indices const& indices, p3a::simd_mask<T, Abi> const& mask)
+  auto operator()(Indices const& indices, p3a::simd_mask<T, Abi> const& mask) const
   {
     auto const simd_result = m_unary_op(indices, mask);
     return reduce(where(mask, simd_result), m_init, m_binary_op);
@@ -212,6 +212,7 @@ class simd_reduce_wrapper {
 };
 
 template <
+  class SimdAbi,
   class ExecutionSpace,
   class Integral,
   class T,
@@ -229,9 +230,9 @@ kokkos_simd_transform_reduce(
   Integral const extent = *last - *first;
   if (extent == 0) return init;
   using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
-  using transform_b = kokkos_simd_functor<T, SimdAbi, Integral, transform_type_a>;
+  using transform_b = kokkos_simd_functor<T, SimdAbi, Integral, transform_a>;
   using functor = kokkos_reduce_functor<
-    T, BinaryReductionOp, transform_type_b, Integral>;
+    T, BinaryReductionOp, transform_b, Integral>;
   using reducer = kokkos_reducer<T, BinaryReductionOp>;
   using kokkos_policy =
     Kokkos::RangePolicy<
@@ -253,6 +254,7 @@ kokkos_simd_transform_reduce(
 }
 
 template <
+  class SimdAbi,
   class ExecutionSpace,
   class Integral,
   class T,
@@ -328,7 +330,9 @@ template <
     BinaryReductionOp binary_op,
     UnaryTransformOp unary_op)
 {
-  return details::kokkos_simd_transform_reduce<typename ExecutionPolicy::kokkos_execution_space>(
+  return details::kokkos_simd_transform_reduce<
+    typename ExecutionPolicy::simd_abi_type,
+    typename ExecutionPolicy::kokkos_execution_space>(
       first, last, init, binary_op, unary_op);
 }
 
