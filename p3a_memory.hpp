@@ -137,6 +137,21 @@ P3A_NEVER_INLINE void destroy(
   }
 }
 
+template <class ForwardIt>
+P3A_ALWAYS_INLINE inline
+void destroy(
+    serial_local_execution,
+    ForwardIt first,
+    ForwardIt const& last)
+{
+  using T = typename std::iterator_traits<ForwardIt>::value_type;
+  if constexpr (!std::is_trivially_destructible_v<T>) {
+    for (; first != last; ++first) {
+      first->~T();
+    }
+  }
+}
+
 #ifdef __CUDACC__
 
 template <class T>
