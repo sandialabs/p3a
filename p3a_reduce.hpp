@@ -7,6 +7,7 @@
 #include "p3a_dynamic_array.hpp"
 #include "p3a_counting_iterator.hpp"
 #include "p3a_functional.hpp"
+#include "p3a_simd.hpp"
 
 namespace p3a {
 
@@ -401,6 +402,18 @@ class int128 {
   [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
   std::uint64_t low() const { return m_low; }
 };
+
+}
+
+template <class Abi>
+class simd<details::int128, Abi> {
+  simd<std::int64_t, Abi> m_impl;
+ public:
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline constexpr
+  int size() { return simd<std::int64_t, Abi>::size(); }
+};
+
+namespace details {
 
 template <
   class Allocator,
