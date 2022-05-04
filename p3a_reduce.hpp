@@ -7,916 +7,377 @@
 #include "p3a_dynamic_array.hpp"
 #include "p3a_counting_iterator.hpp"
 #include "p3a_functional.hpp"
+#include "p3a_simd.hpp"
 
 namespace p3a {
 
-template <class T, class ExecutionPolicy>
-class reducer;
-
-template <class T>
-class reducer<T, serial_execution> {
-  serial_execution m_policy;
- public:
-  reducer() = default;
-  reducer(reducer&&) = default;
-  reducer& operator=(reducer&&) = default;
-  reducer(reducer const&) = delete;
-  reducer& operator=(reducer const&) = delete;
-  template <class Iterator, class BinaryOp, class UnaryOp>
-  [[nodiscard]]
-  T transform_reduce(
-      Iterator first,
-      Iterator last,
-      T init,
-      BinaryOp binary_op,
-      UnaryOp unary_op)
-  {
-    for (; first != last; ++first) {
-      init = binary_op(init, unary_op(*first));
-    }
-    return init;
-  }
-  template <class Iterator, class BinaryOp, class UnaryOp>
-  [[nodiscard]]
-  T simd_transform_reduce(
-      Iterator first,
-      Iterator last,
-      T init,
-      BinaryOp binary_op,
-      UnaryOp unary_op)
-  {
-    using reference_type = typename std::iterator_traits<Iterator>::reference;
-    auto const identity_value = init;
-    simd_for_each<T>(m_policy, first, last,
-    [&] (reference_type ref, host_simd_mask<T> const& mask) P3A_ALWAYS_INLINE {
-      auto const simd_value = unary_op(ref, mask);
-      auto const scalar_value = reduce(where(mask, simd_value), identity_value, binary_op);
-      init = binary_op(init, scalar_value);
-    });
-    return init;
-  }
-  template <class BinaryOp, class UnaryOp>
-  [[nodiscard]]
-  T transform_reduce(
-      subgrid3 grid,
-      T init,
-      BinaryOp binary_op,
-      UnaryOp unary_op)
-  {
-    for_each(m_policy, grid,
-    [&] (vector3<int> const& item) P3A_ALWAYS_INLINE {
-      init = binary_op(init, unary_op(item));
-    });
-    return init;
-  }
-  template <class BinaryOp, class UnaryOp>
-  [[nodiscard]]
-  T simd_transform_reduce(
-      subgrid3 grid,
-      T init,
-      BinaryOp binary_op,
-      UnaryOp unary_op)
-  {
-    T const identity_value = init;
-    simd_for_each<T>(m_policy, grid,
-    [&] (vector3<int> const& item, host_simd_mask<T> const& mask) P3A_ALWAYS_INLINE {
-      auto const simd_value = unary_op(item, mask);
-      T const scalar_value = reduce(where(mask, simd_value), identity_value, binary_op);
-      init = binary_op(init, scalar_value);
-    });
-    return init;
-  }
-};
-
-template <
-    class T,
-    class BinaryOp,
-    class UnaryOp>
-[[nodiscard]] P3A_NEVER_INLINE
-T transform_reduce(
-    serial_execution policy,
-    subgrid3 subgrid,
-    T init,
-    BinaryOp binary_op,
-    UnaryOp unary_op)
-{
-  reducer<T, serial_execution> r;
-  return r.transform_reduce(subgrid, init, binary_op, unary_op);
-}
-
-#ifdef __CUDACC__
-
 namespace details {
 
-static constexpr int cuda_reducer_threads_per_block = 256;
-static constexpr int cuda_grid_reducer_threads_per_block = 64;
-
-// Utility class used to avoid linker errors with extern
-// unsized shared memory arrays with templated type
-template <class T>
-struct cuda_shared_memory {
-  __device__ inline operator T *() {
-    extern __shared__ int __smem[];
-    return (T *)__smem;
-  }
-  __device__ inline operator const T *() const {
-    extern __shared__ int __smem[];
-    return (T *)__smem;
-  }
-};
-
-// specialize for double to avoid unaligned memory
-// access compile errors
-template <>
-struct cuda_shared_memory<double> {
-  __device__ inline operator double *() {
-    extern __shared__ double __smem_d[];
-    return (double *)__smem_d;
-  }
-  __device__ inline operator const double *() const {
-    extern __shared__ double __smem_d[];
-    return (double *)__smem_d;
-  }
-};
-
-template <int Count, bool FitsInInt = (Count <= int(sizeof(int)))>
-class cuda_recursive_sliced_shuffle_helper;
-
-template <int Count>
-class cuda_recursive_sliced_shuffle_helper<Count, true>
-{
-  int val;
+template <class T, class BinaryReductionOp>
+class kokkos_reducer {
  public:
-  __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
+  using reducer = kokkos_reducer<T, BinaryReductionOp>;
+  using value_type = T;
+  using result_view_type = Kokkos::View<value_type, Kokkos::HostSpace>;
+ private:
+  value_type m_init;
+  BinaryReductionOp m_binary_op;
+  result_view_type m_result_view;
+ public:
+  kokkos_reducer(
+      value_type init_arg,
+      BinaryReductionOp binary_op_arg,
+      value_type& result_arg)
+    :m_init(init_arg)
+    ,m_binary_op(binary_op_arg)
+    ,m_result_view(&result_arg)
   {
-    val = __shfl_down_sync(0xFFFFFFFF, val, delta, 32);
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void join(value_type& dest, value_type const& src) const
+  {
+    dest = m_binary_op(dest, src);
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void init(value_type& val) const
+  {
+    val = m_init;
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  value_type& reference() const
+  {
+    return *m_result_view.data();
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  result_view_type view() const
+  {
+    return m_result_view;
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  bool references_scalar() const
+  {
+    return true;
   }
 };
 
-template <int Count>
-class cuda_recursive_sliced_shuffle_helper<Count, false>
-{
-  int val;
-  cuda_recursive_sliced_shuffle_helper<Count - int(sizeof(int))> next;
+template <class T, class BinaryReductionOp, class UnaryTransformOp, class Integral>
+class kokkos_reduce_functor {
+  BinaryReductionOp m_binary_op;
+  UnaryTransformOp m_unary_op;
  public:
-  __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
+  kokkos_reduce_functor(
+      BinaryReductionOp binary_op_arg,
+      UnaryTransformOp unary_op_arg)
+    :m_binary_op(binary_op_arg)
+    ,m_unary_op(unary_op_arg)
   {
-    val = __shfl_down_sync(0xFFFFFFFF, val, delta, 32);
-    next.shuffle_down(delta);
   }
-};
-
-template <class T>
-__device__ P3A_ALWAYS_INLINE inline
-T cuda_shuffle_down(T element, unsigned int delta)
-{
-  if constexpr (
-      std::is_same_v<T, int> ||
-      std::is_same_v<T, unsigned int> ||
-      std::is_same_v<T, long> ||
-      std::is_same_v<T, unsigned long> ||
-      std::is_same_v<T, long long> ||
-      std::is_same_v<T, unsigned long long> ||
-      std::is_same_v<T, float> ||
-      std::is_same_v<T, double>)
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void operator()(Integral i, T& updated) const
   {
-    return __shfl_down_sync(0xFFFFFFFF, element, delta, 32);
-  } else {
-    cuda_recursive_sliced_shuffle_helper<sizeof(T)> helper;
-    static_assert(std::is_trivially_copyable_v<T>, "reduction types need to be trivially copyable to shuffle in CUDA");
-    memcpy(&helper, &element, sizeof(T));
-    helper.shuffle_down(delta);
-    memcpy(&element, &helper, sizeof(T));
-    return element;
-  }
-  return element;
-}
-
-template <class ForwardIt, class T, class BinaryOp, class UnaryOp>
-__global__ void cuda_reduce(ForwardIt first, T* g_odata, int n, T init, BinaryOp binop, UnaryOp unop) {
-  constexpr int blockSize = cuda_reducer_threads_per_block;
-  T* sdata = cuda_shared_memory<T>();
-  // perform first level of reduction,
-  // reading from global memory, writing to shared memory
-  int tid = threadIdx.x;
-  int i = blockIdx.x * (blockSize * 2) + threadIdx.x;
-  int gridSize = (blockSize * 2) * gridDim.x;
-  T myResult = init;
-  // we reduce multiple elements per thread.  The number is determined by the
-  // number of active thread blocks (via gridDim).  More blocks will result
-  // in a larger gridSize and therefore fewer elements per thread
-  while (i < n) {
-    myResult = binop(myResult, unop(first[i]));
-    // ensure we don't read out of bounds
-    if (i + blockSize < n) myResult = binop(myResult, unop(first[i + blockSize]));
-    i += gridSize;
-  }
-  // each thread puts its local sum into shared memory
-  sdata[tid] = myResult;
-  __syncthreads();
-  // do reduction in shared mem
-  if (tid < 128) {
-    sdata[tid] = myResult = binop(myResult, sdata[tid + 128]);
-  }
-  __syncthreads();
-  if (tid < 64) {
-    sdata[tid] = myResult = binop(myResult, sdata[tid + 64]);
-  }
-  __syncthreads();
-  if (tid < 32) {
-    // Fetch final intermediate sum from 2nd warp
-    myResult = binop(myResult, sdata[tid + 32]);
-    // Reduce final warp using shuffle
-    for (unsigned int offset = 32 / 2; offset > 0; offset /= 2) {
-      myResult = binop(myResult, cuda_shuffle_down(myResult, offset));
-    }
-  }
-  // write result for this block to global mem
-  if (tid == 0) g_odata[blockIdx.x] = myResult;
-}
-
-template <class ForwardIt, class Integral, class T, class BinaryOp, class UnaryOp>
-__global__ void cuda_simd_reduce(ForwardIt first, T* g_odata, Integral n, T init, BinaryOp binop, UnaryOp unop) {
-  constexpr int blockSize = 64;
-  T* sdata = cuda_shared_memory<T>();
-  // perform first level of reduction,
-  // reading from global memory, writing to shared memory
-  int tid = threadIdx.x;
-  Integral i = blockIdx.x * blockSize + threadIdx.x;
-  auto const mask = simd_mask<T, simd_abi::scalar>(i < n);
-  auto const simd_value = unop(i, mask);
-  T myResult = reduce(where(mask, simd_value), init, binop);
-  // each thread puts its local sum into shared memory
-  sdata[tid] = myResult;
-  __syncthreads();
-  if (tid < 32) {
-    // Fetch final intermediate sum from 2nd warp
-    myResult = binop(myResult, sdata[tid + 32]);
-    // Reduce final warp using shuffle
-    for (unsigned int offset = 32 / 2; offset > 0; offset /= 2) {
-      myResult = binop(myResult, cuda_shuffle_down(myResult, offset));
-    }
-  }
-  // write result for this block to global mem
-  if (tid == 0) g_odata[blockIdx.x] = myResult;
-}
-
-template <class T, class BinaryOp, class UnaryOp>
-__global__ void cuda_grid_reduce(
-    vector3<int> first, vector3<int> last,
-    T* g_odata, T init, BinaryOp binop, UnaryOp unop) {
-  constexpr int blockSize = cuda_grid_reducer_threads_per_block;
-  T* sdata = cuda_shared_memory<T>();
-  // perform first level of reduction,
-  // reading from global memory, writing to shared memory
-  vector3<int> const thread_idx(threadIdx.x, threadIdx.y, threadIdx.z);
-  vector3<int> const block_idx(blockIdx.x, blockIdx.y, blockIdx.z);
-  grid3 const grid_dim(gridDim.x, gridDim.y, gridDim.z);
-  vector3<int> const user_extents = last - first;
-  int const thread_i = thread_idx.x();
-  int const block_i = grid_dim.index(block_idx);
-  int const tid = thread_i;
-  int const x_i = thread_idx.x() + (block_idx.x() * blockSize);
-  int const y_i = block_idx.y();
-  int const z_i = block_idx.z();
-  vector3<int> const xyz(x_i, y_i, z_i);
-  T myResult = init;
-  if (x_i < user_extents.x()) {
-    myResult = binop(myResult, unop(xyz + first));
-  }
-  // each thread puts its local sum into shared memory
-  sdata[tid] = myResult;
-  __syncthreads();
-  // do reduction in shared mem
-  if (tid < 32) {
-    // Fetch final intermediate sum from 2nd warp
-    myResult = binop(myResult, sdata[tid + 32]);
-    // Reduce final warp using shuffle
-    for (unsigned int offset = 32 / 2; offset > 0; offset /= 2) {
-      myResult = binop(myResult, cuda_shuffle_down(myResult, offset));
-    }
-  }
-  // write result for this block to global mem
-  if (tid == 0) g_odata[block_i] = myResult;
-}
-
-template <class T, class BinaryOp, class UnaryOp>
-__global__ void cuda_simd_grid_reduce(
-    vector3<int> first, vector3<int> last,
-    T* g_odata, T init, BinaryOp binop, UnaryOp unop) {
-  constexpr int blockSize = cuda_grid_reducer_threads_per_block;
-  T* sdata = cuda_shared_memory<T>();
-  // perform first level of reduction,
-  // reading from global memory, writing to shared memory
-  vector3<int> const thread_idx(threadIdx.x, threadIdx.y, threadIdx.z);
-  vector3<int> const block_idx(blockIdx.x, blockIdx.y, blockIdx.z);
-  grid3 const grid_dim(gridDim.x, gridDim.y, gridDim.z);
-  vector3<int> const user_extents = last - first;
-  int const thread_i = thread_idx.x();
-  int const block_i = grid_dim.index(block_idx);
-  int const tid = thread_i;
-  int const x_i = thread_idx.x() + (block_idx.x() * blockSize);
-  int const y_i = block_idx.y();
-  int const z_i = block_idx.z();
-  vector3<int> const xyz(x_i, y_i, z_i);
-  auto const mask = simd_mask<T, simd_abi::scalar>(x_i < user_extents.x());
-  auto const simd_value = unop(xyz + first, mask);
-  T myResult = reduce(where(mask, simd_value), init, binop);
-  // each thread puts its local sum into shared memory
-  sdata[tid] = myResult;
-  __syncthreads();
-  // do reduction in shared mem
-  if (tid < 32) {
-    // Fetch final intermediate sum from 2nd warp
-    myResult = binop(myResult, sdata[tid + 32]);
-    // Reduce final warp using shuffle
-    for (unsigned int offset = 32 / 2; offset > 0; offset /= 2) {
-      myResult = binop(myResult, cuda_shuffle_down(myResult, offset));
-    }
-  }
-  // write result for this block to global mem
-  if (tid == 0) g_odata[block_i] = myResult;
-}
-
-}
-
-template <class T>
-class reducer<T, cuda_execution> {
-  dynamic_array<
-    T,
-    cuda_device_allocator<T>,
-    cuda_execution> m_storage;
-  T* m_scratch1;
-  T* m_scratch2;
-  static constexpr int threads_per_block = details::cuda_reducer_threads_per_block;
-  static constexpr int grid_threads_per_block = details::cuda_grid_reducer_threads_per_block;
-  static vector3<int> get_block_grid(vector3<int> user_grid) {
-    return vector3<int>(
-        (user_grid.x() + grid_threads_per_block - 1) / grid_threads_per_block,
-        user_grid.y(),
-        user_grid.z());
-  }
-  static int get_num_grid_blocks(vector3<int> user_grid) {
-    return get_block_grid(user_grid).volume();
-  }
-  static int get_num_blocks(int size) {
-    return minimum(64, (size + threads_per_block - 1) / threads_per_block);
-  }
-  template <class ForwardIt, class BinaryOp, class UnaryOp>
-  void reduction_pass(int size, int blocks, ForwardIt first, T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
-    dim3 const dimBlock(threads_per_block, 1, 1);
-    dim3 const dimGrid(blocks, 1, 1);
-    int const smemSize = threads_per_block * sizeof(T);
-    cudaStream_t const cuda_stream = nullptr;
-    details::cuda_reduce<<<
-      dimGrid,
-      dimBlock,
-      smemSize,
-      cuda_stream>>>(first, d_odata, size, init, binop, unop);
-  }
-  template <class ForwardIt, class BinaryOp, class UnaryOp, class Integral>
-  void simd_reduction_pass(Integral size, int blocks, ForwardIt first, T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
-    dim3 const dimBlock(64, 1, 1);
-    dim3 const dimGrid(blocks, 1, 1);
-    int const smemSize = 64 * sizeof(T);
-    cudaStream_t const cuda_stream = nullptr;
-    details::cuda_simd_reduce<<<
-      dimGrid,
-      dimBlock,
-      smemSize,
-      cuda_stream>>>(first, d_odata, size, init, binop, unop);
-  }
-  template <class BinaryOp, class UnaryOp>
-  void grid_reduction_pass(
-      vector3<int> first, vector3<int> last, vector3<int> block_grid,
-      T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
-    dim3 const dimBlock(grid_threads_per_block, 1, 1);
-    dim3 const dimGrid(block_grid.x(), block_grid.y(), block_grid.z());
-    int const smemSize = grid_threads_per_block * sizeof(T);
-    cudaStream_t const cuda_stream = nullptr;
-    details::cuda_grid_reduce<<<
-      dimGrid,
-      dimBlock,
-      smemSize,
-      cuda_stream>>>(first, last, d_odata, init, binop, unop);
-  }
-  template <class BinaryOp, class UnaryOp>
-  void simd_grid_reduction_pass(
-      vector3<int> first, vector3<int> last, vector3<int> block_grid,
-      T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
-    dim3 const dimBlock(grid_threads_per_block, 1, 1);
-    dim3 const dimGrid(block_grid.x(), block_grid.y(), block_grid.z());
-    int const smemSize = grid_threads_per_block * sizeof(T);
-    cudaStream_t const cuda_stream = nullptr;
-    details::cuda_simd_grid_reduce<<<
-      dimGrid,
-      dimBlock,
-      smemSize,
-      cuda_stream>>>(first, last, d_odata, init, binop, unop);
-  }
-  template <class ForwardIt, class BinaryOp, class UnaryOp>
-  T* reduce_on_device(
-      int n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
-    int blocks = get_num_blocks(n);
-    this->reduction_pass(n, blocks, first, m_scratch2, init, binop, unop);
-    int s = blocks;
-    T* tmp_d_idata = m_scratch1;
-    T* tmp_d_odata = m_scratch2;
-    while (s > 1) {
-      std::swap(tmp_d_idata, tmp_d_odata);
-      blocks = get_num_blocks(s);
-      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity<T>());
-      s = (s + (threads_per_block * 2 - 1)) / (threads_per_block * 2);
-    }
-    return tmp_d_odata;
-  }
-  template <class ForwardIt, class BinaryOp, class UnaryOp, class Integral>
-  T* simd_reduce_on_device(
-      Integral n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
-    int blocks = int((n + 64 - 1) / 64);
-    this->simd_reduction_pass(n, blocks, first, m_scratch2, init, binop, unop);
-    int s = blocks;
-    T* tmp_d_idata = m_scratch1;
-    T* tmp_d_odata = m_scratch2;
-    while (s > 1) {
-      std::swap(tmp_d_idata, tmp_d_odata);
-      blocks = get_num_blocks(s);
-      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity<T>());
-      s = (s + (threads_per_block * 2 - 1)) / (threads_per_block * 2);
-    }
-    return tmp_d_odata;
-  }
-  template <class BinaryOp, class UnaryOp>
-  T* grid_reduce_on_device(vector3<int> first, vector3<int> last, T init, BinaryOp binop, UnaryOp unop) {
-    int blocks = get_num_grid_blocks(last - first);
-    vector3<int> const block_grid = get_block_grid(last - first);
-    this->grid_reduction_pass(first, last, block_grid, m_scratch2, init, binop, unop);
-    int s = blocks;
-    T* tmp_d_idata = m_scratch1;
-    T* tmp_d_odata = m_scratch2;
-    while (s > 1) {
-      std::swap(tmp_d_idata, tmp_d_odata);
-      blocks = get_num_blocks(s);
-      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity<T>());
-      s = (s + (threads_per_block * 2 - 1)) / (threads_per_block * 2);
-    }
-    return tmp_d_odata;
-  }
-  template <class BinaryOp, class UnaryOp>
-  T* simd_grid_reduce_on_device(vector3<int> first, vector3<int> last, T init, BinaryOp binop, UnaryOp unop) {
-    int blocks = get_num_grid_blocks(last - first);
-    vector3<int> const block_grid = get_block_grid(last - first);
-    this->simd_grid_reduction_pass(first, last, block_grid, m_scratch2, init, binop, unop);
-    int s = blocks;
-    T* tmp_d_idata = m_scratch1;
-    T* tmp_d_odata = m_scratch2;
-    while (s > 1) {
-      std::swap(tmp_d_idata, tmp_d_odata);
-      blocks = get_num_blocks(s);
-      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity<T>());
-      s = (s + (threads_per_block * 2 - 1)) / (threads_per_block * 2);
-    }
-    return tmp_d_odata;
-  }
-  template <class ForwardIt, class BinaryOp, class UnaryOp>
-  T reduce_to_host(int n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
-    m_storage.resize(2 * n);
-    m_scratch1 = m_storage.data();
-    m_scratch2 = m_storage.data() + n;
-    T host_result = init;
-    T const* device_result_ptr = this->reduce_on_device(n, first, init, binop, unop);
-    cudaMemcpy(&host_result, device_result_ptr, sizeof(T), cudaMemcpyDefault);
-    m_storage.resize(0);
-    m_scratch1 = nullptr;
-    m_scratch2 = nullptr;
-    return host_result;
-  }
-  template <class ForwardIt, class BinaryOp, class UnaryOp, class Integral>
-  T simd_reduce_to_host(Integral n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
-    m_storage.resize(2 * n);
-    m_scratch1 = m_storage.data();
-    m_scratch2 = m_storage.data() + n;
-    T host_result = init;
-    T const* device_result_ptr = this->simd_reduce_on_device(n, first, init, binop, unop);
-    cudaMemcpy(&host_result, device_result_ptr, sizeof(T), cudaMemcpyDefault);
-    m_storage.resize(0);
-    m_scratch1 = nullptr;
-    m_scratch2 = nullptr;
-    return host_result;
-  }
-  template <class BinaryOp, class UnaryOp>
-  T grid_reduce_to_host(vector3<int> first, vector3<int> last, T init, BinaryOp binop, UnaryOp unop) {
-    auto const n = (last - first).volume();
-    m_storage.resize(2 * n);
-    m_scratch1 = m_storage.data();
-    m_scratch2 = m_storage.data() + n;
-    T host_result = init;
-    T const* device_result_ptr = this->grid_reduce_on_device(first, last, init, binop, unop);
-    cudaMemcpy(&host_result, device_result_ptr, sizeof(T), cudaMemcpyDefault);
-    m_storage.resize(0);
-    m_scratch1 = nullptr;
-    m_scratch2 = nullptr;
-    return host_result;
-  }
-  template <class BinaryOp, class UnaryOp>
-  T simd_grid_reduce_to_host(vector3<int> first, vector3<int> last, T init, BinaryOp binop, UnaryOp unop) {
-    auto const n = (last - first).volume();
-    m_storage.resize(2 * n);
-    m_scratch1 = m_storage.data();
-    m_scratch2 = m_storage.data() + n;
-    T host_result = init;
-    T const* device_result_ptr = this->simd_grid_reduce_on_device(first, last, init, binop, unop);
-    cudaMemcpy(&host_result, device_result_ptr, sizeof(T), cudaMemcpyDefault);
-    m_storage.resize(0);
-    m_scratch1 = nullptr;
-    m_scratch2 = nullptr;
-    return host_result;
-  }
- public:
-  reducer()
-    :m_scratch1(nullptr)
-    ,m_scratch2(nullptr)
-  {}
-  reducer(reducer&&) = default;
-  reducer& operator=(reducer&&) = default;
-  reducer(reducer const&) = delete;
-  reducer& operator=(reducer const&) = delete;
-  template <class ForwardIt, class BinaryOp, class UnaryOp>
-  [[nodiscard]]
-  T transform_reduce(
-      ForwardIt first, ForwardIt last,
-      T init, BinaryOp binop, UnaryOp unop) {
-    return this->reduce_to_host(last - first, first, init, binop, unop);
-  }
-  template <class ForwardIt, class BinaryOp, class UnaryOp>
-  [[nodiscard]]
-  T simd_transform_reduce(
-      ForwardIt first, ForwardIt last,
-      T init, BinaryOp binop, UnaryOp unop) {
-    return this->simd_reduce_to_host(last - first, first, init, binop, unop);
-  }
-  template <class BinaryOp, class UnaryOp>
-  [[nodiscard]]
-  T transform_reduce(
-      subgrid3 grid,
-      T init, BinaryOp binop, UnaryOp unop) {
-    return this->grid_reduce_to_host(grid.lower(), grid.upper(), init, binop, unop);
-  }
-  template <class BinaryOp, class UnaryOp>
-  [[nodiscard]]
-  T simd_transform_reduce(
-      subgrid3 grid,
-      T init, BinaryOp binop, UnaryOp unop) {
-    return this->simd_grid_reduce_to_host(grid.lower(), grid.upper(), init, binop, unop);
+    updated = m_binary_op(updated, m_unary_op(i));
   }
 };
 
 template <
-    class T,
-    class BinaryOp,
-    class UnaryOp>
-[[nodiscard]] P3A_NEVER_INLINE
-T transform_reduce(
-    cuda_execution policy,
-    subgrid3 subgrid,
+  class ExecutionSpace,
+  class Integral,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]]
+std::enable_if_t<std::is_integral_v<Integral>, T>
+kokkos_transform_reduce(
+    p3a::counting_iterator<Integral> first,
+    p3a::counting_iterator<Integral> last,
     T init,
-    BinaryOp binary_op,
-    UnaryOp unary_op)
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
 {
-  reducer<T, cuda_execution> r;
-  return r.transform_reduce(subgrid, init, binary_op, unary_op);
+  using functor = kokkos_reduce_functor<
+    T, BinaryReductionOp, UnaryTransformOp, Integral>;
+  using reducer_type = kokkos_reducer<T, BinaryReductionOp>;
+  using kokkos_policy_type =
+    Kokkos::RangePolicy<
+      ExecutionSpace,
+      Kokkos::IndexType<Integral>>;
+  T result = init;
+  reducer_type reducer(init, binary_op, result);
+  Kokkos::parallel_reduce(
+      "p3a::details::kokkos_transform_reduce(1D)",
+      kokkos_policy_type(*first, *last),
+      functor(binary_op, unary_op),
+      reducer);
+  return result;
 }
 
-#endif
-
-#ifdef __HIPCC__
-
-namespace details {
-
-static constexpr int hip_reducer_threads_per_block = 256;
-static constexpr int hip_grid_reducer_threads_per_block = 128;
-
-// Utility class used to avoid linker errors with extern
-// unsized shared memory arrays with templated type
-template <class T>
-struct hip_shared_memory {
-  __device__ inline operator T *() {
-    HIP_DYNAMIC_SHARED(int, __smem);
-    return (T *)__smem;
-  }
-  __device__ inline operator const T *() const {
-    HIP_DYNAMIC_SHARED(int, __smem);
-    return (T *)__smem;
-  }
-};
-
-// specialize for double to avoid unaligned memory
-// access compile errors
-template <>
-struct hip_shared_memory<double> {
-  __device__ inline operator double *() {
-    HIP_DYNAMIC_SHARED(double, __smem_d);
-    return (double *)__smem_d;
-  }
-  __device__ inline operator const double *() const {
-    HIP_DYNAMIC_SHARED(double, __smem_d);
-    return (double *)__smem_d;
-  }
-};
-
-template <int Count, bool FitsInInt = (Count <= int(sizeof(int)))>
-class hip_recursive_sliced_shuffle_helper;
-
-template <int Count>
-class hip_recursive_sliced_shuffle_helper<Count, true>
+template <
+  class ExecutionSpace,
+  class Iterator,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]]
+T kokkos_transform_reduce(
+    Iterator first, Iterator last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
 {
-  int val;
- public:
-  __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
-  {
-    val = __shfl_down(val, delta, 64);
-  }
-};
-
-template <int Count>
-class hip_recursive_sliced_shuffle_helper<Count, false>
-{
-  int val;
-  hip_recursive_sliced_shuffle_helper<Count - int(sizeof(int))> next;
- public:
-  __device__ P3A_ALWAYS_INLINE void shuffle_down(unsigned int delta)
-  {
-    val = __shfl_down(val, delta, 64);
-    next.shuffle_down(delta);
-  }
-};
-
-template <class T>
-__device__ P3A_ALWAYS_INLINE T hip_shuffle_down(T val, unsigned int delta)
-{
-  if constexpr (
-      std::is_same_v<T, int> ||
-      std::is_same_v<T, unsigned int> ||
-      std::is_same_v<T, float> ||
-      std::is_same_v<T, double> ||
-      std::is_same_v<T, long> ||
-      std::is_same_v<T, long long>)
-  {
-    return __shfl_down(val, delta, 64);
-  } else {
-    hip_recursive_sliced_shuffle_helper<int(sizeof(T))> helper;
-    memcpy(&helper, &val, sizeof(T));
-    helper.shuffle_down(delta);
-    memcpy(&val, &helper, sizeof(T));
-    return val;
-  }
-}
-
-template <class ForwardIt, class T, class BinaryOp, class UnaryOp>
-__global__ void hip_reduce(ForwardIt first, T* g_odata, int n, T init, BinaryOp binop, UnaryOp unop) {
-  constexpr int blockSize = hip_reducer_threads_per_block;
-  // Handle to thread block group
-  T* sdata = hip_shared_memory<T>();
-  // perform first level of reduction,
-  // reading from global memory, writing to shared memory
-  int tid = hipThreadIdx_x;
-  int i = hipBlockIdx_x * (blockSize * 2) + hipThreadIdx_x;
-  int gridSize = (blockSize * 2) * hipGridDim_x;
-  T myResult = init;
-  // we reduce multiple elements per thread.  The number is determined by the
-  // number of active thread blocks (via gridDim).  More blocks will result
-  // in a larger gridSize and therefore fewer elements per thread
-  while (i < n) {
-    myResult = binop(myResult, unop(first[i]));
-    // ensure we don't read out of bounds
-    if (i + blockSize < n) myResult = binop(myResult, unop(first[i + blockSize]));
-    i += gridSize;
-  }
-  // each thread puts its local sum into shared memory
-  sdata[tid] = myResult;
-  __syncthreads();
-  // do reduction in shared mem
-  if (tid < 128) {
-    sdata[tid] = myResult = binop(myResult, sdata[tid + 128]);
-  }
-  __syncthreads();
-  if (tid < 64) {
-    // Fetch final intermediate sum from 2nd warp
-    myResult = binop(myResult, sdata[tid + 64]);
-    // Reduce final warp using shuffle
-    for (unsigned int offset = 64 / 2; offset > 0; offset /= 2) {
-      myResult = binop(myResult, hip_shuffle_down(myResult, offset));
-    }
-  }
-  // write result for this block to global mem
-  if (tid == 0) g_odata[hipBlockIdx_x] = myResult;
-}
-
-template <class T, class BinaryOp, class UnaryOp>
-__global__ void hip_grid_reduce(
-    vector3<int> first, vector3<int> last,
-    T* g_odata, T init, BinaryOp binop, UnaryOp unop) {
-  constexpr int blockSize = hip_grid_reducer_threads_per_block;
-  // Handle to thread block group
-  T* sdata = hip_shared_memory<T>();
-  // perform first level of reduction,
-  // reading from global memory, writing to shared memory
-  vector3<int> const thread_idx(hipThreadIdx_x, hipThreadIdx_y, hipThreadIdx_z);
-  vector3<int> const block_idx(hipBlockIdx_x, hipBlockIdx_y, hipBlockIdx_z);
-  grid3 const grid_dim(hipGridDim_x, hipGridDim_y, hipGridDim_z);
-  vector3<int> const user_extents = last - first;
-  int const thread_i = thread_idx.x();
-  int const block_i = grid_dim.index(block_idx);
-  int const tid = thread_i;
-  int const x_i = thread_idx.x() + (block_idx.x() * blockSize);
-  int const y_i = block_idx.y();
-  int const z_i = block_idx.z();
-  vector3<int> const xyz(x_i, y_i, z_i);
-  T myResult = init;
-  if (x_i < user_extents.x()) {
-    myResult = binop(myResult, unop(xyz + first));
-  }
-  // each thread puts its local sum into shared memory
-  sdata[tid] = myResult;
-  __syncthreads();
-  // do reduction in shared mem
-  if (tid < 64) {
-    // Fetch final intermediate sum from 2nd warp
-    myResult = binop(myResult, sdata[tid + 64]);
-    // Reduce final warp using shuffle
-    for (unsigned int offset = 64 / 2; offset > 0; offset /= 2) {
-      myResult = binop(myResult, hip_shuffle_down(myResult, offset));
-    }
-  }
-  // write result for this block to global mem
-  if (tid == 0) g_odata[block_i] = myResult;
-}
-
-}
-
-template <class T>
-class reducer<T, hip_execution> {
-  dynamic_array<
-    T,
-    hip_device_allocator<T>,
-    hip_execution> m_storage;
-  T* m_scratch1;
-  T* m_scratch2;
-  static constexpr int threads_per_block = details::hip_reducer_threads_per_block;
-  static constexpr int grid_threads_per_block = details::hip_grid_reducer_threads_per_block;
-  static vector3<int> get_block_grid(vector3<int> user_grid) {
-    return vector3<int>(
-        (user_grid.x() + grid_threads_per_block - 1) / grid_threads_per_block,
-        user_grid.y(),
-        user_grid.z());
-  }
-  static int get_num_grid_blocks(vector3<int> user_grid) {
-    return get_block_grid(user_grid).volume();
-  }
-  static int get_num_blocks(int size) {
-    return (size + threads_per_block - 1) / threads_per_block;
-  }
-  template <class ForwardIt, class BinaryOp, class UnaryOp>
-  void reduction_pass(int size, int blocks, ForwardIt first, T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
-    dim3 const dimBlock(threads_per_block, 1, 1);
-    dim3 const dimGrid(blocks, 1, 1);
-    int const smemSize = threads_per_block * sizeof(T);
-    hipStream_t const hip_stream = nullptr;
-    hipLaunchKernelGGL(
-      details::hip_reduce,
-      dimGrid,
-      dimBlock,
-      smemSize,
-      hip_stream,
-      first,
-      d_odata,
-      size,
+  using difference_type = typename std::iterator_traits<Iterator>::difference_type;
+  difference_type const n = last - first;
+  using new_transform_type = kokkos_iterator_functor<Iterator, UnaryTransformOp>;
+  return kokkos_transform_reduce(
+      p3a::counting_iterator<difference_type>(0),
+      p3a::counting_iterator<difference_type>(n),
       init,
-      binop,
-      unop);
-  }
-  template <class BinaryOp, class UnaryOp>
-  void grid_reduction_pass(
-      vector3<int> first, vector3<int> last, vector3<int> block_grid,
-      T* d_odata, T init, BinaryOp binop, UnaryOp unop) {
-    dim3 const dimBlock(grid_threads_per_block, 1, 1);
-    dim3 const dimGrid(block_grid.x(), block_grid.y(), block_grid.z());
-    int const smemSize = grid_threads_per_block * sizeof(T);
-    hipStream_t const hip_stream = nullptr;
-    hipLaunchKernelGGL(
-      details::hip_grid_reduce,
-      dimGrid,
-      dimBlock,
-      smemSize,
-      hip_stream,
-      first,
-      last,
-      d_odata,
-      init,
-      binop,
-      unop);
-  }
-  template <class ForwardIt, class BinaryOp, class UnaryOp>
-  T* reduce_on_device(
-      int n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
-    int blocks = get_num_blocks(n);
-    this->reduction_pass(n, blocks, first, m_scratch2, init, binop, unop);
-    int s = blocks;
-    T* tmp_d_idata = m_scratch1;
-    T* tmp_d_odata = m_scratch2;
-    while (s > 1) {
-      std::swap(tmp_d_idata, tmp_d_odata);
-      blocks = get_num_blocks(s);
-      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity<T>());
-      s = (s + (threads_per_block * 2 - 1)) / (threads_per_block * 2);
-    }
-    return tmp_d_odata;
-  }
-  template <class BinaryOp, class UnaryOp>
-  T* grid_reduce_on_device(vector3<int> first, vector3<int> last, T init, BinaryOp binop, UnaryOp unop) {
-    int blocks = get_num_grid_blocks(last - first);
-    vector3<int> const block_grid = get_block_grid(last - first);
-    this->grid_reduction_pass(first, last, block_grid, m_scratch2, init, binop, unop);
-    int s = blocks;
-    T* tmp_d_idata = m_scratch1;
-    T* tmp_d_odata = m_scratch2;
-    while (s > 1) {
-      std::swap(tmp_d_idata, tmp_d_odata);
-      blocks = get_num_blocks(s);
-      this->reduction_pass(s, blocks, tmp_d_idata, tmp_d_odata, init, binop, identity<T>());
-      s = (s + (threads_per_block * 2 - 1)) / (threads_per_block * 2);
-    }
-    return tmp_d_odata;
-  }
-  template <class ForwardIt, class BinaryOp, class UnaryOp>
-  T reduce_to_host(int n, ForwardIt first, T init, BinaryOp binop, UnaryOp unop) {
-    m_storage.resize(2 * n);
-    m_scratch1 = m_storage.data();
-    m_scratch2 = m_storage.data() + n;
-    T host_result = init;
-    T const* device_result_ptr = this->reduce_on_device(n, first, init, binop, unop);
-    hipMemcpy(&host_result, device_result_ptr, sizeof(T), hipMemcpyDefault);
-    m_storage.resize(0);
-    m_scratch1 = nullptr;
-    m_scratch2 = nullptr;
-    return host_result;
-  }
-  template <class BinaryOp, class UnaryOp>
-  T grid_reduce_to_host(vector3<int> first, vector3<int> last, T init, BinaryOp binop, UnaryOp unop) {
-    auto const n = (last - first).volume();
-    m_storage.resize(2 * n);
-    m_scratch1 = m_storage.data();
-    m_scratch2 = m_storage.data() + n;
-    T host_result = init;
-    T const* device_result_ptr = this->grid_reduce_on_device(first, last, init, binop, unop);
-    hipMemcpy(&host_result, device_result_ptr, sizeof(T), hipMemcpyDefault);
-    m_storage.resize(0);
-    m_scratch1 = nullptr;
-    m_scratch2 = nullptr;
-    return host_result;
-  }
+      binary_op,
+      new_transform_type(first, unary_op));
+}
+
+template <class T, class BinaryReductionOp, class UnaryTransformOp, class Integral>
+class kokkos_3d_reduce_functor {
+  BinaryReductionOp m_binary_op;
+  UnaryTransformOp m_unary_op;
  public:
-  reducer()
-    :m_scratch1(nullptr)
-    ,m_scratch2(nullptr)
-  {}
-  reducer(reducer&&) = default;
-  reducer& operator=(reducer&&) = default;
-  reducer(reducer const&) = delete;
-  reducer& operator=(reducer const&) = delete;
-  template <class BinaryOp, class UnaryOp>
-  [[nodiscard]]
-  T transform_reduce(
-      subgrid3 grid,
-      T init, BinaryOp binop, UnaryOp unop) {
-    return this->grid_reduce_to_host(grid.lower(), grid.upper(), init, binop, unop);
+  kokkos_3d_reduce_functor(
+      BinaryReductionOp binary_op_arg,
+      UnaryTransformOp unary_op_arg)
+    :m_binary_op(binary_op_arg)
+    ,m_unary_op(unary_op_arg)
+  {
   }
-  template <class ForwardIt, class BinaryOp, class UnaryOp>
-  [[nodiscard]]
-  T transform_reduce(
-      ForwardIt first, ForwardIt last,
-      T init, BinaryOp binop, UnaryOp unop) {
-    return this->reduce_to_host(last - first, first, init, binop, unop);
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void operator()(Integral i, Integral j, Integral k, T& updated) const
+  {
+    updated = m_binary_op(updated, m_unary_op(i, j, k));
   }
 };
 
 template <
-    class T,
-    class BinaryOp,
-    class UnaryOp>
-[[nodiscard]] P3A_NEVER_INLINE
-T transform_reduce(
-    hip_execution policy,
-    subgrid3 subgrid,
+  class ExecutionSpace,
+  class Integral,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]]
+std::enable_if_t<std::is_integral_v<Integral>, T>
+kokkos_transform_reduce(
+    p3a::counting_iterator3<Integral> first,
+    p3a::counting_iterator3<Integral> last,
     T init,
-    BinaryOp binary_op,
-    UnaryOp unary_op)
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
 {
-  reducer<T, hip_execution> r;
-  return r.transform_reduce(subgrid, init, binary_op, unary_op);
+  using new_transform = kokkos_3d_functor<Integral, UnaryTransformOp>;
+  using functor_type = kokkos_3d_reduce_functor<
+    T, BinaryReductionOp, new_transform, Integral>;
+  using reducer = kokkos_reducer<T, BinaryReductionOp>;
+  using kokkos_policy =
+    Kokkos::MDRangePolicy<
+      ExecutionSpace,
+      Kokkos::IndexType<Integral>,
+      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
+  T result = init;
+  Kokkos::parallel_reduce(
+      "p3a::details::kokkos_transform_reduce(3D)",
+      kokkos_policy(
+        {first.vector.x(), first.vector.y(), first.vector.z()},
+        {last.vector.x(), last.vector.y(), last.vector.z()}),
+      functor_type(binary_op, new_transform(unary_op)),
+      reducer(init, binary_op, result));
+  return result;
 }
 
-#endif
+template <class T, class BinaryReductionOp, class UnaryTransformOp>
+class simd_reduce_wrapper {
+  T m_init;
+  BinaryReductionOp m_binary_op;
+  UnaryTransformOp m_unary_op;
+ public:
+  simd_reduce_wrapper(
+      T init_arg,
+      BinaryReductionOp binary_op_arg,
+      UnaryTransformOp unary_op_arg)
+    :m_init(init_arg)
+    ,m_binary_op(binary_op_arg)
+    ,m_unary_op(unary_op_arg)
+  {
+  }
+  template <class Indices, class Abi>
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  auto operator()(Indices const& indices, p3a::simd_mask<T, Abi> const& mask) const
+  {
+    auto const simd_result = m_unary_op(indices, mask);
+    return reduce(where(mask, simd_result), m_init, m_binary_op);
+  }
+};
+
+template <
+  class SimdAbi,
+  class ExecutionSpace,
+  class Integral,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]]
+std::enable_if_t<std::is_integral_v<Integral>, T>
+kokkos_simd_transform_reduce(
+    p3a::counting_iterator<Integral> first,
+    p3a::counting_iterator<Integral> last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  Integral const extent = *last - *first;
+  if (extent == 0) return init;
+  using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
+  using transform_b = kokkos_simd_functor<T, SimdAbi, Integral, transform_a>;
+  using functor = kokkos_reduce_functor<
+    T, BinaryReductionOp, transform_b, Integral>;
+  using reducer = kokkos_reducer<T, BinaryReductionOp>;
+  using kokkos_policy =
+    Kokkos::RangePolicy<
+      ExecutionSpace,
+      Kokkos::IndexType<Integral>>;
+  T result = init;
+  Integral constexpr width = Integral(p3a::simd_mask<T, SimdAbi>::size());
+  Integral const quotient = extent / width;
+  Kokkos::parallel_reduce(
+      "p3a::details::kokkos_simd_transform_reduce(1D)",
+      kokkos_policy(0, quotient + 1),
+      functor(binary_op,
+        transform_b(
+          transform_a(init, binary_op, unary_op),
+          *first,
+          *last)),
+      reducer(init, binary_op, result));
+  return result;
+}
+
+template <
+  class SimdAbi,
+  class ExecutionSpace,
+  class Integral,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]]
+std::enable_if_t<std::is_integral_v<Integral>, T>
+kokkos_simd_transform_reduce(
+    p3a::counting_iterator3<Integral> first,
+    p3a::counting_iterator3<Integral> last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  auto const extents = last.vector - first.vector;
+  if (extents.volume() == 0) return init;
+  using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
+  using transform_b = kokkos_3d_simd_functor<T, SimdAbi, Integral, transform_a>;
+  using functor = kokkos_3d_reduce_functor<
+    T, BinaryReductionOp, transform_b, Integral>;
+  using reducer = kokkos_reducer<T, BinaryReductionOp>;
+  using kokkos_policy =
+    Kokkos::MDRangePolicy<
+      ExecutionSpace,
+      Kokkos::IndexType<Integral>,
+      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
+  T result = init;
+  Integral constexpr width = Integral(p3a::simd_mask<T, SimdAbi>::size());
+  Integral const quotient = extents.x() / width;
+  Kokkos::parallel_reduce(
+      "p3a::details::kokkos_simd_transform_reduce(1D)",
+      kokkos_policy(
+        {Integral(0), first.vector.y(), first.vector.z()},
+        {Integral(quotient + 1), last.vector.y(), last.vector.z()}),
+      functor(binary_op,
+        transform_b(
+          transform_a(init, binary_op, unary_op),
+          first.vector.x(),
+          last.vector.x())),
+      reducer(init, binary_op, result));
+  return result;
+}
+
+}
+
+template <
+  class ExecutionPolicy,
+  class Iterator,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] T transform_reduce(
+    ExecutionPolicy policy,
+    Iterator first, Iterator last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  return details::kokkos_transform_reduce<typename ExecutionPolicy::kokkos_execution_space>(
+      first, last, init, binary_op, unary_op);
+}
+
+template <
+  class ExecutionPolicy,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] T transform_reduce(
+    ExecutionPolicy policy,
+    subgrid3 subgrid,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  return transform_reduce(
+      policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      init,
+      binary_op,
+      unary_op);
+}
+
+template <
+  class ExecutionPolicy,
+  class Iterator,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] T simd_transform_reduce(
+    ExecutionPolicy policy,
+    Iterator first, Iterator last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  return details::kokkos_simd_transform_reduce<
+    typename ExecutionPolicy::simd_abi_type,
+    typename ExecutionPolicy::kokkos_execution_space>(
+      first, last, init, binary_op, unary_op);
+}
+
+template <
+  class ExecutionPolicy,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] T simd_transform_reduce(
+    ExecutionPolicy policy,
+    subgrid3 subgrid,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  return simd_transform_reduce(
+      policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      init,
+      binary_op,
+      unary_op);
+}
 
 namespace details {
 
@@ -942,6 +403,10 @@ class int128 {
   std::uint64_t low() const { return m_low; }
 };
 
+}
+
+namespace details {
+
 template <
   class Allocator,
   class ExecutionPolicy>
@@ -951,8 +416,6 @@ class fixed_point_double_sum {
  private:
   mpicpp::comm m_comm;
   values_type m_values;
-  reducer<int, ExecutionPolicy> m_exponent_reducer;
-  reducer<int128, ExecutionPolicy> m_int128_reducer;
  public:
   fixed_point_double_sum() = default;
   explicit fixed_point_double_sum(mpicpp::comm&& comm_arg)

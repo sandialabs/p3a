@@ -13,12 +13,15 @@
 #pragma clang diagnostic pop
 #endif
 
+#include <Kokkos_Core.hpp>
+
 namespace p3a {
 
 class serial_execution {
  public:
   void synchronize() const {}
   using simd_abi_type = simd_abi::host_native;
+  using kokkos_execution_space = Kokkos::Serial;
 };
 
 inline constexpr serial_execution serial = {};
@@ -61,6 +64,7 @@ class cuda_execution {
  public:
   void synchronize() const;
   using simd_abi_type = simd_abi::scalar;
+  using kokkos_execution_space = Kokkos::Cuda;
 };
 
 inline constexpr cuda_execution cuda = {};
@@ -98,6 +102,7 @@ class hip_execution {
  public:
   void synchronize() const;
   using simd_abi_type = simd_abi::scalar;
+  using kokkos_execution_space = Kokkos::Hip;
 };
 
 inline constexpr hip_execution hip = {};
