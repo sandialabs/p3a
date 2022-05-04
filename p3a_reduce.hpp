@@ -319,6 +319,27 @@ template <
 
 template <
   class ExecutionPolicy,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] T transform_reduce(
+    ExecutionPolicy policy,
+    subgrid3 subgrid,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  return transform_reduce(
+      policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      init,
+      binary_op,
+      unary_op);
+}
+
+template <
+  class ExecutionPolicy,
   class Iterator,
   class T,
   class BinaryReductionOp,
