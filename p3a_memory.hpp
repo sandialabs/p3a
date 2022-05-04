@@ -594,4 +594,17 @@ __device__ P3A_ALWAYS_INLINE void fill(
 
 #endif
 
+template <class ForwardIt, class T>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+void fill(
+    local_execution,
+    ForwardIt first,
+    ForwardIt last,
+    const T& value)
+{
+  for (; first != last; ++first) {
+    *first = value;
+  }
+}
+
 }
