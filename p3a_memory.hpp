@@ -15,12 +15,30 @@ void uninitialized_move(
     InputIt last,
     ForwardIt d_first)
 {
-  using difference_type = std::iterator_traits<InputIt>::difference_type;
-  using functor = details::uninitialized_move_functor<InputIt, ForwardIt>;
+  using difference_type = typename std::iterator_traits<InputIt>::difference_type;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
   p3a::for_each(policy,
       p3a::counting_iterator<difference_type>(0),
       p3a::counting_iterator<difference_type>(last - first),
   [=] P3A_HOST P3A_DEVICE (difference_type i) P3A_ALWAYS_INLINE {
+    void* const address = static_cast<void*>(std::addressof(d_first[i]));
+    ::new (address) value_type(std::move(first[i]));
+  });
+}
+
+template <class InputIt, class ForwardIt>
+void uninitialized_move(
+    serial_execution policy,
+    InputIt first,
+    InputIt last,
+    ForwardIt d_first)
+{
+  using difference_type = typename std::iterator_traits<InputIt>::difference_type;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  p3a::for_each(policy,
+      p3a::counting_iterator<difference_type>(0),
+      p3a::counting_iterator<difference_type>(last - first),
+  [=] (difference_type i) P3A_ALWAYS_INLINE {
     void* const address = static_cast<void*>(std::addressof(d_first[i]));
     ::new (address) value_type(std::move(first[i]));
   });
@@ -49,10 +67,29 @@ void uninitialized_copy(
     ForwardIt d_first)
 {
   using difference_type = typename std::iterator_traits<InputIt>::difference_type;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
   p3a::for_each(policy,
       p3a::counting_iterator<difference_type>(0),
       p3a::counting_iterator<difference_type>(last - first),
   [=] P3A_HOST P3A_DEVICE (difference_type i) P3A_ALWAYS_INLINE {
+    void* const address = static_cast<void*>(std::addressof(d_first[i]));
+    ::new (address) value_type(first[i]);
+  });
+}
+
+template <class InputIt, class ForwardIt>
+void uninitialized_copy(
+    serial_execution policy,
+    InputIt first,
+    InputIt last,
+    ForwardIt d_first)
+{
+  using difference_type = typename std::iterator_traits<InputIt>::difference_type;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  p3a::for_each(policy,
+      p3a::counting_iterator<difference_type>(0),
+      p3a::counting_iterator<difference_type>(last - first),
+  [=] (difference_type i) P3A_ALWAYS_INLINE {
     void* const address = static_cast<void*>(std::addressof(d_first[i]));
     ::new (address) value_type(first[i]);
   });
@@ -85,6 +122,24 @@ void destroy(
         counting_iterator<difference_type>(0),
         counting_iterator<difference_type>(last - first),
     [=] P3A_HOST P3A_DEVICE (difference_type i) P3A_ALWAYS_INLINE {
+      first[i].~T();
+    });
+  }
+}
+
+template <class ForwardIt>
+void destroy(
+    serial_execution policy,
+    ForwardIt first,
+    ForwardIt last)
+{
+  using T = typename std::iterator_traits<ForwardIt>::value_type;
+  if constexpr (!std::is_trivially_destructible_v<T>) {
+    using difference_type = typename std::iterator_traits<ForwardIt>::difference_type;
+    for_each(policy,
+        counting_iterator<difference_type>(0),
+        counting_iterator<difference_type>(last - first),
+    [=] (difference_type i) P3A_ALWAYS_INLINE {
       first[i].~T();
     });
   }
@@ -288,6 +343,22 @@ void move(
 }
 
 template <class ForwardIt1, class ForwardIt2>
+void move(
+    serial_execution policy,
+    ForwardIt1 first,
+    ForwardIt1 last,
+    ForwardIt2 d_first)
+{
+  using difference_type = typename std::iterator_traits<ForwardIt1>::difference_type;
+  for_each(policy,
+      counting_iterator<difference_type>(0),
+      counting_iterator<difference_type>(last - first),
+  [=] (difference_type i) P3A_ALWAYS_INLINE {
+    d_first[i] = std::move(first[i]);
+  });
+}
+
+template <class ForwardIt1, class ForwardIt2>
 P3A_ALWAYS_INLINE inline
 void move(
     serial_local_execution,
@@ -341,12 +412,39 @@ void fill(
 }
 
 template <class ForwardIt, class T>
-P3A_ALWAYS_INLINE inline
+void fill(
+    serial_execution policy,
+    ForwardIt first,
+    ForwardIt last,
+    T value)
+{
+  using reference = typename std::iterator_traits<ForwardIt>::reference;
+  for_each(policy, first, last,
+  [=] (reference r) P3A_ALWAYS_INLINE {
+    r = value;
+  });
+}
+
+template <class ForwardIt, class T>
+P3A_ALWAYS_INLINE inline constexpr
 void fill(
     serial_local_execution,
     ForwardIt first,
-    ForwardIt last,
-    const T& value)
+    ForwardIt const& last,
+    T const& value)
+{
+  for (; first != last; ++first) {
+    *first = value;
+  }
+}
+
+template <class ForwardIt, class T>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+void fill(
+    local_execution,
+    ForwardIt first,
+    ForwardIt const& last,
+    T const& value)
 {
   for (; first != last; ++first) {
     *first = value;
