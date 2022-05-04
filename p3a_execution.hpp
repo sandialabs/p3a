@@ -129,6 +129,8 @@ using device_local_execution = hip_local_execution;
 using device_execution = serial_execution;
 using device_local_execution = serial_local_execution;
 #endif
+using host_execution = serial_execution;
+inline constexpr host_execution host = {};
 inline constexpr device_execution device = {};
 inline constexpr device_local_execution device_local = {};
 
