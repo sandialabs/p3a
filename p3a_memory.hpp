@@ -21,7 +21,7 @@ void uninitialized_move(
       p3a::counting_iterator<difference_type>(0),
       p3a::counting_iterator<difference_type>(last - first),
   [=] P3A_HOST P3A_DEVICE (difference_type i) P3A_ALWAYS_INLINE {
-    void* const address = static_cast<void*>(std::addressof(d_first[i]));
+    void* const address = static_cast<void*>(&(d_first[i]));
     ::new (address) value_type(std::move(first[i]));
   });
 }
@@ -202,7 +202,7 @@ void uninitialized_fill(
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
   for_each(policy, first, last,
   [=] P3A_HOST P3A_DEVICE (reference r) P3A_ALWAYS_INLINE {
-    ::new (static_cast<void*>(std::addressof(r))) value_type(value);
+    ::new (static_cast<void*>(&r)) value_type(value);
   });
 }
 
