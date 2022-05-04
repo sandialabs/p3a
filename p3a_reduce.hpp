@@ -270,6 +270,8 @@ kokkos_simd_transform_reduce(
     UnaryTransformOp unary_op)
 {
   auto const extents = last.vector - first.vector;
+  fprintf(stderr, "kokkos_simd_transform_reduce(3D) extents %d %d %d\n",
+      extents.x(), extents.y(), extents.z());
   if (extents.volume() == 0) return;
   using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
   using transform_b = kokkos_3d_simd_functor<T, SimdAbi, Integral, transform_a>;
@@ -288,7 +290,7 @@ kokkos_simd_transform_reduce(
       "p3a::details::kokkos_simd_transform_reduce(1D)",
       kokkos_policy(
         {Integral(0), first.vector.y(), first.vector.z()},
-        {Integral(quotient + 1), first.vector.y(), first.vector.z()}),
+        {Integral(quotient + 1), last.vector.y(), last.vector.z()}),
       functor(binary_op,
         transform_b(
           transform_a(init, binary_op, unary_op),
