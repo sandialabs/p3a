@@ -49,6 +49,7 @@ set(P3A_HEADERS
   p3a_for_each.hpp
   p3a_functional.hpp
   p3a_reduce.hpp
+  p3a_scan.hpp
   p3a_quantity.hpp
   p3a_scalar.hpp
   p3a_identity3x3.hpp
