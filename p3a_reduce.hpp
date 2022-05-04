@@ -240,7 +240,7 @@ kokkos_simd_transform_reduce(
       ExecutionSpace,
       Kokkos::IndexType<Integral>>;
   T result = init;
-  Integral constexpr width = Integral(p3a::simd<T, SimdAbi>::size());
+  Integral constexpr width = Integral(p3a::simd_mask<T, SimdAbi>::size());
   Integral const quotient = extent / width;
   Kokkos::parallel_reduce(
       "p3a::details::kokkos_simd_transform_reduce(1D)",
@@ -271,7 +271,7 @@ kokkos_simd_transform_reduce(
     UnaryTransformOp unary_op)
 {
   auto const extents = last.vector - first.vector;
-  if (extents.volume() == 0) return;
+  if (extents.volume() == 0) return init;
   using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
   using transform_b = kokkos_3d_simd_functor<T, SimdAbi, Integral, transform_a>;
   using functor = kokkos_3d_reduce_functor<
@@ -283,7 +283,7 @@ kokkos_simd_transform_reduce(
       Kokkos::IndexType<Integral>,
       Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
   T result = init;
-  Integral constexpr width = Integral(p3a::simd<T, SimdAbi>::size());
+  Integral constexpr width = Integral(p3a::simd_mask<T, SimdAbi>::size());
   Integral const quotient = extents.x() / width;
   Kokkos::parallel_reduce(
       "p3a::details::kokkos_simd_transform_reduce(1D)",
@@ -404,14 +404,6 @@ class int128 {
 };
 
 }
-
-template <class Abi>
-class simd<details::int128, Abi> {
-  simd<std::int64_t, Abi> m_impl;
- public:
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static inline constexpr
-  int size() { return simd<std::int64_t, Abi>::size(); }
-};
 
 namespace details {
 
