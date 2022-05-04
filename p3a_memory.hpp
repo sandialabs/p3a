@@ -8,62 +8,62 @@
 
 namespace p3a {
 
-template <class InputIt, class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_move(
-    serial_execution,
+template <class ExecutionPolicy, class InputIt, class ForwardIt>
+void uninitialized_move(
+    ExecutionPolicy policy,
     InputIt first,
     InputIt last,
     ForwardIt d_first)
 {
+  using difference_type = std::iterator_traits<InputIt>::difference_type;
+  using functor = details::uninitialized_move_functor<InputIt, ForwardIt>;
+  p3a::for_each(policy,
+      p3a::counting_iterator<difference_type>(0),
+      p3a::counting_iterator<difference_type>(last - first),
+  [=] P3A_HOST P3A_DEVICE (difference_type i) P3A_ALWAYS_INLINE {
+    void* const address = static_cast<void*>(std::addressof(d_first[i]));
+    ::new (address) value_type(std::move(first[i]));
+  });
+}
+
+template <class InputIt, class ForwardIt>
+P3A_ALWAYS_INLINE inline
+void uninitialized_move(
+    serial_local_execution,
+    InputIt first,
+    InputIt const& last,
+    ForwardIt d_first)
+{
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
   for (; first != last; ++first, ++d_first) {
-    ::new (static_cast<void*>(std::addressof(*d_first)))
-      typename std::iterator_traits<ForwardIt>::value_type(std::move(*first));
+    void* const address = static_cast<void*>(std::addressof(*d_first));
+    ::new (address) value_type(std::move(*first));
   }
 }
 
-#ifdef __CUDACC__
-
-template <class InputIt, class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_move(
-    cuda_execution policy,
+template <class ExecutionPolicy, class InputIt, class ForwardIt>
+void uninitialized_copy(
+    ExecutionPolicy policy,
     InputIt first,
     InputIt last,
     ForwardIt d_first)
 {
-  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  for_each(policy, first, last,
-  [=] __device__ (value_type& src_value) P3A_ALWAYS_INLINE {
-    auto addr = &(d_first[&src_value - &(*first)]);
-    ::new (static_cast<void*>(addr)) value_type(std::move(src_value));
+  using difference_type = typename std::iterator_traits<InputIt>::difference_type;
+  p3a::for_each(policy,
+      p3a::counting_iterator<difference_type>(0),
+      p3a::counting_iterator<difference_type>(last - first),
+  [=] P3A_HOST P3A_DEVICE (difference_type i) P3A_ALWAYS_INLINE {
+    void* const address = static_cast<void*>(std::addressof(d_first[i]));
+    ::new (address) value_type(first[i]);
   });
 }
 
-#endif
-
-#ifdef __HIPCC__
-
 template <class InputIt, class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_move(
-    hip_execution policy,
+P3A_ALWAYS_INLINE inline
+void uninitialized_copy(
+    serial_local_execution,
     InputIt first,
-    InputIt last,
-    ForwardIt d_first)
-{
-  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  for_each(policy, first, last,
-  [=] __device__ (value_type& src_value) P3A_ALWAYS_INLINE {
-    auto addr = &(d_first[&src_value - &(*first)]);
-    ::new (static_cast<void*>(addr)) value_type(std::move(src_value));
-  });
-}
-
-#endif
-
-template <class InputIt, class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_copy(
-    serial_execution,
-    InputIt first,
-    InputIt last,
+    InputIt const& last,
     ForwardIt d_first)
 {
   for (; first != last; ++first, ++d_first) {
@@ -72,125 +72,61 @@ P3A_NEVER_INLINE void uninitialized_copy(
   }
 }
 
-#ifdef __CUDACC__
-
-template <class InputIt, class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_copy(
-    cuda_execution policy,
-    InputIt first,
-    InputIt last,
-    ForwardIt d_first)
+template <class ExecutionPolicy, class ForwardIt>
+void destroy(
+    ExecutionPolicy policy,
+    ForwardIt first,
+    ForwardIt last)
 {
-  using input_reference_type = typename std::iterator_traits<InputIt>::reference;
-  using output_value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  for_each(policy, first, last,
-  [=] __device__ (input_reference_type input_reference) P3A_ALWAYS_INLINE {
-    auto addr = &(d_first[&input_reference - &(*first)]);
-    ::new (static_cast<void*>(addr)) output_value_type(input_reference);
-  });
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class InputIt, class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_copy(
-    hip_execution policy,
-    InputIt first,
-    InputIt last,
-    ForwardIt d_first)
-{
-  using input_reference_type = typename std::iterator_traits<InputIt>::reference;
-  using output_value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  for_each(policy, first, last,
-  [=] __device__ (input_reference_type input_reference) P3A_ALWAYS_INLINE {
-    auto addr = &(d_first[&input_reference - &(*first)]);
-    ::new (static_cast<void*>(addr)) output_value_type(input_reference);
-  });
-}
-
-#endif
-
-template <class T>
-P3A_ALWAYS_INLINE inline void destroy_at(
-    serial_execution,
-    T* p)
-{
-  p->~T();
+  using T = typename std::iterator_traits<ForwardIt>::value_type;
+  if constexpr (!std::is_trivially_destructible_v<T>) {
+    using difference_type = typename std::iterator_traits<ForwardIt>::difference_type;
+    for_each(policy,
+        counting_iterator<difference_type>(0),
+        counting_iterator<difference_type>(last - first),
+    [=] P3A_HOST P3A_DEVICE (difference_type i) P3A_ALWAYS_INLINE {
+      first[i].~T();
+    });
+  }
 }
 
 template <class ForwardIt>
-P3A_NEVER_INLINE void destroy(
-    serial_execution policy,
+P3A_ALWAYS_INLINE inline
+void destroy(
+    serial_local_execution,
     ForwardIt first,
-    ForwardIt last)
+    ForwardIt const& last)
 {
   using T = typename std::iterator_traits<ForwardIt>::value_type;
   if constexpr (!std::is_trivially_destructible_v<T>) {
     for (; first != last; ++first) {
-      destroy_at(policy, std::addressof(*first));
+      first->~T();
     }
   }
 }
 
-#ifdef __CUDACC__
-
-template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
-void destroy_at(cuda_execution, T* p)
-{
-  p->~T();
-}
-
-template <class ForwardIt>
-P3A_NEVER_INLINE void destroy(
-    cuda_execution policy,
-    ForwardIt first,
-    ForwardIt last)
-{
-  using T = typename std::iterator_traits<ForwardIt>::value_type;
-  if constexpr (!std::is_trivially_destructible_v<T>) {
-    for_each(policy, first, last,
-    [=] P3A_DEVICE (T& ref) P3A_ALWAYS_INLINE {
-      destroy_at(policy, &ref);
-    });
-  }
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class T>
-__host__ __device__ P3A_ALWAYS_INLINE inline
-void destroy_at(hip_execution, T* p)
-{
-  p->~T();
-}
-
-template <class ForwardIt>
-P3A_NEVER_INLINE void destroy(
-    hip_execution policy,
-    ForwardIt first,
-    ForwardIt last)
-{
-  using T = typename std::iterator_traits<ForwardIt>::value_type;
-  if constexpr (!std::is_trivially_destructible_v<T>) {
-    for_each(policy, first, last,
-    [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
-      destroy_at(policy, &ref);
-    });
-  }
-}
-
-#endif
-
-template <class ForwardIt>
+template <class ExecutionPolicy, class ForwardIt>
 P3A_NEVER_INLINE void uninitialized_default_construct(
-    serial_execution,
+    ExecutionPolicy policy,
     ForwardIt first,
     ForwardIt last)
+{
+  using T = typename std::iterator_traits<ForwardIt>::value_type;
+  if constexpr (!std::is_trivially_default_constructible_v<T>) {
+    using reference = typename std::iterator_traits<ForwardIt>::reference;
+    for_each(policy, first, last,
+    [=] P3A_HOST P3A_DEVICE (reference r) P3A_ALWAYS_INLINE {
+      ::new (static_cast<void*>(std::addressof(r))) T;
+    });
+  }
+}
+
+template <class ForwardIt>
+P3A_ALWAYS_INLINE inline
+void uninitialized_default_construct(
+    serial_local_execution,
+    ForwardIt first,
+    ForwardIt const& last)
 {
   using T = typename std::iterator_traits<ForwardIt>::value_type;
   if constexpr (!std::is_trivially_default_constructible_v<T>) {
@@ -200,49 +136,27 @@ P3A_NEVER_INLINE void uninitialized_default_construct(
   }
 }
 
-#ifdef __CUDACC__
-
-template <class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_default_construct(
-    cuda_execution policy,
-    ForwardIt first,
-    ForwardIt last)
-{
-  using T = typename std::iterator_traits<ForwardIt>::value_type;
-  if constexpr (!std::is_trivially_default_constructible_v<T>) {
-    for_each(policy, first, last,
-    [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
-      ::new (static_cast<void*>(&ref)) T;
-    });
-  }
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_default_construct(
-    hip_execution policy,
-    ForwardIt first,
-    ForwardIt last)
-{
-  using T = typename std::iterator_traits<ForwardIt>::value_type;
-  if constexpr (!std::is_trivially_default_constructible_v<T>) {
-    for_each(policy, first, last,
-    [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
-      ::new (static_cast<void*>(&ref)) T;
-    });
-  }
-}
-
-#endif
-
-template <class ForwardIt, class T>
-P3A_NEVER_INLINE void uninitialized_fill(
-    serial_execution,
+template <class ExecutionPolicy, class ForwardIt, class T>
+void uninitialized_fill(
+    ExecutionPolicy policy,
     ForwardIt first,
     ForwardIt last,
+    T value)
+{
+  using reference = typename std::iterator_traits<ForwardIt>::reference;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  for_each(policy, first, last,
+  [=] P3A_HOST P3A_DEVICE (reference r) P3A_ALWAYS_INLINE {
+    ::new (static_cast<void*>(std::addressof(r))) value_type(value);
+  });
+}
+
+template <class ForwardIt, class T>
+P3A_ALWAYS_INLINE inline
+void uninitialized_fill(
+    serial_local_execution,
+    ForwardIt first,
+    ForwardIt const& last,
     T const& value)
 {
   for (; first != last; ++first) {
@@ -250,40 +164,6 @@ P3A_NEVER_INLINE void uninitialized_fill(
       typename std::iterator_traits<ForwardIt>::value_type(value);
   }
 }
-
-#ifdef __CUDACC__
-
-template <class ForwardIt, class T>
-P3A_NEVER_INLINE void uninitialized_fill(
-    cuda_execution policy,
-    ForwardIt first,
-    ForwardIt last,
-    T value)
-{
-  for_each(policy, first, last,
-  [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
-    ::new (static_cast<void*>(&ref)) T(value);
-  });
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class ForwardIt, class T>
-P3A_NEVER_INLINE void uninitialized_fill(
-    hip_execution policy,
-    ForwardIt first,
-    ForwardIt last,
-    T value)
-{
-  for_each(policy, first, last,
-  [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
-    ::new (static_cast<void*>(&ref)) T(value);
-  });
-}
-
-#endif
 
 template <class ForwardIt1, class ForwardIt2>
 P3A_NEVER_INLINE void copy(
@@ -391,66 +271,36 @@ __device__ P3A_ALWAYS_INLINE void copy(
 
 #endif
 
-template <class ForwardIt1, class ForwardIt2>
-P3A_NEVER_INLINE void move(
-    serial_execution,
+template <class ExecutionPolicy, class ForwardIt1, class ForwardIt2>
+void move(
+    ExecutionPolicy policy,
     ForwardIt1 first,
     ForwardIt1 last,
     ForwardIt2 d_first)
 {
-  while (first != last) {
-    *d_first++ = std::move(*first++);
-  }
+  using difference_type = typename std::iterator_traits<ForwardIt1>::difference_type;
+  for_each(policy,
+      counting_iterator<difference_type>(0),
+      counting_iterator<difference_type>(last - first),
+  [=] P3A_HOST P3A_DEVICE (difference_type i)  P3A_ALWAYS_INLINE {
+    d_first[i] = std::move(first[i]);
+  });
 }
 
 template <class ForwardIt1, class ForwardIt2>
-P3A_ALWAYS_INLINE inline void
-move(
+P3A_ALWAYS_INLINE inline
+void move(
     serial_local_execution,
     ForwardIt1 first,
-    ForwardIt1 last,
+    ForwardIt1 const& last,
     ForwardIt2 d_first)
 {
   while (first != last) {
     *d_first++ = std::move(*first++);
   }
 }
-
-#ifdef __CUDACC__
-
-template <class ForwardIt1, class ForwardIt2>
-P3A_DEVICE P3A_ALWAYS_INLINE inline
-void move(
-    cuda_local_execution,
-    ForwardIt1 first,
-    ForwardIt1 last,
-    ForwardIt2 d_first)
-{
-  while (first != last) {
-    *d_first++ = std::move(*first++);
-  }
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class ForwardIt1, class ForwardIt2>
-__device__ P3A_ALWAYS_INLINE void move(
-    hip_local_execution,
-    ForwardIt1 first,
-    ForwardIt1 last,
-    ForwardIt2 d_first)
-{
-  while (first != last) {
-    *d_first++ = std::move(*first++);
-  }
-}
-
-#endif
 
 template <class BidirIt1, class BidirIt2>
-P3A_NEVER_INLINE
 void move_backward(
     serial_execution,
     BidirIt1 first,
@@ -475,42 +325,10 @@ void move_backward(
   }
 }
 
-#ifdef __CUDACC__
 
-template <class BidirIt1, class BidirIt2>
-__device__ P3A_ALWAYS_INLINE inline
-void move_backward(
-    cuda_local_execution,
-    BidirIt1 first,
-    BidirIt1 last,
-    BidirIt2 d_last)
-{
-  while (first != last) {
-    *(--d_last) = std::move(*(--last));
-  }
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class BidirIt1, class BidirIt2>
-__device__ P3A_ALWAYS_INLINE void move_backward(
-    hip_local_execution,
-    BidirIt1 first,
-    BidirIt1 last,
-    BidirIt2 d_last)
-{
-  while (first != last) {
-    *(--d_last) = std::move(*(--last));
-  }
-}
-
-#endif
-
-template <class ForwardIt, class T>
-P3A_NEVER_INLINE void fill(
-    serial_execution,
+template <class ExecutionPolicy, class ForwardIt, class T>
+void fill(
+    ExecutionPolicy policy,
     ForwardIt first,
     ForwardIt last,
     const T& value)
