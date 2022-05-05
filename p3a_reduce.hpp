@@ -433,10 +433,10 @@ class fixed_point_double_sum {
 };
 
 extern template class fixed_point_double_sum<allocator<double>, serial_execution>;
-#ifdef __CUDACC__
+#ifdef KOKKOS_ENABLE_CUDA
 extern template class fixed_point_double_sum<cuda_device_allocator<double>, cuda_execution>;
 #endif
-#ifdef __HIPCC__
+#ifdef KOKKOS_ENABLE_HIP
 extern template class fixed_point_double_sum<hip_device_allocator<double>, hip_execution>;
 #endif
 
@@ -502,12 +502,6 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
   associative_sum& operator=(associative_sum&&) = default;
   associative_sum(associative_sum const&) = delete;
   associative_sum& operator=(associative_sum const&) = delete;
-#ifdef __CUDACC__
- public:
-#else
- private:
-#endif
- public:
   template <class Iterator, class UnaryOp>
   [[nodiscard]]
   double transform_reduce(
