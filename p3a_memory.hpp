@@ -312,6 +312,20 @@ P3A_NEVER_INLINE void uninitialized_fill(
   }
 }
 
+template <class ForwardIt, class T>
+P3A_ALWAYS_INLINE inline
+void uninitialized_fill(
+    serial_local_execution,
+    ForwardIt first,
+    ForwardIt const& last,
+    T const& value)
+{
+  for (; first != last; ++first) {
+    ::new (static_cast<void*>(std::addressof(*first)))
+      typename std::iterator_traits<ForwardIt>::value_type(value);
+  }
+}
+
 #ifdef __CUDACC__
 
 template <class ForwardIt, class T>
