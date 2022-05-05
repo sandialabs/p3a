@@ -2,7 +2,7 @@
 
 namespace p3a {
 
-#ifdef __CUDACC__
+#ifdef KOKKOS_ENABLE_CUDA
 
 cuda_exception::cuda_exception(cudaError_t error)
   :error_string(cudaGetErrorString(error))
@@ -31,7 +31,7 @@ void cuda_execution::synchronize() const {
 
 #endif
 
-#ifdef __HIPCC__
+#ifdef KOKKOS_ENABLE_HIP
 
 hip_exception::hip_exception(hipError_t error)
   :error_string(hipGetErrorString(error))

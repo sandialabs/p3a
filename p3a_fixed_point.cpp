@@ -99,10 +99,10 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
 // code can stay in this translation unit
 //
 template class fixed_point_double_sum<allocator<double>, serial_execution>;
-#ifdef __CUDACC__
+#ifdef KOKKOS_ENABLE_CUDA
 template class fixed_point_double_sum<cuda_device_allocator<double>, cuda_execution>;
 #endif
-#ifdef __HIPCC__
+#ifdef KOKKOS_ENABLE_HIP
 template class fixed_point_double_sum<hip_device_allocator<double>, hip_execution>;
 #endif
 

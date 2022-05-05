@@ -240,7 +240,7 @@ void for_each(
   }
 }
 
-#ifdef __CUDACC__
+#ifdef KOKKOS_ENABLE_CUDA
 
 template <class ForwardIt, class UnaryFunction>
 __device__ P3A_ALWAYS_INLINE inline constexpr
@@ -257,7 +257,7 @@ void for_each(
 
 #endif
 
-#ifdef __HIPCC__
+#ifdef KOKKOS_ENABLE_HIP
 
 template <class ForwardIt, class UnaryFunction>
 __device__ P3A_ALWAYS_INLINE inline constexpr
@@ -392,7 +392,7 @@ void simd_for_each(
       functor);
 }
 
-#ifdef __CUDACC__
+#ifdef KOKKOS_ENABLE_CUDA
 
 template <class Functor, class Integral>
 __device__ P3A_ALWAYS_INLINE constexpr void for_each(
@@ -436,7 +436,7 @@ __device__ P3A_ALWAYS_INLINE constexpr void for_each(
 
 #endif
 
-#ifdef __HIPCC__
+#ifdef KOKKOS_ENABLE_HIP
 
 namespace details {
 
