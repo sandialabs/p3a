@@ -411,19 +411,6 @@ P3A_NEVER_INLINE void copy(
   }
 }
 
-template <class ForwardIt1, class ForwardIt2>
-P3A_DEVICE P3A_ALWAYS_INLINE inline
-void copy(
-    cuda_local_execution,
-    ForwardIt1 first,
-    ForwardIt1 last,
-    ForwardIt2 d_first)
-{
-  while (first != last) {
-    *d_first++ = *first++;
-  }
-}
-
 #endif
 
 #ifdef __HIPCC__
@@ -491,39 +478,6 @@ move(
   }
 }
 
-#ifdef __CUDACC__
-
-template <class ForwardIt1, class ForwardIt2>
-P3A_DEVICE P3A_ALWAYS_INLINE inline
-void move(
-    cuda_local_execution,
-    ForwardIt1 first,
-    ForwardIt1 last,
-    ForwardIt2 d_first)
-{
-  while (first != last) {
-    *d_first++ = std::move(*first++);
-  }
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class ForwardIt1, class ForwardIt2>
-__device__ P3A_ALWAYS_INLINE void move(
-    hip_local_execution,
-    ForwardIt1 first,
-    ForwardIt1 last,
-    ForwardIt2 d_first)
-{
-  while (first != last) {
-    *d_first++ = std::move(*first++);
-  }
-}
-
-#endif
-
 template <class BidirIt1, class BidirIt2>
 P3A_NEVER_INLINE
 void move_backward(
@@ -549,39 +503,6 @@ void move_backward(
     *(--d_last) = std::move(*(--last));
   }
 }
-
-#ifdef __CUDACC__
-
-template <class BidirIt1, class BidirIt2>
-__device__ P3A_ALWAYS_INLINE inline
-void move_backward(
-    cuda_local_execution,
-    BidirIt1 first,
-    BidirIt1 last,
-    BidirIt2 d_last)
-{
-  while (first != last) {
-    *(--d_last) = std::move(*(--last));
-  }
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class BidirIt1, class BidirIt2>
-__device__ P3A_ALWAYS_INLINE void move_backward(
-    hip_local_execution,
-    BidirIt1 first,
-    BidirIt1 last,
-    BidirIt2 d_last)
-{
-  while (first != last) {
-    *(--d_last) = std::move(*(--last));
-  }
-}
-
-#endif
 
 template <class ForwardIt, class T>
 P3A_NEVER_INLINE void fill(
@@ -624,19 +545,6 @@ P3A_NEVER_INLINE void fill(
   });
 }
 
-template <class ForwardIt, class T>
-__device__ P3A_ALWAYS_INLINE inline
-void fill(
-    cuda_local_execution,
-    ForwardIt first,
-    ForwardIt last,
-    const T& value)
-{
-  for (; first != last; ++first) {
-    *first = value;
-  }
-}
-
 #endif
 
 #ifdef __HIPCC__
@@ -655,26 +563,14 @@ P3A_NEVER_INLINE void fill(
   });
 }
 
-template <class ForwardIt, class T>
-__device__ P3A_ALWAYS_INLINE void fill(
-    hip_local_execution,
-    ForwardIt first,
-    ForwardIt last,
-    const T& value)
-{
-  for (; first != last; ++first) {
-    *first = value;
-  }
-}
-
 #endif
 
 template <class ForwardIt, class T>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 void fill(
-    local_execution,
+    device_local_execution,
     ForwardIt first,
-    ForwardIt last,
+    ForwardIt const& last,
     const T& value)
 {
   for (; first != last; ++first) {

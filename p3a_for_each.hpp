@@ -240,40 +240,6 @@ void for_each(
   }
 }
 
-#ifdef KOKKOS_ENABLE_CUDA
-
-template <class ForwardIt, class UnaryFunction>
-__device__ P3A_ALWAYS_INLINE inline constexpr
-void for_each(
-    cuda_local_execution,
-    ForwardIt first,
-    ForwardIt const& last,
-    UnaryFunction const& f)
-{
-  for (; first != last; ++first) {
-    f(*first);
-  }
-}
-
-#endif
-
-#ifdef KOKKOS_ENABLE_HIP
-
-template <class ForwardIt, class UnaryFunction>
-__device__ P3A_ALWAYS_INLINE inline constexpr
-void for_each(
-    hip_local_execution,
-    ForwardIt first,
-    ForwardIt const& last,
-    UnaryFunction const& f)
-{
-  for (; first != last; ++first) {
-    f(*first);
-  }
-}
-
-#endif
-
 template <class Functor, class Integral>
 P3A_ALWAYS_INLINE inline constexpr void for_each(
     serial_local_execution,
@@ -293,7 +259,7 @@ P3A_ALWAYS_INLINE inline constexpr void for_each(
 template <class Functor, class Integral>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 void for_each(
-    local_execution,
+    device_local_execution,
     counting_iterator3<Integral> const& first,
     counting_iterator3<Integral> const& last,
     Functor const& functor)
@@ -334,7 +300,7 @@ P3A_ALWAYS_INLINE constexpr void for_each(
 template <class Functor>
 P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 void for_each(
-    local_execution policy,
+    device_local_execution policy,
     grid3 const& grid,
     Functor const& functor)
 {
@@ -349,6 +315,19 @@ void for_each(
     ExecutionPolicy policy,
     subgrid3 subgrid,
     Functor functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
+}
+
+template <class Functor>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+void for_each(
+    device_local_execution policy,
+    subgrid3 subgrid,
+    Functor const& functor)
 {
   for_each(policy,
       counting_iterator3<int>{subgrid.lower()},
@@ -391,95 +370,5 @@ void simd_for_each(
       counting_iterator3<int>{grid.extents()},
       functor);
 }
-
-#ifdef KOKKOS_ENABLE_CUDA
-
-template <class Functor, class Integral>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    cuda_local_execution,
-    counting_iterator3<Integral> const& first,
-    counting_iterator3<Integral> const& last,
-    Functor const& functor)
-{
-  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
-    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
-        functor(vector3<Integral>(i, j, k));
-      }
-    }
-  }
-}
-
-template <class Functor>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    cuda_local_execution policy,
-    subgrid3 const& subgrid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{subgrid.lower()},
-      counting_iterator3<int>{subgrid.upper()},
-      functor);
-}
-
-template <class Functor>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    cuda_local_execution policy,
-    grid3 const& grid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      functor);
-}
-
-#endif
-
-#ifdef KOKKOS_ENABLE_HIP
-
-namespace details {
-
-template <class Functor, class Integral>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    hip_local_execution,
-    counting_iterator3<Integral> const& first,
-    counting_iterator3<Integral> const& last,
-    Functor const& functor)
-{
-  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
-    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
-        functor(vector3<Integral>(i, j, k));
-      }
-    }
-  }
-}
-
-template <class Functor>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    hip_local_execution policy,
-    subgrid3 const& subgrid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{subgrid.lower()},
-      counting_iterator3<int>{subgrid.upper()},
-      functor);
-}
-
-template <class Functor>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    hip_local_execution policy,
-    grid3 const& grid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      functor);
-}
-
-#endif
 
 }

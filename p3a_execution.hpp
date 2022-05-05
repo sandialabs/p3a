@@ -36,14 +36,14 @@ class serial_local_execution {
 
 inline constexpr serial_local_execution serial_local = {};
 
-class local_execution {
+class device_local_execution {
  public:
   P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
   void synchronize() const {}
   using simd_abi_type = simd_abi::scalar;
 };
 
-inline constexpr local_execution local = {};
+inline constexpr device_local_execution device_local = {};
 
 #ifdef KOKKOS_ENABLE_CUDA
 
@@ -70,16 +70,6 @@ class cuda_execution {
 };
 
 inline constexpr cuda_execution cuda = {};
-
-class cuda_local_execution {
- public:
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr void synchronize() const
-  {
-  }
-  using simd_abi_type = simd_abi::scalar;
-};
-
-inline constexpr cuda_local_execution cuda_local = {};
 
 #endif
 
@@ -109,31 +99,16 @@ class hip_execution {
 
 inline constexpr hip_execution hip = {};
 
-class hip_local_execution {
- public:
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr void synchronize() const
-  {
-  }
-  using simd_abi_type = simd_abi::scalar;
-};
-
-inline constexpr hip_local_execution hip_local = {};
-
 #endif
 
 #if defined(KOKKOS_ENABLE_CUDA)
 using device_execution = cuda_execution;
-using device_local_execution = cuda_local_execution;
 #elif defined(KOKKOS_ENABLE_HIP)
 using device_execution = hip_execution;
-using device_local_execution = hip_local_execution;
 #else
 using device_execution = serial_execution;
-using device_local_execution = serial_local_execution;
 #endif
 using host_execution = serial_execution;
-inline constexpr host_execution host = {};
 inline constexpr device_execution device = {};
-inline constexpr device_local_execution device_local = {};
 
 }
