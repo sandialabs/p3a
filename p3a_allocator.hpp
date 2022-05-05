@@ -3,6 +3,8 @@
 #include <cstdint> //int64_t
 #include <cstdlib> //malloc
 
+#include <Kokkos_Macros.hpp>
+
 namespace p3a {
 
 class allocation_failure : public std::bad_alloc {
@@ -41,7 +43,7 @@ class allocator {
   }
 };
 
-#ifdef __CUDACC__
+#ifdef KOKKOS_ENABLE_CUDA
 
 template <class T>
 class cuda_host_allocator {
@@ -85,7 +87,7 @@ class cuda_device_allocator {
 
 #endif
 
-#ifdef __HIPCC__
+#ifdef KOKKOS_ENABLE_HIP
 
 template <class T>
 class hip_host_allocator {
@@ -129,10 +131,10 @@ class hip_device_allocator {
 
 #endif
 
-#if defined(__CUDACC__)
+#if defined(KOKKOS_ENABLE_CUDA)
 template <class T>
 using device_allocator = cuda_device_allocator<T>;
-#elif defined(__HIPCC__)
+#elif defined(KOKKOS_ENABLE_HIP)
 template <class T>
 using device_allocator = hip_device_allocator<T>;
 #else
@@ -140,10 +142,10 @@ template <class T>
 using device_allocator = allocator<T>;
 #endif
 
-#if defined(__CUDACC__)
+#if defined(KOKKOS_ENABLE_CUDA)
 template <class T>
 using mirror_allocator = cuda_host_allocator<T>;
-#elif defined(__HIPCC__)
+#elif defined(KOKKOS_ENABLE_HIP)
 template <class T>
 using mirror_allocator = hip_host_allocator<T>;
 #else
