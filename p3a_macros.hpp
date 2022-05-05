@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Kokkos_Macros.hpp>
+
 #if defined(_MSC_VER)
 #define P3A_ALWAYS_INLINE
 #define P3A_NEVER_INLINE __declspec(noinline)
@@ -8,13 +10,13 @@
 #define P3A_NEVER_INLINE __attribute__((noinline))
 #endif
 
-#ifdef __CUDACC__
+#ifdef KOKKOS_ENABLE_CUDA
 #ifndef __CUDACC_EXTENDED_LAMBDA__
 #error "P3A uses CUDA extended lambdas. Please recompile with --expt-extended-lambda"
 #endif
 #endif
 
-#if defined(__CUDACC__) || defined(__HIPCC__)
+#if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP)
 #define P3A_HOST __host__
 #define P3A_DEVICE __device__
 #else
