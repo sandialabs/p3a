@@ -336,11 +336,11 @@ void simd_for_each(
   details::simd_functor<T, simd_abi_type, Integral, Functor>(functor, *first, *last));
 }
 
-template <class T, class ExecutionPolicy, class Iterator, class Functor>
+template <class T, class ExecutionPolicy, class Integral, class Functor>
 void simd_for_each(
     ExecutionPolicy,
-    Iterator first,
-    Iterator last,
+    counting_iterator3<Integral> first,
+    counting_iterator3<Integral> last,
     Functor functor)
 {
   details::kokkos_simd_for_each<
