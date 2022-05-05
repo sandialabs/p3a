@@ -210,6 +210,11 @@ class simd_reduce_wrapper {
     auto const simd_result = m_unary_op(indices, mask);
     return reduce(where(mask, simd_result), m_init, m_binary_op);
   }
+  P3A_ALWAYS_INLINE inline constexpr
+  BinaryReductionOp const& binary_op() const
+  {
+    return m_binary_op;
+  }
 };
 
 template <
@@ -319,6 +324,26 @@ template <
 }
 
 template <
+  class Iterator,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] P3A_ALWAYS_INLINE inline
+T transform_reduce(
+    serial_local_execution,
+    Iterator first,
+    Iterator const& last,
+    T init,
+    BinaryReductionOp const& binary_op,
+    UnaryTransformOp const& unary_op)
+{
+  for (; first != last; ++first) {
+    init = op(std::move(init), unary_op(*first)); // std::move since C++20
+  }
+  return init;
+}
+
+template <
   class ExecutionPolicy,
   class T,
   class BinaryReductionOp,
@@ -356,6 +381,53 @@ template <
     typename ExecutionPolicy::simd_abi_type,
     typename ExecutionPolicy::kokkos_execution_space>(
       first, last, init, binary_op, unary_op);
+}
+
+namespace details {
+
+template <class T, class BinaryReductionOp, class UnaryTransformOp>
+class serial_simd_reduce_functor {
+  using wrapper_type = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
+  wrapper_type m_wrapper;
+  T& m_init;
+ public:
+  serial_simd_reduce_functor(
+      T& init_arg,
+      BinaryReductionOp binary_op_arg,
+      UnaryTransformOp unary_op_arg)
+    :m_wrapper(init_arg, binary_op_arg, unary_op_arg)
+    ,m_init(init_arg)
+  {
+  }
+  template <class Indices, class Abi>
+  P3A_ALWAYS_INLINE inline
+  void operator()(Indices const& indices, p3a::simd_mask<T, Abi> const& mask) const
+  {
+    m_init = m_wrapper.binary_op()(
+        std::move(m_init),
+        m_wrapper(indices, mask));
+  }
+};
+
+}
+
+template <
+  class Iterator,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] T simd_transform_reduce(
+    serial_local_execution policy,
+    Iterator first,
+    Iterator last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  using functor = details::serial_simd_reduce_functor<T, BinaryReductionOp, UnaryTransformOp>;
+  simd_for_each<T>(policy, first, last,
+      functor(init, binary_op, unary_op));
+  return init;
 }
 
 template <
@@ -432,7 +504,7 @@ class fixed_point_double_sum {
   values_type& values() { return m_values; }
 };
 
-extern template class fixed_point_double_sum<allocator<double>, serial_execution>;
+extern template class fixed_point_double_sum<allocator<double>, serial_local_execution>;
 #ifdef KOKKOS_ENABLE_CUDA
 extern template class fixed_point_double_sum<cuda_device_allocator<double>, cuda_execution>;
 #endif
@@ -539,6 +611,6 @@ using device_associative_sum =
   associative_sum<T, device_allocator<T>, device_execution>;
 template <class T>
 using host_associative_sum = 
-  associative_sum<T, allocator<T>, serial_execution>;
+  associative_sum<T, allocator<T>, serial_local_execution>;
 
 }

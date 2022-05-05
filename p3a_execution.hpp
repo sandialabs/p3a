@@ -19,19 +19,19 @@
 
 namespace p3a {
 
-class serial_execution {
+class kokkos_serial_execution {
  public:
   void synchronize() const {}
   using simd_abi_type = simd_abi::host_native;
   using kokkos_execution_space = Kokkos::Serial;
 };
 
-inline constexpr serial_execution serial = {};
+inline constexpr kokkos_serial_execution kokkos_serial = {};
 
 class serial_local_execution {
  public:
   P3A_ALWAYS_INLINE constexpr void synchronize() const {}
-  using simd_abi_type = simd_abi::scalar;
+  using simd_abi_type = simd_abi::host_native;
 };
 
 inline constexpr serial_local_execution serial_local = {};
@@ -106,9 +106,8 @@ using device_execution = cuda_execution;
 #elif defined(KOKKOS_ENABLE_HIP)
 using device_execution = hip_execution;
 #else
-using device_execution = serial_execution;
+using device_execution = kokkos_serial_execution;
 #endif
-using host_execution = serial_execution;
 inline constexpr device_execution device = {};
 
 }

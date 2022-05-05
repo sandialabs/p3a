@@ -10,7 +10,7 @@ namespace p3a {
 
 template <class InputIt, class ForwardIt>
 P3A_NEVER_INLINE void uninitialized_move(
-    serial_execution,
+    kokkos_serial_execution,
     InputIt first,
     InputIt last,
     ForwardIt d_first)
@@ -78,7 +78,7 @@ P3A_NEVER_INLINE void uninitialized_move(
 
 template <class InputIt, class ForwardIt>
 P3A_NEVER_INLINE void uninitialized_copy(
-    serial_execution,
+    kokkos_serial_execution,
     InputIt first,
     InputIt last,
     ForwardIt d_first)
@@ -145,7 +145,7 @@ P3A_NEVER_INLINE void uninitialized_copy(
 
 template <class T>
 P3A_ALWAYS_INLINE inline void destroy_at(
-    serial_execution,
+    kokkos_serial_execution,
     T* p)
 {
   p->~T();
@@ -153,7 +153,7 @@ P3A_ALWAYS_INLINE inline void destroy_at(
 
 template <class ForwardIt>
 P3A_NEVER_INLINE void destroy(
-    serial_execution policy,
+    kokkos_serial_execution policy,
     ForwardIt first,
     ForwardIt last)
 {
@@ -234,7 +234,7 @@ P3A_NEVER_INLINE void destroy(
 
 template <class ForwardIt>
 P3A_NEVER_INLINE void uninitialized_default_construct(
-    serial_execution,
+    kokkos_serial_execution,
     ForwardIt first,
     ForwardIt last)
 {
@@ -301,7 +301,7 @@ P3A_NEVER_INLINE void uninitialized_default_construct(
 
 template <class ForwardIt, class T>
 P3A_NEVER_INLINE void uninitialized_fill(
-    serial_execution,
+    kokkos_serial_execution,
     ForwardIt first,
     ForwardIt last,
     T const& value)
@@ -362,7 +362,7 @@ P3A_NEVER_INLINE void uninitialized_fill(
 
 template <class ForwardIt1, class ForwardIt2>
 P3A_NEVER_INLINE void copy(
-    serial_execution,
+    kokkos_serial_execution,
     ForwardIt1 first,
     ForwardIt1 last,
     ForwardIt2 d_first)
@@ -468,7 +468,7 @@ __device__ P3A_ALWAYS_INLINE void copy(
 
 template <class ForwardIt1, class ForwardIt2>
 P3A_NEVER_INLINE void move(
-    serial_execution,
+    kokkos_serial_execution,
     ForwardIt1 first,
     ForwardIt1 last,
     ForwardIt2 d_first)
@@ -494,7 +494,7 @@ move(
 template <class BidirIt1, class BidirIt2>
 P3A_NEVER_INLINE
 void move_backward(
-    serial_execution,
+    kokkos_serial_execution,
     BidirIt1 first,
     BidirIt1 last,
     BidirIt2 d_last)
@@ -519,7 +519,7 @@ void move_backward(
 
 template <class ForwardIt, class T>
 P3A_NEVER_INLINE void fill(
-    serial_execution,
+    kokkos_serial_execution,
     ForwardIt first,
     ForwardIt last,
     const T& value)
