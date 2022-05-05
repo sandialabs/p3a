@@ -101,6 +101,141 @@ void kokkos_for_each(
   kokkos_3d_functor<Integral, Functor>(functor));
 }
 
+}
+
+template <class ExecutionPolicy, class Iterator, class Functor>
+void for_each(
+    ExecutionPolicy,
+    Iterator first,
+    Iterator last,
+    Functor functor)
+{
+  details::kokkos_for_each<typename ExecutionPolicy::kokkos_execution_space>(
+      first, last, functor);
+}
+
+template <class ForwardIt, class UnaryFunction>
+P3A_ALWAYS_INLINE inline constexpr
+void for_each(
+    serial_local_execution,
+    ForwardIt first,
+    ForwardIt const& last,
+    UnaryFunction const& f)
+{
+  for (; first != last; ++first) {
+    f(*first);
+  }
+}
+
+template <class Functor, class Integral>
+P3A_ALWAYS_INLINE inline constexpr void for_each(
+    serial_local_execution,
+    counting_iterator3<Integral> const& first,
+    counting_iterator3<Integral> const& last,
+    Functor const& functor)
+{
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
+        functor(vector3<Integral>(i, j, k));
+      }
+    }
+  }
+}
+
+template <class Functor, class Integral>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+void for_each(
+    device_local_execution,
+    counting_iterator3<Integral> const& first,
+    counting_iterator3<Integral> const& last,
+    Functor const& functor)
+{
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
+        functor(vector3<Integral>(i, j, k));
+      }
+    }
+  }
+}
+
+template <class Functor>
+P3A_ALWAYS_INLINE inline constexpr void for_each(
+    serial_local_execution policy,
+    subgrid3 const& subgrid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
+}
+
+template <class Functor>
+P3A_ALWAYS_INLINE inline constexpr void for_each(
+    serial_local_execution policy,
+    grid3 const& grid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
+}
+
+template <class Functor>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+void for_each(
+    device_local_execution policy,
+    grid3 const& grid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
+}
+
+template <class ExecutionPolicy, class Functor>
+void for_each(
+    ExecutionPolicy policy,
+    subgrid3 subgrid,
+    Functor functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
+}
+
+template <class Functor>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+void for_each(
+    device_local_execution policy,
+    subgrid3 subgrid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
+}
+
+template <class ExecutionPolicy, class Functor>
+void for_each(
+    ExecutionPolicy policy,
+    grid3 grid,
+    Functor functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
+}
+
+namespace details {
+
 template <
   class T,
   class SimdAbi,
@@ -203,17 +338,6 @@ void kokkos_simd_for_each(
 
 }
 
-template <class ExecutionPolicy, class Iterator, class Functor>
-void for_each(
-    ExecutionPolicy,
-    Iterator first,
-    Iterator last,
-    Functor functor)
-{
-  details::kokkos_for_each<typename ExecutionPolicy::kokkos_execution_space>(
-      first, last, functor);
-}
-
 template <class T, class ExecutionPolicy, class Iterator, class Functor>
 void simd_for_each(
     ExecutionPolicy,
@@ -225,126 +349,6 @@ void simd_for_each(
     T,
     typename ExecutionPolicy::simd_abi_type,
     typename ExecutionPolicy::kokkos_execution_space>(first, last, functor);
-}
-
-template <class ForwardIt, class UnaryFunction>
-P3A_ALWAYS_INLINE inline constexpr
-void for_each(
-    serial_local_execution,
-    ForwardIt first,
-    ForwardIt const& last,
-    UnaryFunction const& f)
-{
-  for (; first != last; ++first) {
-    f(*first);
-  }
-}
-
-template <class Functor, class Integral>
-P3A_ALWAYS_INLINE inline constexpr void for_each(
-    serial_local_execution,
-    counting_iterator3<Integral> const& first,
-    counting_iterator3<Integral> const& last,
-    Functor const& functor)
-{
-  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
-    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
-        functor(vector3<Integral>(i, j, k));
-      }
-    }
-  }
-}
-
-template <class Functor, class Integral>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-void for_each(
-    device_local_execution,
-    counting_iterator3<Integral> const& first,
-    counting_iterator3<Integral> const& last,
-    Functor const& functor)
-{
-  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
-    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
-        functor(vector3<Integral>(i, j, k));
-      }
-    }
-  }
-}
-
-template <class Functor>
-P3A_ALWAYS_INLINE inline constexpr void for_each(
-    serial_local_execution policy,
-    subgrid3 const& subgrid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{subgrid.lower()},
-      counting_iterator3<int>{subgrid.upper()},
-      functor);
-}
-
-template <class Functor>
-P3A_ALWAYS_INLINE constexpr void for_each(
-    serial_local_execution policy,
-    grid3 const& grid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      functor);
-}
-
-template <class Functor>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-void for_each(
-    device_local_execution policy,
-    grid3 const& grid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      functor);
-}
-
-template <class ExecutionPolicy, class Functor>
-void for_each(
-    ExecutionPolicy policy,
-    subgrid3 subgrid,
-    Functor functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{subgrid.lower()},
-      counting_iterator3<int>{subgrid.upper()},
-      functor);
-}
-
-template <class Functor>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-void for_each(
-    device_local_execution policy,
-    subgrid3 subgrid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{subgrid.lower()},
-      counting_iterator3<int>{subgrid.upper()},
-      functor);
-}
-
-template <class ExecutionPolicy, class Functor>
-void for_each(
-    ExecutionPolicy policy,
-    grid3 grid,
-    Functor functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      functor);
 }
 
 template <class T, class ExecutionPolicy, class Functor>
