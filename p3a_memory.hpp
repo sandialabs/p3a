@@ -385,6 +385,19 @@ void copy(
   }
 }
 
+template <class ForwardIt1, class ForwardIt2>
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+void copy(
+    device_local_execution,
+    ForwardIt1 first,
+    ForwardIt1 const& last,
+    ForwardIt2 d_first)
+{
+  while (first != last) {
+    *d_first++ = *first++;
+  }
+}
+
 #ifdef __CUDACC__
 
 template <class ForwardIt1, class ForwardIt2>
