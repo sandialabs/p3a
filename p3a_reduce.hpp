@@ -231,7 +231,7 @@ kokkos_simd_transform_reduce(
   Integral const extent = *last - *first;
   if (extent == 0) return init;
   using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
-  using transform_b = kokkos_simd_functor<T, SimdAbi, Integral, transform_a>;
+  using transform_b = simd_functor<T, SimdAbi, Integral, transform_a>;
   using functor = kokkos_reduce_functor<
     T, BinaryReductionOp, transform_b, Integral>;
   using reducer = kokkos_reducer<T, BinaryReductionOp>;

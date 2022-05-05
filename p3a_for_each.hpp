@@ -293,12 +293,12 @@ template <
   class SimdAbi,
   class Integral,
   class OriginalFunctor>
-class kokkos_simd_functor {
+class simd_functor {
   OriginalFunctor m_functor;
   Integral m_first_i;
   Integral m_last_i;
  public:
-  kokkos_simd_functor(
+  simd_functor(
       OriginalFunctor functor_arg,
       Integral first_i_arg,
       Integral last_i_arg)
@@ -307,7 +307,7 @@ class kokkos_simd_functor {
     ,m_last_i(last_i_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE auto operator()(Integral i) const
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline auto operator()(Integral i) const
   {
     using mask_type = p3a::simd_mask<T, SimdAbi>;
     auto constexpr width = Integral(mask_type::size());
@@ -317,25 +317,23 @@ class kokkos_simd_functor {
   }
 };
 
-template <class T, class SimdAbi, class ExecutionSpace, class Integral, class Functor>
-void kokkos_simd_for_each(
+}
+
+template <class T, class ExecutionPolicy, class Integral, class Functor>
+void simd_for_each(
+    ExecutionPolicy policy,
     p3a::counting_iterator<Integral> first,
     p3a::counting_iterator<Integral> last,
     Functor functor)
 {
+  using simd_abi_type = typename ExecutionPolicy::simd_abi_type;
   Integral const extent = *last - *first;
-  if (extent == 0) return;
-  using kokkos_policy =
-    Kokkos::RangePolicy<
-      ExecutionSpace,
-      Kokkos::IndexType<Integral>>;
-  Integral constexpr width = Integral(p3a::simd<T, SimdAbi>::size());
+  Integral constexpr width = Integral(p3a::simd<T, simd_abi_type>::size());
   Integral const quotient = extent / width;
-  Kokkos::parallel_for("p3a::details::kokkos_simd_for_each(1D)",
-      kokkos_policy(0, quotient + 1),
-  kokkos_simd_functor<T, SimdAbi, Integral, Functor>(functor, *first, *last));
-}
-
+  for_each(policy,
+      counting_iterator<Integral>(0),
+      counting_iterator<Integral>(quotient + 1),
+  details::simd_functor<T, simd_abi_type, Integral, Functor>(functor, *first, *last));
 }
 
 template <class T, class ExecutionPolicy, class Iterator, class Functor>
