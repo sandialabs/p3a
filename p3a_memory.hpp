@@ -21,6 +21,20 @@ P3A_NEVER_INLINE void uninitialized_move(
   }
 }
 
+template <class InputIt, class ForwardIt>
+P3A_ALWAYS_INLINE inline
+void uninitialized_move(
+    serial_local_execution,
+    InputIt first,
+    InputIt const& last,
+    ForwardIt d_first)
+{
+  for (; first != last; ++first, ++d_first) {
+    ::new (static_cast<void*>(std::addressof(*d_first)))
+      typename std::iterator_traits<ForwardIt>::value_type(std::move(*first));
+  }
+}
+
 #ifdef __CUDACC__
 
 template <class InputIt, class ForwardIt>
@@ -67,6 +81,20 @@ P3A_NEVER_INLINE void uninitialized_copy(
     serial_execution,
     InputIt first,
     InputIt last,
+    ForwardIt d_first)
+{
+  for (; first != last; ++first, ++d_first) {
+    ::new (static_cast<void*>(std::addressof(*d_first)))
+      typename std::iterator_traits<ForwardIt>::value_type(*first);
+  }
+}
+
+template <class InputIt, class ForwardIt>
+P3A_ALWAYS_INLINE inline
+void uninitialized_copy(
+    serial_local_execution,
+    InputIt first,
+    InputIt const& last,
     ForwardIt d_first)
 {
   for (; first != last; ++first, ++d_first) {
@@ -209,6 +237,21 @@ P3A_NEVER_INLINE void uninitialized_default_construct(
     serial_execution,
     ForwardIt first,
     ForwardIt last)
+{
+  using T = typename std::iterator_traits<ForwardIt>::value_type;
+  if constexpr (!std::is_trivially_default_constructible_v<T>) {
+    for (; first != last; ++first) {
+      ::new (static_cast<void*>(std::addressof(*first))) T;
+    }
+  }
+}
+
+template <class ForwardIt>
+P3A_ALWAYS_INLINE inline
+void uninitialized_default_construct(
+    serial_local_execution,
+    ForwardIt first,
+    ForwardIt const& last)
 {
   using T = typename std::iterator_traits<ForwardIt>::value_type;
   if constexpr (!std::is_trivially_default_constructible_v<T>) {
