@@ -134,4 +134,19 @@ counting_iterator<Integral> operator+(
   return it + n;
 }
 
+template <class Integral>
+class counting_iterator3 {
+ public:
+  vector3<Integral> vector;
+  P3A_ALWAYS_INLINE inline counting_iterator3() = default;
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  counting_iterator3(Integral a, Integral b, Integral c)
+    :vector(a, b, c)
+  {}
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  counting_iterator3(vector3<Integral> const& v)
+    :vector(v)
+  {}
+};
+
 }

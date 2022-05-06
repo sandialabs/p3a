@@ -273,9 +273,10 @@ kokkos_simd_transform_reduce(
   auto const extents = last.vector - first.vector;
   if (extents.volume() == 0) return init;
   using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
-  using transform_b = kokkos_3d_simd_functor<T, SimdAbi, Integral, transform_a>;
+  using transform_b = simd_3d_functor<T, SimdAbi, Integral, transform_a>;
+  using transform_c = kokkos_3d_functor<Integral, transform_b>;
   using functor = kokkos_3d_reduce_functor<
-    T, BinaryReductionOp, transform_b, Integral>;
+    T, BinaryReductionOp, transform_c, Integral>;
   using reducer = kokkos_reducer<T, BinaryReductionOp>;
   using kokkos_policy =
     Kokkos::MDRangePolicy<
@@ -291,10 +292,11 @@ kokkos_simd_transform_reduce(
         {Integral(0), first.vector.y(), first.vector.z()},
         {Integral(quotient + 1), last.vector.y(), last.vector.z()}),
       functor(binary_op,
-        transform_b(
-          transform_a(init, binary_op, unary_op),
-          first.vector.x(),
-          last.vector.x())),
+        transform_c(
+          transform_b(
+            transform_a(init, binary_op, unary_op),
+            first.vector.x(),
+            last.vector.x()))),
       reducer(init, binary_op, result));
   return result;
 }
