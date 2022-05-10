@@ -33,27 +33,27 @@ class kokkos_reducer {
     ,m_result_view(&result_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void join(value_type& dest, value_type const& src) const
   {
     dest = m_binary_op(dest, src);
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void init(value_type& val) const
   {
     val = m_init;
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   value_type& reference() const
   {
     return *m_result_view.data();
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   result_view_type view() const
   {
     return m_result_view;
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   bool references_scalar() const
   {
     return true;
@@ -72,7 +72,7 @@ class kokkos_reduce_functor {
     ,m_unary_op(unary_op_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void operator()(Integral i, T& updated) const
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline void operator()(Integral i, T& updated) const
   {
     updated = m_binary_op(updated, m_unary_op(i));
   }
@@ -146,7 +146,7 @@ class kokkos_3d_reduce_functor {
     ,m_unary_op(unary_op_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void operator()(Integral i, Integral j, Integral k, T& updated) const
   {
     updated = m_binary_op(updated, m_unary_op(i, j, k));
@@ -204,7 +204,7 @@ class simd_reduce_wrapper {
   {
   }
   template <class Indices, class Abi>
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   auto operator()(Indices const& indices, p3a::simd_mask<T, Abi> const& mask) const
   {
     auto const simd_result = m_unary_op(indices, mask);
@@ -231,7 +231,7 @@ kokkos_simd_transform_reduce(
   Integral const extent = *last - *first;
   if (extent == 0) return init;
   using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
-  using transform_b = kokkos_simd_functor<T, SimdAbi, Integral, transform_a>;
+  using transform_b = simd_functor<T, SimdAbi, Integral, transform_a>;
   using functor = kokkos_reduce_functor<
     T, BinaryReductionOp, transform_b, Integral>;
   using reducer = kokkos_reducer<T, BinaryReductionOp>;
@@ -273,9 +273,10 @@ kokkos_simd_transform_reduce(
   auto const extents = last.vector - first.vector;
   if (extents.volume() == 0) return init;
   using transform_a = simd_reduce_wrapper<T, BinaryReductionOp, UnaryTransformOp>;
-  using transform_b = kokkos_3d_simd_functor<T, SimdAbi, Integral, transform_a>;
+  using transform_b = simd_3d_functor<T, SimdAbi, Integral, transform_a>;
+  using transform_c = kokkos_3d_functor<Integral, transform_b>;
   using functor = kokkos_3d_reduce_functor<
-    T, BinaryReductionOp, transform_b, Integral>;
+    T, BinaryReductionOp, transform_c, Integral>;
   using reducer = kokkos_reducer<T, BinaryReductionOp>;
   using kokkos_policy =
     Kokkos::MDRangePolicy<
@@ -286,15 +287,16 @@ kokkos_simd_transform_reduce(
   Integral constexpr width = Integral(p3a::simd_mask<T, SimdAbi>::size());
   Integral const quotient = extents.x() / width;
   Kokkos::parallel_reduce(
-      "p3a::details::kokkos_simd_transform_reduce(1D)",
+      "p3a::details::kokkos_simd_transform_reduce(3D)",
       kokkos_policy(
         {Integral(0), first.vector.y(), first.vector.z()},
         {Integral(quotient + 1), last.vector.y(), last.vector.z()}),
       functor(binary_op,
-        transform_b(
-          transform_a(init, binary_op, unary_op),
-          first.vector.x(),
-          last.vector.x())),
+        transform_c(
+          transform_b(
+            transform_a(init, binary_op, unary_op),
+            first.vector.x(),
+            last.vector.x()))),
       reducer(init, binary_op, result));
   return result;
 }
@@ -386,20 +388,20 @@ class int128 {
   std::uint64_t m_low;
  public:
   P3A_ALWAYS_INLINE inline int128() = default;
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
   int128(std::int64_t high_arg, std::uint64_t low_arg)
     :m_high(high_arg)
     ,m_low(low_arg)
   {}
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
   int128(std::int64_t value)
     :int128(
         std::int64_t(-1) * (value < 0),
         std::uint64_t(value))
   {}
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
   std::int64_t high() const { return m_high; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
   std::uint64_t low() const { return m_low; }
 };
 
@@ -432,11 +434,11 @@ class fixed_point_double_sum {
   values_type& values() { return m_values; }
 };
 
-extern template class fixed_point_double_sum<allocator<double>, serial_execution>;
-#ifdef __CUDACC__
+extern template class fixed_point_double_sum<host_allocator<double>, kokkos_serial_execution>;
+#ifdef KOKKOS_ENABLE_CUDA
 extern template class fixed_point_double_sum<cuda_device_allocator<double>, cuda_execution>;
 #endif
-#ifdef __HIPCC__
+#ifdef KOKKOS_ENABLE_HIP
 extern template class fixed_point_double_sum<hip_device_allocator<double>, hip_execution>;
 #endif
 
@@ -461,7 +463,7 @@ class associative_sum_iterator_functor {
     ,values(values_arg)
     ,unary_op(unary_op_arg)
   {}
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE void operator()(SizeType i) const {
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE void operator()(SizeType i) const {
     values[i] = unary_op(first[i]);
   }
 };
@@ -480,7 +482,7 @@ class associative_sum_subgrid_functor {
     ,values(values_arg)
     ,unary_op(unary_op_arg)
   {}
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE void operator()(vector3<int> const& grid_point) const {
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE void operator()(vector3<int> const& grid_point) const {
     int const index = grid.index(grid_point);
     values[index] = unary_op(grid_point);
   }
@@ -502,12 +504,6 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
   associative_sum& operator=(associative_sum&&) = default;
   associative_sum(associative_sum const&) = delete;
   associative_sum& operator=(associative_sum const&) = delete;
-#ifdef __CUDACC__
- public:
-#else
- private:
-#endif
- public:
   template <class Iterator, class UnaryOp>
   [[nodiscard]]
   double transform_reduce(
@@ -543,8 +539,5 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
 template <class T>
 using device_associative_sum = 
   associative_sum<T, device_allocator<T>, device_execution>;
-template <class T>
-using host_associative_sum = 
-  associative_sum<T, allocator<T>, serial_execution>;
 
 }

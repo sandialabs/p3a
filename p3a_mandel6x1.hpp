@@ -106,7 +106,7 @@ class mandel6x1
   P3A_ALWAYS_INLINE constexpr
   mandel6x1() = default;
 
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1(
       T const& X1, T const& X2, T const& X3,
       T const& X4, T const& X5, T const& X6):
@@ -121,7 +121,7 @@ class mandel6x1
     this->MandelXform();
   }
 
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1(
       T const& X1, T const& X2, T const& X3,
       T const& X4, T const& X5, T const& X6, bool const& Xform)
@@ -137,7 +137,7 @@ class mandel6x1
         this->MandelXform();
   }
 
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1(symmetric3x3<T> const& a):
     m_x1(a.xx()),
     m_x2(a.yy()),
@@ -150,7 +150,7 @@ class mandel6x1
     this->MandelXform();
   }
 
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1(symmetric3x3<T> const& a, bool const& Xform):
     m_x1(a.xx()),
     m_x2(a.yy()),
@@ -164,7 +164,7 @@ class mandel6x1
         this->MandelXform();
   }
 
-  P3A_HOST P3A_DEVICE P3A_NEVER_INLINE
+  P3A_HOST_DEVICE P3A_NEVER_INLINE
   mandel6x1(matrix3x3<T> const& a):
     m_x1(a.xx()),
     m_x2(a.yy()),
@@ -228,7 +228,7 @@ class mandel6x1
   }
 
 
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1(diagonal3x3<T> const& a):
     m_x1(a.xx()),
     m_x2(a.yy()),
@@ -241,7 +241,7 @@ class mandel6x1
     this->MandelXform();
   }
 
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1(diagonal3x3<T> const& a, bool const& Xform):
     m_x1(a.xx()),
     m_x2(a.yy()),
@@ -256,60 +256,60 @@ class mandel6x1
   }
 
   //Return components by ij descriptor
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xx() const { return m_x1; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& yy() const { return m_x2; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& zz() const { return m_x3; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& yz() const { return m_x4; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xz() const { return m_x5; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xy() const { return m_x6; }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& xx() { return m_x1; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& yy() { return m_x2; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& zz() { return m_x3; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& yz() { return m_x4; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& xz() { return m_x5; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& xy() { return m_x6; }
 
   //return by mandel index 1-6
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x1() const { return m_x1; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x2() const { return m_x2; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x3() const { return m_x3; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x4() const { return m_x4; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x5() const { return m_x5; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& x6() const { return m_x6; }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& x1() { return m_x1; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& x2() { return m_x2; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& x3() { return m_x3; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& x4() { return m_x4; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& x5() { return m_x5; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& x6() { return m_x6; }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE static constexpr
   mandel6x1<T> zero()
   {
     return mandel6x1<T>(
@@ -317,7 +317,7 @@ class mandel6x1
         T(0), T(0), T(0),false);
   }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE static constexpr
   mandel6x1<T> identity()
   {
     return mandel6x1<T>(
@@ -325,7 +325,7 @@ class mandel6x1
         T(0), T(0), T(0));
   }
 
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   void MandelXform()
   {
       m_x4 *= r2;
@@ -333,7 +333,7 @@ class mandel6x1
       m_x6 *= r2;
   }
 
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   void invMandelXform()
   {
       m_x4 /= r2;
@@ -343,7 +343,7 @@ class mandel6x1
 
   //conversion of symmetric3x3 to mandel6x1 via assignment
   template <class U>
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1<U> operator=(
       symmetric3x3<U> const& t)
   {
@@ -359,7 +359,7 @@ class mandel6x1
 
   //conversion of static_matrix<3,3> to mandel6x1 via assignment
   template <class U>
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   mandel6x1<U> operator=(
       static_matrix<U,3,3> const& t)
   {
@@ -381,7 +381,7 @@ class mandel6x1
 //mandel6x1 binary operators with scalars
 //multiplication by constant
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<B>, mandel6x1<decltype(A() * B())>>::type
 operator*(
     mandel6x1<A> const& t, 
@@ -399,7 +399,7 @@ operator*(
 
 //multiplication by constant
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<A>, mandel6x1<decltype(A() * B())>>::type 
 operator*(
     A const& c, 
@@ -410,7 +410,7 @@ operator*(
 
 //division by constant
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<B>, mandel6x1<decltype(A() * B())>>::type 
 operator/(
     mandel6x1<A> const& t, 
@@ -428,7 +428,7 @@ operator/(
 
 //multiplication *= by constant
 template <class A>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator*=(
     mandel6x1<A>& t, 
     A const& c)
@@ -443,7 +443,7 @@ void operator*=(
 
 //division /= by constant
 template <class A>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator/=(
     mandel6x1<A>& t, 
     A const& c)
@@ -458,7 +458,7 @@ void operator/=(
 
 //mandel6x1 -= subtraction
 template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator-=(
     mandel6x1<T>& a, 
     mandel6x1<T> const& b)
@@ -474,7 +474,7 @@ void operator-=(
 
 //mandel6x1 addition
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator+(
     mandel6x1<T> const& a, 
     mandel6x1<U> const& b)
@@ -491,7 +491,7 @@ auto operator+(
 
 //mandel6x1 += addition
 template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator+=(
     mandel6x1<T>& a, 
     mandel6x1<T> const& b)
@@ -506,7 +506,7 @@ void operator+=(
 
 //mandel6x1 subtraction
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator-(
     mandel6x1<T> const& a, 
     mandel6x1<U> const& b)
@@ -523,7 +523,7 @@ auto operator-(
 
 //mandel6x1 negation
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 mandel6x1<T> operator-(
     mandel6x1<T> const& a)
 {
@@ -542,7 +542,7 @@ mandel6x1<T> operator-(
  *****************************************************************************/
 //trace
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 T trace(
     mandel6x1<T> const& a)
 {
@@ -551,7 +551,7 @@ T trace(
 
 //determinate
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 T determinant(
     mandel6x1<T> const& t)
 {
@@ -562,7 +562,7 @@ T determinant(
 
 //inverse
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 mandel6x1<T> inverse(
     mandel6x1<T> const& V)
 {
@@ -583,7 +583,7 @@ mandel6x1<T> inverse(
 
 /** Tensor multiply MandelVector (6x1) by MandelVector (6x1) **/
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(
     mandel6x1<T> const &v,
     mandel6x1<U> const &t)
@@ -606,7 +606,7 @@ auto operator*(
 
 /** Tensor multiply MandelVector (6x1) by symmetric3x3 (3x3) **/
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(
     mandel6x1<T> const &v, 
     symmetric3x3<U> const &tt)
@@ -627,7 +627,7 @@ auto operator*(
 
 /** Tensor multiply symmetric3x3 by MandelVector (6x1) **/
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(
     symmetric3x3<T> const &tt,
     mandel6x1<U> const &v) 
@@ -648,7 +648,7 @@ auto operator*(
 
 /** Tensor multiply MandelVector (6x1) by diagonal3x3 (3x3) **/
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(mandel6x1<T> const &v, diagonal3x3<U> const &tt)
 {
     mandel6x1<T> vv = v;
@@ -667,7 +667,7 @@ auto operator*(mandel6x1<T> const &v, diagonal3x3<U> const &tt)
 
 /** Tensor multiply diagonal3x3 (3x3) by MandelVector (6x1) **/
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(diagonal3x3<T> const &tt, mandel6x1<U> const &v)
 {
     mandel6x1<U> vv = v;
@@ -686,7 +686,7 @@ auto operator*(diagonal3x3<T> const &tt, mandel6x1<U> const &v)
 
 /** Tensor multiply MandelVector (6x1) by vector3 (3x1) **/
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(mandel6x1<T> const &m, vector3<U> const &v)
 {
   mandel6x1<T> t = m;
@@ -707,7 +707,7 @@ auto operator*(mandel6x1<T> const &m, vector3<U> const &v)
 //////////////////////////////////////////////////////////////////////////////////
 //double dot product of mandel6x1 with mandel6x1
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto ddot(mandel6x1<T> const &t, mandel6x1<U> const &v)
 {
     using result_type = decltype(t.x1() * v.x());
@@ -716,7 +716,7 @@ auto ddot(mandel6x1<T> const &t, mandel6x1<U> const &v)
 
 //double dot product of mandel6x1 with diagonal3x3
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto ddot(mandel6x1<T> const &t, diagonal3x3<U> const &d)
 {
     using result_type = decltype(t.x1() * d.x());
@@ -725,7 +725,7 @@ auto ddot(mandel6x1<T> const &t, diagonal3x3<U> const &d)
 
 //double dot product of diagonal3x3 and mandel6x1
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto ddot(diagonal3x3<T> const &d, mandel6x1<U> const &t)
 {
     using result_type = decltype(d.xx() * t.x1());
@@ -734,7 +734,7 @@ auto ddot(diagonal3x3<T> const &d, mandel6x1<U> const &t)
 
 //double dot product of mandel6x1 and symmetric3x3
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto ddot( mandel6x1<T> const &v, symmetric3x3<U> const &t)
 {
     using result_type = decltype(v.x1() * t.xx());
@@ -743,7 +743,7 @@ auto ddot( mandel6x1<T> const &v, symmetric3x3<U> const &t)
 
 //double dot product of symmetric3x3 and mandel6x1
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto ddot(symmetric3x3<T> const& t, mandel6x1<U> const &v) 
 {
     using result_type = decltype(v.x1() * t.xx());
@@ -752,7 +752,7 @@ auto ddot(symmetric3x3<T> const& t, mandel6x1<U> const &v)
 
 //double dot product of mandel6x1 and matrix3x3
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto ddot(mandel6x1<T> const& v, matrix3x3<U> const& t)
 {
     using result_type = decltype(t.xx() * v.x1());
@@ -761,7 +761,7 @@ auto ddot(mandel6x1<T> const& v, matrix3x3<U> const& t)
 
 //double dot product of matrix3x3 and mandel6x1 
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto ddot(matrix3x3<T> const& t, mandel6x1<U> const& v)
 {
     using result_type = decltype(v.x1() * t.xx());
@@ -772,7 +772,7 @@ auto ddot(matrix3x3<T> const& t, mandel6x1<U> const& v)
 //////////////////////////////////////////////////////////////////////////////////
 /** Tensor mult: mandel6x1 by matrix3x3 **/ 
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(mandel6x1<T> const& v, matrix3x3<U> const& t)
 { 
     using result_type = decltype(t.xx() * v.x1());
@@ -785,7 +785,7 @@ auto operator*(mandel6x1<T> const& v, matrix3x3<U> const& t)
 
 /** Tensor mult: matrix3x3 by mandel6x1 **/ 
 template <class T, class U>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(matrix3x3<T> const& t, mandel6x1<U> const& v)
 { 
     //The transformation is reversed as the operation is performed 
@@ -802,7 +802,7 @@ auto operator*(matrix3x3<T> const& t, mandel6x1<U> const& v)
 
 /** Convert MandelVector (6x1) to symmetric3x3 **/
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 symmetric3x3<T> mandel6x1_to_symmetric3x3(mandel6x1<T> const& v)
 {
     //invert Mandel Tranformation of MandelVector 
@@ -813,7 +813,7 @@ symmetric3x3<T> mandel6x1_to_symmetric3x3(mandel6x1<T> const& v)
 
 /** Convert MandelVector (6x1) to symmetric3x3 **/
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 matrix3x3<T> mandel6x1_to_matrix3x3(mandel6x1<T> const& v)
 {
     //invert Mandel Tranformation of MandelVector 

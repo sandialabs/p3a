@@ -8,7 +8,7 @@
 namespace p3a {
 
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 T norm(static_matrix<T, N, N> const& a)
 {
   T result(0);
@@ -21,7 +21,7 @@ T norm(static_matrix<T, N, N> const& a)
 }
 
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 T off_diagonal_norm(static_matrix<T, N, N> const& a)
 {
   T result(0);
@@ -36,7 +36,7 @@ T off_diagonal_norm(static_matrix<T, N, N> const& a)
 }
 
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void maximum_off_diagonal_indices(
     static_matrix<T, N, N> const& a,
     int& p,
@@ -64,7 +64,7 @@ void maximum_off_diagonal_indices(
 // \param \f$ A = [f, g; g, h] \in S(2) \f$
 // \return \f$ c, s \rightarrow [c, -s; s, c]\f diagonalizes A$
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void symmetric_schur(
     T const& f,
     T const& g,
@@ -88,7 +88,7 @@ void symmetric_schur(
 
 /* Apply Givens-Jacobi rotation on the left */
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void rotate_givens_left(
     T const& c,
     T const& s,
@@ -106,7 +106,7 @@ void rotate_givens_left(
 
 /* Apply Givens-Jacobi rotation on the right */
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void rotate_givens_right(
     T const& c,
     T const& s,
@@ -123,7 +123,7 @@ void rotate_givens_right(
 }
 
 template <class T, int N>
-P3A_HOST P3A_DEVICE inline
+P3A_HOST_DEVICE inline
 void eigendecompose(
     static_matrix<T, N, N>& a,
     static_matrix<T, N, N>& q,
@@ -148,7 +148,7 @@ void eigendecompose(
 }
 
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 T eigen_tolerance(
     static_matrix<T, N, N> const& a)
 {
@@ -158,7 +158,7 @@ T eigen_tolerance(
 }
 
 template <class T, int N>
-P3A_HOST P3A_DEVICE inline
+P3A_HOST_DEVICE inline
 void eigendecompose(
     static_matrix<T, N, N>& a,
     static_matrix<T, N, N>& q)
@@ -167,7 +167,7 @@ void eigendecompose(
 }
 
 template <class T>
-P3A_HOST P3A_DEVICE inline
+P3A_HOST_DEVICE inline
 void eigendecompose(
     symmetric3x3<T> const& a,
     diagonal3x3<T>& l,

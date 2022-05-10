@@ -19,7 +19,7 @@ class symmetric3x3 {
  public:
   P3A_ALWAYS_INLINE constexpr
   symmetric3x3() = default;
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   symmetric3x3(
       T const& a, T const& b, T const& c,
       T const& d, T const& e, T const& f)
@@ -31,47 +31,47 @@ class symmetric3x3 {
     ,m_zz(f)
   {
   }
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   symmetric3x3(scaled_identity3x3<T> const& a)
     :symmetric3x3(a.scale(), T(0), T(0), a.scale(), T(0), a.scale())
   {}
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xx() const { return m_xx; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xy() const { return m_xy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xz() const { return m_xz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& yx() const { return m_xy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& yy() const { return m_yy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& yz() const { return m_yz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& zx() const { return m_xz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& zy() const { return m_yz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& zz() const { return m_zz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& xx() { return m_xx; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& xy() { return m_xy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& xz() { return m_xz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& yx() { return m_xy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& yy() { return m_yy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& yz() { return m_yz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& zx() { return m_xz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& zy() { return m_yz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& zz() { return m_zz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& operator() (int const i, int const j) const
   {
     if (i == 0) {
@@ -88,7 +88,7 @@ class symmetric3x3 {
       if (j == 2) return m_zz;
     }
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& operator()(int const i, int const j)
   {
     if (i == 0) {
@@ -105,14 +105,14 @@ class symmetric3x3 {
       if (j == 2) return m_zz;
     }
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE static constexpr
   symmetric3x3 zero()
   {
     return symmetric3x3<T>(
         T(0), T(0), T(0),
         T(0), T(0), T(0));
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE static constexpr
   symmetric3x3 identity()
   {
     return symmetric3x3<T>(
@@ -122,7 +122,7 @@ class symmetric3x3 {
 };
 
 template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator+=(symmetric3x3<T>& a, symmetric3x3<T> const& b)
 {
   a.xx() += b.xx();
@@ -134,7 +134,7 @@ void operator+=(symmetric3x3<T>& a, symmetric3x3<T> const& b)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 symmetric3x3<T> operator+(symmetric3x3<T> const& a, symmetric3x3<T> const& b)
 {
   return symmetric3x3<T>(
@@ -147,7 +147,7 @@ symmetric3x3<T> operator+(symmetric3x3<T> const& a, symmetric3x3<T> const& b)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 symmetric3x3<T> operator-(symmetric3x3<T> const& a, symmetric3x3<T> const& b)
 {
   return symmetric3x3<T>(
@@ -160,7 +160,7 @@ symmetric3x3<T> operator-(symmetric3x3<T> const& a, symmetric3x3<T> const& b)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 symmetric3x3<T> operator-(symmetric3x3<T> const& a)
 {
   return symmetric3x3<T>(
@@ -173,14 +173,14 @@ symmetric3x3<T> operator-(symmetric3x3<T> const& a)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 T trace(symmetric3x3<T> const& a)
 {
   return a.xx() + a.yy() + a.zz();
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 symmetric3x3<T> operator+(
     symmetric3x3<T> const& a,
     scaled_identity3x3<T> const& b)
@@ -195,7 +195,7 @@ symmetric3x3<T> operator+(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 symmetric3x3<T> operator-(
     scaled_identity3x3<T> const& a,
     symmetric3x3<T> const& b)
@@ -210,7 +210,7 @@ symmetric3x3<T> operator-(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 symmetric3x3<T> operator+(
     scaled_identity3x3<T> const& a,
     symmetric3x3<T> const& b)
@@ -219,7 +219,7 @@ symmetric3x3<T> operator+(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 symmetric3x3<T> operator-(
     symmetric3x3<T> const& a,
     scaled_identity3x3<T> const& b)
@@ -234,7 +234,7 @@ symmetric3x3<T> operator-(
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<B>, symmetric3x3<decltype(A() * B())>>::type
 operator*(
     symmetric3x3<A> const& a,
@@ -250,7 +250,7 @@ operator*(
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<B>, symmetric3x3<decltype(A() / B())>>::type
 operator/(
     symmetric3x3<A> const& a,
@@ -266,7 +266,7 @@ operator/(
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<A>, symmetric3x3<decltype(A() * B())>>::type
 operator*(
     A const& a,
@@ -276,7 +276,7 @@ operator*(
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(symmetric3x3<A> const& a, vector3<B> const& b)
 {
   using C = decltype(a.xx() * b.x());
@@ -287,7 +287,7 @@ auto operator*(symmetric3x3<A> const& a, vector3<B> const& b)
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(symmetric3x3<A> const& a, symmetric3x3<B> const& b)
 {
   using C = decltype(a.xx() * b.xx());
@@ -302,7 +302,7 @@ auto operator*(symmetric3x3<A> const& a, symmetric3x3<B> const& b)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 scaled_identity3x3<T> isotropic_part(symmetric3x3<T> const& a)
 {
   auto const d = trace(a) / 3.0;
@@ -310,14 +310,14 @@ scaled_identity3x3<T> isotropic_part(symmetric3x3<T> const& a)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 symmetric3x3<T> deviatoric_part(symmetric3x3<T> const& a)
 {
   return a - isotropic_part(a);
 }
 
 template <class A, class B>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto frobenius_inner_product(
     symmetric3x3<A> const& a, symmetric3x3<B> const& b)
 {
@@ -331,14 +331,14 @@ auto frobenius_inner_product(
 }
 
 template <class A>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto l2_norm(symmetric3x3<A> const& a)
 {
   return .5 * square_root(frobenius_inner_product(a, a));
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 T determinant(symmetric3x3<T> const& a)
 {
   return
@@ -350,7 +350,7 @@ T determinant(symmetric3x3<T> const& a)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto adjugate(symmetric3x3<T> const& a)
 {
   auto const xx = +(a.yy() * a.zz() - a.yz() * a.yz());
@@ -364,14 +364,14 @@ auto adjugate(symmetric3x3<T> const& a)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto inverse(symmetric3x3<T> const& a)
 {
   return adjugate(a) / determinant(a);
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto outer_product(vector3<T> const& a)
 {
   using result_type = decltype(a.x() * a.x());
@@ -384,7 +384,7 @@ auto outer_product(vector3<T> const& a)
 inline int constexpr symmetric3x3_component_count = 6;
 
 template <class T>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 auto load_symmetric3x3(T const* ptr, int stride, int offset)
 {
   auto const a = load(ptr, 0 * stride + offset);
@@ -398,7 +398,7 @@ auto load_symmetric3x3(T const* ptr, int stride, int offset)
 }
 
 template <class T, class U, class Abi>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 auto load_symmetric3x3(T const* ptr, int stride, int offset, simd_mask<U, Abi> const& mask)
 {
   auto const a = load(ptr, 0 * stride + offset, mask);
@@ -412,7 +412,7 @@ auto load_symmetric3x3(T const* ptr, int stride, int offset, simd_mask<U, Abi> c
 }
 
 template <class T, class U>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void store(
     symmetric3x3<T> const& value,
     U* ptr, int stride, int offset)
@@ -426,7 +426,7 @@ void store(
 }
 
 template <class T, class U, class V, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void store(
     symmetric3x3<T> const& value,
     U* ptr, int stride, int offset, simd_mask<V, Abi> const& mask)
@@ -440,7 +440,7 @@ void store(
 }
 
 template <class T, class Mask>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<!std::is_same_v<Mask, bool>, symmetric3x3<T>>
 condition(
     Mask const& a,
@@ -457,7 +457,7 @@ condition(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 T maximum_norm(symmetric3x3<T> const& a)
 {
   return maximum(

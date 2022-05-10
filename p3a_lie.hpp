@@ -11,7 +11,7 @@
 namespace p3a {
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 matrix3x3<T> pack_polar(
     symmetric3x3<T> const& spd,
     vector3<T> const& aa)
@@ -29,7 +29,7 @@ matrix3x3<T> pack_polar(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 symmetric3x3<T> unpack_polar_spd(
     matrix3x3<T> const& packed)
 {
@@ -43,7 +43,7 @@ symmetric3x3<T> unpack_polar_spd(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 vector3<T> unpack_polar_axis_angle(
     matrix3x3<T> const& packed)
 {
@@ -54,7 +54,7 @@ vector3<T> unpack_polar_axis_angle(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
 {
   return diagonal3x3<T>(
@@ -80,7 +80,7 @@ diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
  */
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 matrix3x3<T> polar_logarithm(matrix3x3<T> const& a)
 {
   matrix3x3<T> w, vt;
@@ -94,7 +94,7 @@ matrix3x3<T> polar_logarithm(matrix3x3<T> const& a)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 symmetric3x3<T> spd_exponential(symmetric3x3<T> const& log_m)
 {
   diagonal3x3<T> l;
@@ -108,7 +108,7 @@ symmetric3x3<T> spd_exponential(symmetric3x3<T> const& log_m)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 symmetric3x3<T> spd_logarithm(symmetric3x3<T> const& exp_m)
 {
   diagonal3x3<T> l;
@@ -122,7 +122,7 @@ symmetric3x3<T> spd_logarithm(symmetric3x3<T> const& exp_m)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 matrix3x3<T> polar_exponential(matrix3x3<T> const& packed)
 {
   auto const log_u = unpack_polar_axis_angle(packed);
@@ -140,7 +140,7 @@ enum class polar_errc {
 };
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 polar_errc polar_rotation(
     matrix3x3<T> const& F,
     matrix3x3<T>& R,
@@ -237,7 +237,7 @@ polar_errc polar_rotation(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 polar_errc decompose_polar_right(
     matrix3x3<T> const& input,
     matrix3x3<T>& rotation,
@@ -251,7 +251,7 @@ polar_errc decompose_polar_right(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 polar_errc decompose_polar_left(
     matrix3x3<T> const& input,
     symmetric3x3<T>& left_stretch,
@@ -272,7 +272,7 @@ polar_errc decompose_polar_left(
 // The rotation/reflection obtained through this projection is
 // the orthogonal component of the real polar decomposition
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 polar_rotation(matrix3x3<T> const& A)
 {
   auto const dim       = 3.0;

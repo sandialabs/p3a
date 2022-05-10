@@ -10,7 +10,7 @@
 namespace p3a {
 
 template <class T>
-P3A_HOST P3A_DEVICE
+P3A_HOST_DEVICE
 void givens(
     T const& a,
     T const& b,
@@ -41,7 +41,7 @@ void givens(
 // \return \f$ A = USV^T\f$
 
 template <class T>
-P3A_HOST P3A_DEVICE
+P3A_HOST_DEVICE
 void svd_bidiagonal(
     T f,
     T const& g,
@@ -120,7 +120,7 @@ void svd_bidiagonal(
 }
 
 template <class T>
-P3A_HOST P3A_DEVICE
+P3A_HOST_DEVICE
 void svd_2x2(
     matrix2x2<T> const& A,
     matrix2x2<T>& U,
@@ -147,7 +147,7 @@ void svd_2x2(
 // \return \f$ A = USV^T\f$
 
 template <class T, int N>
-P3A_HOST P3A_DEVICE
+P3A_HOST_DEVICE
 void decompose_singular_values(
     static_matrix<T, N, N> const& A,
     static_matrix<T, N, N>& U,
@@ -204,7 +204,7 @@ void decompose_singular_values(
 }
 
 template <class T>
-P3A_HOST P3A_DEVICE
+P3A_HOST_DEVICE
 void decompose_singular_values(
     matrix3x3<T> const& A,
     matrix3x3<T>& U,
@@ -247,7 +247,7 @@ void decompose_singular_values(
 }
 
 template <class T>
-P3A_HOST P3A_DEVICE
+P3A_HOST_DEVICE
 void decompose_singular_values(
     matrix3x3<unitless<T>> const& A,
     matrix3x3<unitless<T>>& U,

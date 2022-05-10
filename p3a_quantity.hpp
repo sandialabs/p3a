@@ -55,7 +55,7 @@ class quantity {
          (!std::is_same_v<quantity<Unit, ValueType, Origin>, quantity<no_unit, ValueType, void>>) &&
          (std::is_arithmetic_v<T> || std::is_same_v<T, ValueType>),
          bool>::type = false>
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   explicit quantity(T const& v)
     :m_value(v)
   {}
@@ -65,7 +65,7 @@ class quantity {
          std::is_same_v<quantity<Unit, ValueType, Origin>, quantity<no_unit, ValueType, void>> &&
          (std::is_arithmetic_v<T> || std::is_same_v<T, ValueType>),
          bool>::type = false>
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   quantity(T const& v)
     :m_value(v)
   {}
@@ -79,20 +79,20 @@ class quantity {
   quantity& operator=(quantity const&) = default;
   P3A_ALWAYS_INLINE inline constexpr
   quantity& operator=(quantity&&) = default;
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   value_type const& value() const { return m_value; }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   value_type& value() { return m_value; }
   // converting constructor for converting only ValueType
   template <class OtherValueType>
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   quantity(quantity<unit, OtherValueType, origin> const& other)
     :m_value(other.value())
   {
   }
   // converting constructor for different magnitude and/or origin
   template <class OtherUnit, class OtherValueType, class OtherOrigin>
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   explicit quantity(quantity<OtherUnit, OtherValueType, OtherOrigin> const& other)
     :m_value(0)
   {
@@ -121,48 +121,48 @@ class quantity {
   }
   // converting assignment operator
   template <class OtherUnit, class OtherValueType, class OtherOrigin>
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   quantity& operator=(quantity<OtherUnit, OtherValueType, OtherOrigin> const& other) {
     // attempt converting constructor then regular assign
     return operator=(quantity<unit, value_type, origin>(other));
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   auto operator==(quantity const& other) const {
     return value() == other.value();
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   auto operator!=(quantity const& other) const {
     return value() != other.value();
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   auto operator<=(quantity const& other) const {
     return value() <= other.value();
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   auto operator>=(quantity const& other) const {
     return value() >= other.value();
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   auto operator<(quantity const& other) const {
     return value() < other.value();
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   auto operator>(quantity const& other) const {
     return value() > other.value();
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline static constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline static constexpr
   quantity zero() {
     return quantity(zero_value<ValueType>());
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline static constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline static constexpr
   quantity epsilon() {
     return quantity(epsilon_value<ValueType>());
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline static constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline static constexpr
   quantity maximum() {
     return quantity(maximum_value<ValueType>());
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline static constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline static constexpr
   quantity minimum() {
     return quantity(minimum_value<ValueType>());
   }
@@ -304,7 +304,7 @@ template <
   class Unit,
   class ValueType,
   class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<Unit, ValueType, Origin> operator-(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
@@ -321,7 +321,7 @@ template <
   class RightUnit,
   class RightValueType,
   class RightOrigin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 auto operator+(
     quantity<LeftUnit, LeftValueType, LeftOrigin> const& left,
     quantity<RightUnit, RightValueType, RightOrigin> const& right)
@@ -359,7 +359,7 @@ template <
   class RightUnit,
   class RightValueType,
   class RightOrigin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 auto operator-(
     quantity<LeftUnit, LeftValueType, LeftOrigin> const& left,
     quantity<RightUnit, RightValueType, RightOrigin> const& right)
@@ -398,7 +398,7 @@ template <
   class RightUnit,
   class RightValueType,
   class RightOrigin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 auto operator*(
     quantity<LeftUnit, LeftValueType, LeftOrigin> const& left,
     quantity<RightUnit, RightValueType, RightOrigin> const& right)
@@ -420,7 +420,7 @@ template <
   class RightUnit,
   class RightValueType,
   class RightOrigin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 auto operator/(
     quantity<LeftUnit, LeftValueType, LeftOrigin> const& left,
     quantity<RightUnit, RightValueType, RightOrigin> const& right)
@@ -443,7 +443,7 @@ template <
   class LeftOrigin,
   class RightUnit,
   class RightValueType>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator+=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
@@ -457,7 +457,7 @@ template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator+=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
@@ -473,7 +473,7 @@ template <
   class LeftOrigin,
   class RightUnit,
   class RightValueType>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator-=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
@@ -487,7 +487,7 @@ template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator-=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
@@ -504,7 +504,7 @@ template <
   class RightUnit,
   class RightValueType,
   class RightOrigin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator*=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
@@ -521,7 +521,7 @@ template <
   class RightUnit,
   class RightValueType,
   class RightOrigin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator/=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
@@ -535,7 +535,7 @@ template <
   class LeftUnit,
   class LeftValueType,
   class LeftOrigin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<LeftUnit, LeftValueType, LeftOrigin>&
 operator/=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
@@ -550,7 +550,7 @@ template <
   class LeftValueType,
   class LeftOrigin,
   class Arithmetic>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<LeftUnit, LeftValueType, LeftOrigin>&>
 operator/=(
     quantity<LeftUnit, LeftValueType, LeftOrigin>& left,
@@ -566,7 +566,7 @@ template <
   class T,
   class Dimension,
   class Magnitude>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<unit<Dimension, Magnitude>, T, void>
 operator*(
     T const& left,
@@ -579,7 +579,7 @@ template <
   class T,
   class Dimension,
   class Magnitude>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<unit<Dimension, Magnitude>, T, void>
 operator*(
     unit<Dimension, Magnitude>,
@@ -593,7 +593,7 @@ operator*(
 // a physical quantity
 
 template <class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<Unit, ValueType, Origin>
 operator+(
     ValueType const& left,
@@ -603,7 +603,7 @@ operator+(
 }
 
 template <class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<Unit, ValueType, Origin>
 operator+(
     quantity<Unit, ValueType, Origin> const& left,
@@ -613,7 +613,7 @@ operator+(
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
 operator+(
     Arithmetic const& left,
@@ -623,7 +623,7 @@ operator+(
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
 operator+(
     quantity<Unit, ValueType, Origin> const& left,
@@ -633,7 +633,7 @@ operator+(
 }
 
 template <class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<Unit, ValueType, Origin>
 operator-(
     ValueType const& left,
@@ -643,7 +643,7 @@ operator-(
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<Unit, ValueType, Origin>
 operator-(
     quantity<Unit, ValueType, Origin> const& left,
@@ -653,7 +653,7 @@ operator-(
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
 operator-(
     Arithmetic const& left,
@@ -663,7 +663,7 @@ operator-(
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
 operator-(
     quantity<Unit, ValueType, Origin> const& left,
@@ -673,7 +673,7 @@ operator-(
 }
 
 template <class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<Unit, ValueType, Origin>
 operator*(
     ValueType const& left,
@@ -683,7 +683,7 @@ operator*(
 }
 
 template <class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<Unit, ValueType, Origin>
 operator*(
     quantity<Unit, ValueType, Origin> const& left,
@@ -693,7 +693,7 @@ operator*(
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
 operator*(
     Arithmetic const& left,
@@ -703,7 +703,7 @@ operator*(
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
 operator*(
     quantity<Unit, ValueType, Origin> const& left,
@@ -713,7 +713,7 @@ operator*(
 }
 
 template <class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<unit_inverse<Unit>, ValueType, Origin>
 operator/(
     ValueType const& left,
@@ -723,7 +723,7 @@ operator/(
 }
 
 template <class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<Unit, ValueType, Origin>
 operator/(
     quantity<Unit, ValueType, Origin> const& left,
@@ -733,7 +733,7 @@ operator/(
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<unit_inverse<Unit>, ValueType, Origin>>
 operator/(
     Arithmetic const& left,
@@ -743,7 +743,7 @@ operator/(
 }
 
 template <class Arithmetic, class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, quantity<Unit, ValueType, Origin>>
 operator/(
     quantity<Unit, ValueType, Origin> const& left,
@@ -755,7 +755,7 @@ operator/(
 // roots functions
 
 template <class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 auto square_root(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
@@ -764,7 +764,7 @@ auto square_root(quantity<Unit, ValueType, Origin> const& q)
 }
 
 template <class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 auto cube_root(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
@@ -775,56 +775,56 @@ auto cube_root(quantity<Unit, ValueType, Origin> const& q)
 // transcendental functions act on unitless quantities
 
 template <class ValueType>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> natural_exponential(unitless<ValueType> const& q)
 {
   return unitless<ValueType>(natural_exponential(q.value()));
 }
 
 template <class ValueType>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> natural_logarithm(unitless<ValueType> const& q)
 {
   return unitless<ValueType>(natural_logarithm(q.value()));
 }
 
 template <class ValueType>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> sine(unitless<ValueType> const& q)
 {
   return unitless<ValueType>(sine(q.value()));
 }
 
 template <class ValueType>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> cosine(unitless<ValueType> const& q)
 {
   return unitless<ValueType>(cosine(q.value()));
 }
 
 template <class ValueType>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> tangent(unitless<ValueType> const& q)
 {
   return unitless<ValueType>(tangent(q.value()));
 }
 
 template <class ValueType>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> arcsin(unitless<ValueType> const& q)
 {
   return unitless<ValueType>(arcsin(q.value()));
 }
 
 template <class ValueType>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> arccos(unitless<ValueType> const& q)
 {
   return unitless<ValueType>(arccos(q.value()));
 }
 
 template <class ValueType>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> exponentiate(unitless<ValueType> const& a, unitless<ValueType> const& b)
 {
   return unitless<ValueType>(exponentiate(a.value(), b.value()));
@@ -833,7 +833,7 @@ unitless<ValueType> exponentiate(unitless<ValueType> const& a, unitless<ValueTyp
 // allow the exponent to be a raw arithmetic type
 
 template <class ValueType, class Arithmetic>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, unitless<ValueType>>
 exponentiate(unitless<ValueType> const& a, Arithmetic const& b)
 {
@@ -841,7 +841,7 @@ exponentiate(unitless<ValueType> const& a, Arithmetic const& b)
 }
 
 template <class Unit, class ValueType, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<Unit, ValueType, Origin> absolute_value(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
@@ -864,91 +864,91 @@ namespace quantity_literals {
 // how to use, as far as I can see floating-point literals
 // just have to use long double as the argument type
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::seconds<double> operator""_s(long double v)
 {
   return p3a::seconds<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::meters<double> operator""_m(long double v)
 {
   return p3a::meters<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::kilograms<double> operator""_kg(long double v)
 {
   return p3a::kilograms<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::amperes<double> operator""_A(long double v)
 {
   return p3a::amperes<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::volts<double> operator""_V(long double v)
 {
   return p3a::volts<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::degrees_kelvin<double> operator""_K(long double v)
 {
   return p3a::degrees_kelvin<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::pascals<double> operator""_Pa(long double v)
 {
   return p3a::pascals<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::joules<double> operator""_J(long double v)
 {
   return p3a::joules<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::meters_per_second<double> operator""_m_per_s(long double v)
 {
   return p3a::meters_per_second<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::meters_per_second_squared<double> operator""_m_per_s2(long double v)
 {
   return p3a::meters_per_second_squared<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::cubic_meters<double> operator""_m3(long double v)
 {
   return p3a::cubic_meters<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::kilograms_per_cubic_meter<double> operator""_kg_per_m3(long double v)
 {
   return p3a::kilograms_per_cubic_meter<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::pascal_seconds<double> operator""_Pa_s(long double v)
 {
   return p3a::pascal_seconds<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::joules_per_kilogram<double> operator""_J_per_kg(long double v)
 {
   return p3a::joules_per_kilogram<double>(v);
 }
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::siemens_per_meter_quantity<double> operator""_S_per_m(long double v)
 {
   return p3a::siemens_per_meter_quantity<double>(v);
@@ -957,7 +957,7 @@ p3a::siemens_per_meter_quantity<double> operator""_S_per_m(long double v)
 }
 
 template <class ValueType, class Abi, class Unit, class Origin>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 quantity<Unit, simd<ValueType, Abi>, Origin> load(
     quantity<Unit, ValueType, Origin> const* ptr,
     int offset,
@@ -967,7 +967,7 @@ quantity<Unit, simd<ValueType, Abi>, Origin> load(
 }
 
 template <class ValueType, class Integral, class Abi, class Unit, class Origin>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 quantity<Unit, simd<ValueType, Abi>, Origin> load(
     quantity<Unit, ValueType, Origin> const* ptr,
     simd<Integral, Abi> const& offset,
@@ -977,7 +977,7 @@ quantity<Unit, simd<ValueType, Abi>, Origin> load(
 }
 
 template <class ValueType, class Abi, class Unit, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void store(
     quantity<Unit, simd<ValueType, Abi>, Origin> const& value,
     quantity<Unit, ValueType, Origin>* ptr,
@@ -988,7 +988,7 @@ void store(
 }
 
 template <class T, class Abi, class Unit, class Origin>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 quantity<Unit, simd<T, Abi>, Origin> condition(
     simd_mask<T, Abi> const& a,
     quantity<Unit, simd<T, Abi>, Origin> const& b,

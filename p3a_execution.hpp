@@ -6,7 +6,9 @@
 #include <exception>
 #include <string>
 
-#ifdef __HIPCC__
+#include <Kokkos_Core.hpp>
+
+#ifdef KOKKOS_ENABLE_HIP
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-attributes"
 #include <hip/hip_runtime.h>
@@ -17,33 +19,33 @@
 
 namespace p3a {
 
-class serial_execution {
+class host_execution {
+ public:
+  P3A_ALWAYS_INLINE constexpr void synchronize() const {}
+  using simd_abi_type = simd_abi::scalar;
+};
+
+inline constexpr host_execution host = {};
+
+class host_device_execution {
+ public:
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+  void synchronize() const {}
+  using simd_abi_type = simd_abi::scalar;
+};
+
+inline constexpr host_device_execution host_device = {};
+
+class kokkos_serial_execution {
  public:
   void synchronize() const {}
   using simd_abi_type = simd_abi::host_native;
   using kokkos_execution_space = Kokkos::Serial;
 };
 
-inline constexpr serial_execution serial = {};
+inline constexpr kokkos_serial_execution kokkos_serial = {};
 
-class serial_local_execution {
- public:
-  P3A_ALWAYS_INLINE constexpr void synchronize() const {}
-  using simd_abi_type = simd_abi::scalar;
-};
-
-inline constexpr serial_local_execution serial_local = {};
-
-class local_execution {
- public:
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-  void synchronize() const {}
-  using simd_abi_type = simd_abi::scalar;
-};
-
-inline constexpr local_execution local = {};
-
-#ifdef __CUDACC__
+#ifdef KOKKOS_ENABLE_CUDA
 
 class cuda_exception : public std::exception
 {
@@ -60,7 +62,6 @@ void handle_cuda_error(cudaError_t error);
 }
 
 class cuda_execution {
- cudaStream_t stream{nullptr};
  public:
   void synchronize() const;
   using simd_abi_type = simd_abi::scalar;
@@ -69,19 +70,9 @@ class cuda_execution {
 
 inline constexpr cuda_execution cuda = {};
 
-class cuda_local_execution {
- public:
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr void synchronize() const
-  {
-  }
-  using simd_abi_type = simd_abi::scalar;
-};
-
-inline constexpr cuda_local_execution cuda_local = {};
-
 #endif
 
-#ifdef __HIPCC__
+#ifdef KOKKOS_ENABLE_HIP
 
 class hip_exception : public std::exception
 {
@@ -98,7 +89,6 @@ void handle_hip_error(hipError_t error);
 }
 
 class hip_execution {
-  hipStream_t stream{nullptr};
  public:
   void synchronize() const;
   using simd_abi_type = simd_abi::scalar;
@@ -107,29 +97,15 @@ class hip_execution {
 
 inline constexpr hip_execution hip = {};
 
-class hip_local_execution {
- public:
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE constexpr void synchronize() const
-  {
-  }
-  using simd_abi_type = simd_abi::scalar;
-};
-
-inline constexpr hip_local_execution hip_local = {};
-
 #endif
 
-#if defined(__CUDACC__)
+#if defined(KOKKOS_ENABLE_CUDA)
 using device_execution = cuda_execution;
-using device_local_execution = cuda_local_execution;
-#elif defined(__HIPCC__)
+#elif defined(KOKKOS_ENABLE_HIP)
 using device_execution = hip_execution;
-using device_local_execution = hip_local_execution;
 #else
-using device_execution = serial_execution;
-using device_local_execution = serial_local_execution;
+using device_execution = kokkos_serial_execution;
 #endif
 inline constexpr device_execution device = {};
-inline constexpr device_local_execution device_local = {};
 
 }
