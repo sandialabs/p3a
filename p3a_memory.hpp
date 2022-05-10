@@ -116,6 +116,27 @@ class copy_functor {
   }
 };
 
+template <class InputIt, class ForwardIt>
+class move_functor {
+  InputIt m_first;
+  ForwardIt m_d_first;
+ public:
+  using difference_type = typename std::iterator_traits<InputIt>::difference_type;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  move_functor(
+      InputIt first_arg,
+      ForwardIt d_first_arg)
+    :m_first(first_arg)
+    ,m_d_first(d_first_arg)
+  {
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void operator()(difference_type i) const
+  {
+    m_d_first[i] = std::move(m_first[i]);
+  }
+};
+
 }
 
 template <class ExecutionPolicy, class InputIt, class ForwardIt>
@@ -375,21 +396,24 @@ void copy(
   }
 }
 
-template <class ForwardIt1, class ForwardIt2>
+template <class ExecutionPolicy, class ForwardIt1, class ForwardIt2>
 P3A_NEVER_INLINE void move(
-    serial_execution,
+    ExecutionPolicy policy,
     ForwardIt1 first,
     ForwardIt1 last,
     ForwardIt2 d_first)
 {
-  while (first != last) {
-    *d_first++ = std::move(*first++);
-  }
+  using difference_type = typename std::iterator_traits<ForwardIt1>::difference_type;
+  using functor = details::move_functor<ForwardIt1, ForwardIt2>;
+  p3a::for_each(policy,
+      counting_iterator<difference_type>(0),
+      counting_iterator<difference_type>(last - first),
+      functor(first, d_first));
 }
 
 template <class ForwardIt1, class ForwardIt2>
-P3A_ALWAYS_INLINE inline void
-move(
+P3A_ALWAYS_INLINE inline constexpr
+void move(
     serial_local_execution,
     ForwardIt1 first,
     ForwardIt1 last,
