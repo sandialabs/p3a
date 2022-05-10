@@ -10,15 +10,20 @@ namespace p3a {
 
 template <class InputIt, class ForwardIt>
 P3A_NEVER_INLINE void uninitialized_move(
-    serial_execution,
+    serial_execution policy,
     InputIt first,
     InputIt last,
     ForwardIt d_first)
 {
-  for (; first != last; ++first, ++d_first) {
-    ::new (static_cast<void*>(std::addressof(*d_first)))
-      typename std::iterator_traits<ForwardIt>::value_type(std::move(*first));
-  }
+  using difference_type = typename std::iterator_traits<InputIt>::difference_type;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  for_each(policy,
+      counting_iterator<difference_type>(0),
+      counting_iterator<difference_type>(last - first),
+  [=] (difference_type i) P3A_ALWAYS_INLINE {
+    auto addr = &(d_first[i]);
+    ::new (static_cast<void*>(addr)) value_type(std::move(first[i]));
+  });
 }
 
 template <class InputIt, class ForwardIt>
