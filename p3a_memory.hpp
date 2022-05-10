@@ -106,7 +106,7 @@ P3A_NEVER_INLINE void uninitialized_move(
 {
   using difference_type = typename std::iterator_traits<InputIt>::difference_type;
   using functor = details::uninitialized_move_functor<InputIt, ForwardIt>;
-  for_each(policy,
+  p3a::for_each(policy,
       counting_iterator<difference_type>(0),
       counting_iterator<difference_type>(last - first),
   functor(first, d_first));
@@ -135,7 +135,7 @@ P3A_NEVER_INLINE void uninitialized_copy(
 {
   using difference_type = typename std::iterator_traits<InputIt>::difference_type;
   using functor = details::uninitialized_copy_functor<InputIt, ForwardIt>;
-  for_each(policy,
+  p3a::for_each(policy,
       counting_iterator<difference_type>(0),
       counting_iterator<difference_type>(last - first),
   functor(first, d_first));
@@ -163,7 +163,7 @@ P3A_NEVER_INLINE void destroy(
 {
   using T = typename std::iterator_traits<ForwardIt>::value_type;
   if constexpr (!std::is_trivially_destructible_v<T>) {
-    for_each(policy, first, last, details::destroy_functor<ForwardIt>());
+    p3a::for_each(policy, first, last, details::destroy_functor<ForwardIt>());
   }
 }
 
@@ -190,7 +190,7 @@ P3A_NEVER_INLINE void uninitialized_default_construct(
 {
   using T = typename std::iterator_traits<ForwardIt>::value_type;
   if constexpr (!std::is_trivially_default_constructible_v<T>) {
-    for_each(policy, first, last, details::uninitialized_default_construct_functor<ForwardIt>());
+    p3a::for_each(policy, first, last, details::uninitialized_default_construct_functor<ForwardIt>());
   }
 }
 
@@ -289,7 +289,7 @@ P3A_NEVER_INLINE void copy(
         sizeof(value_type) * std::size_t(last - first), 
         cudaMemcpyDefault));
   } else {
-    for_each(policy, first, last,
+    p3a::for_each(policy, first, last,
     [=] P3A_DEVICE (value_type& ref) P3A_ALWAYS_INLINE {
       auto& d_ref = *(d_first + (&ref - &*first));
       d_ref = ref;
@@ -317,7 +317,7 @@ P3A_NEVER_INLINE void copy(
         sizeof(value_type) * std::size_t(last - first), 
         hipMemcpyDefault));
   } else {
-    for_each(policy, first, last,
+    p3a::for_each(policy, first, last,
     [=] __device__ (value_type& ref) P3A_ALWAYS_INLINE {
       auto& d_ref = *(d_first + (&ref - &*first));
       d_ref = ref;
@@ -425,7 +425,7 @@ P3A_NEVER_INLINE void fill(
     T value)
 {
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  for_each(policy, first, last,
+  p3a::for_each(policy, first, last,
   [=] __device__ (value_type& range_value) P3A_ALWAYS_INLINE {
     range_value = value;
   });
@@ -443,7 +443,7 @@ P3A_NEVER_INLINE void fill(
     T value)
 {
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  for_each(policy, first, last,
+  p3a::for_each(policy, first, last,
   [=] __device__ (value_type& range_value) P3A_ALWAYS_INLINE {
     range_value = value;
   });
