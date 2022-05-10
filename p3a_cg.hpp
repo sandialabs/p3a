@@ -8,7 +8,7 @@ namespace p3a {
 template <
   class T,
   class Allocator = allocator<T>,
-  class ExecutionPolicy = serial_local_execution>
+  class ExecutionPolicy = host_execution>
 class conjugate_gradient {
  public:
   using array_type = dynamic_array<T, Allocator, ExecutionPolicy>;

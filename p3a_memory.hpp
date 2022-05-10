@@ -174,7 +174,7 @@ P3A_NEVER_INLINE void uninitialized_move(
 template <class InputIt, class ForwardIt>
 P3A_ALWAYS_INLINE inline
 void uninitialized_move(
-    serial_local_execution,
+    host_execution,
     InputIt first,
     InputIt const& last,
     ForwardIt d_first)
@@ -203,7 +203,7 @@ P3A_NEVER_INLINE void uninitialized_copy(
 template <class InputIt, class ForwardIt>
 P3A_ALWAYS_INLINE inline
 void uninitialized_copy(
-    serial_local_execution,
+    host_execution,
     InputIt first,
     InputIt const& last,
     ForwardIt d_first)
@@ -229,7 +229,7 @@ P3A_NEVER_INLINE void destroy(
 template <class ForwardIt>
 P3A_ALWAYS_INLINE inline
 void destroy(
-    serial_local_execution,
+    host_execution,
     ForwardIt first,
     ForwardIt const& last)
 {
@@ -256,7 +256,7 @@ P3A_NEVER_INLINE void uninitialized_default_construct(
 template <class ForwardIt>
 P3A_ALWAYS_INLINE inline
 void uninitialized_default_construct(
-    serial_local_execution,
+    host_execution,
     ForwardIt first,
     ForwardIt const& last)
 {
@@ -281,7 +281,7 @@ P3A_NEVER_INLINE void uninitialized_fill(
 template <class ForwardIt, class T>
 P3A_ALWAYS_INLINE inline
 void uninitialized_fill(
-    serial_local_execution,
+    host_execution,
     ForwardIt first,
     ForwardIt const& last,
     T const& value)
@@ -390,7 +390,7 @@ P3A_NEVER_INLINE void copy(
 template <class ForwardIt1, class ForwardIt2>
 P3A_ALWAYS_INLINE inline constexpr
 void copy(
-    serial_local_execution,
+    host_execution,
     ForwardIt1 first,
     ForwardIt1 const& last,
     ForwardIt2 d_first)
@@ -431,7 +431,7 @@ P3A_NEVER_INLINE void move(
 template <class ForwardIt1, class ForwardIt2>
 P3A_ALWAYS_INLINE inline constexpr
 void move(
-    serial_local_execution,
+    host_execution,
     ForwardIt1 first,
     ForwardIt1 last,
     ForwardIt2 d_first)
@@ -444,7 +444,7 @@ void move(
 template <class BidirIt1, class BidirIt2>
 P3A_ALWAYS_INLINE inline constexpr
 void move_backward(
-    serial_local_execution,
+    host_execution,
     BidirIt1 const& first,
     BidirIt1 last,
     BidirIt2 d_last)
@@ -468,7 +468,7 @@ P3A_NEVER_INLINE void fill(
 template <class ForwardIt, class T>
 P3A_ALWAYS_INLINE inline constexpr
 void fill(
-    serial_local_execution,
+    host_execution,
     ForwardIt first,
     ForwardIt const& last,
     T const& value)

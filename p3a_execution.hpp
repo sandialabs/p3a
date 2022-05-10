@@ -28,13 +28,13 @@ class kokkos_serial_execution {
 
 inline constexpr kokkos_serial_execution kokkos_serial = {};
 
-class serial_local_execution {
+class host_execution {
  public:
   P3A_ALWAYS_INLINE constexpr void synchronize() const {}
   using simd_abi_type = simd_abi::scalar;
 };
 
-inline constexpr serial_local_execution serial_local = {};
+inline constexpr host_execution host = {};
 
 class device_local_execution {
  public:

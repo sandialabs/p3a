@@ -9,7 +9,7 @@ namespace p3a {
 template <
   class T,
   class Allocator = allocator<T>,
-  class ExecutionPolicy = serial_local_execution>
+  class ExecutionPolicy = host_execution>
 class dynamic_array {
  public:
   using size_type = std::int64_t;
@@ -274,6 +274,6 @@ class dynamic_array {
 template <class T>
 using device_array = dynamic_array<T, device_allocator<T>, device_execution>;
 template <class T>
-using mirror_array = dynamic_array<T, mirror_allocator<T>, serial_local_execution>;
+using mirror_array = dynamic_array<T, mirror_allocator<T>, host_execution>;
 
 }
