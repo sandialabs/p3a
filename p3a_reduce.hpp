@@ -287,7 +287,7 @@ kokkos_simd_transform_reduce(
   Integral constexpr width = Integral(p3a::simd_mask<T, SimdAbi>::size());
   Integral const quotient = extents.x() / width;
   Kokkos::parallel_reduce(
-      "p3a::details::kokkos_simd_transform_reduce(1D)",
+      "p3a::details::kokkos_simd_transform_reduce(3D)",
       kokkos_policy(
         {Integral(0), first.vector.y(), first.vector.z()},
         {Integral(quotient + 1), last.vector.y(), last.vector.z()}),
