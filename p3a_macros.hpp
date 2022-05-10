@@ -24,3 +24,4 @@
 #define P3A_DEVICE
 #endif
 
+#define P3A_HOST_DEVICE P3A_HOST P3A_DEVICE

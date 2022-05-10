@@ -725,7 +725,7 @@ double reduce(
 }
 
 template <class To>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_same_v<To, simd<std::uint64_t, simd_abi::avx512_fixed_size<8>>>, simd<std::uint64_t, simd_abi::avx512_fixed_size<8>>>
 bit_cast(simd<double, simd_abi::avx512_fixed_size<8>> const& src)
 {
@@ -734,7 +734,7 @@ bit_cast(simd<double, simd_abi::avx512_fixed_size<8>> const& src)
 }
 
 template <class To>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_same_v<To, simd<double, simd_abi::avx512_fixed_size<8>>>, simd<double, simd_abi::avx512_fixed_size<8>>>
 bit_cast(simd<std::uint64_t, simd_abi::avx512_fixed_size<8>> const& src)
 {

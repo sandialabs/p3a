@@ -38,7 +38,7 @@ inline constexpr serial_local_execution serial_local = {};
 
 class device_local_execution {
  public:
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   void synchronize() const {}
   using simd_abi_type = simd_abi::scalar;
 };

@@ -15,24 +15,24 @@ class static_vector {
   using const_reference = T const&;
   P3A_ALWAYS_INLINE static_vector() = default;
   template <class U>
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE explicit constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE explicit constexpr
   static_vector(static_vector<U, N> const& other)
   {
     for (int i = 0; i < N; ++i) {
       m_data[i] = T(other.m_data[i]);
     }
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   reference operator[](int i)
   {
     return m_data[i];
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   const_reference operator[](int i) const
   {
     return m_data[i];
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE static
   static_vector zero()
   {
     static_vector r;
@@ -41,7 +41,7 @@ class static_vector {
     }
     return r;
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE static
   static_vector ones()
   {
     static_vector r;
@@ -51,7 +51,7 @@ class static_vector {
     return r;
   }
   template <class U>
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
   static_vector& operator=(static_vector<U, N> const& other)
   {
     for (int i = 0; i < N; ++i) {
@@ -62,7 +62,7 @@ class static_vector {
 };
 
 template <class T, int N>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 bool operator==(static_vector<T, N> const& a, static_vector<T, N> const& b)
 {
   bool equal = true;
@@ -73,7 +73,7 @@ bool operator==(static_vector<T, N> const& a, static_vector<T, N> const& b)
 }
 
 template <class A, class B, int N>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator+=(static_vector<A, N>& a, static_vector<B, N> const& b)
 {
   for (int i = 0; i < N; ++i) {
@@ -82,7 +82,7 @@ void operator+=(static_vector<A, N>& a, static_vector<B, N> const& b)
 }
 
 template <class A, class B, int N>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator-=(static_vector<A, N>& a, static_vector<B, N> const& b)
 {
   for (int i = 0; i < N; ++i) {
@@ -91,7 +91,7 @@ void operator-=(static_vector<A, N>& a, static_vector<B, N> const& b)
 }
 
 template <class A, class B, int N>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator*=(static_vector<A, N>& a, B const& b)
 {
   for (int i = 0; i < N; ++i) {
@@ -100,7 +100,7 @@ void operator*=(static_vector<A, N>& a, B const& b)
 }
 
 template <class A, class B, int N>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator/=(static_vector<A, N>& a, B const& b)
 {
   for (int i = 0; i < N; ++i) {
@@ -109,7 +109,7 @@ void operator/=(static_vector<A, N>& a, B const& b)
 }
 
 template <class A, class B, int N>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator+(static_vector<A, N> const& a, static_vector<B, N> const& b)
 {
   using C = decltype(a[0] + b[0]);
@@ -121,7 +121,7 @@ auto operator+(static_vector<A, N> const& a, static_vector<B, N> const& b)
 }
 
 template <class A, class B, int N>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator-(static_vector<A, N> const& a, static_vector<B, N> const& b)
 {
   using C = decltype(a[0] - b[0]);
@@ -133,7 +133,7 @@ auto operator-(static_vector<A, N> const& a, static_vector<B, N> const& b)
 }
 
 template <class A, class B, int N>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator/(static_vector<A, N> const& a, B const& b)
 {
   using C = decltype(a[0] / b);
@@ -145,7 +145,7 @@ auto operator/(static_vector<A, N> const& a, B const& b)
 }
 
 template <class A, class B, int N>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<B>, static_vector<decltype(A() * B()), N>>::type
 operator*(static_vector<A, N> const& a, B const& b)
 {
@@ -158,7 +158,7 @@ operator*(static_vector<A, N> const& a, B const& b)
 }
 
 template <class A, class B, int N>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<A>, static_vector<decltype(A() * B()), N>>::type
 operator*(A const& a, static_vector<B, N> const& b)
 {
@@ -166,7 +166,7 @@ operator*(A const& a, static_vector<B, N> const& b)
 }
 
 template <class A, int N>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 static_vector<A, N> operator-(static_vector<A, N> const& a)
 {
   static_vector<A, N> r;

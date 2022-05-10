@@ -40,7 +40,7 @@ class kokkos_iterator_functor {
     :m_first(first_arg)
     ,m_functor(functor_arg)
   {}
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE auto operator()(difference_type i) const
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE auto operator()(difference_type i) const
   {
     return m_functor(m_first[i]);
   }
@@ -69,7 +69,7 @@ class kokkos_3d_functor {
     :m_functor(functor_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   auto operator()(Integral i, Integral j, Integral k) const
   {
     return m_functor(p3a::vector3<Integral>(i, j, k));
@@ -139,7 +139,7 @@ P3A_ALWAYS_INLINE inline constexpr void for_each(
 }
 
 template <class Functor, class Integral>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void for_each(
     device_local_execution,
     counting_iterator3<Integral> const& first,
@@ -180,7 +180,7 @@ P3A_ALWAYS_INLINE inline constexpr void for_each(
 }
 
 template <class Functor>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void for_each(
     device_local_execution policy,
     grid3 const& grid,
@@ -205,7 +205,7 @@ void for_each(
 }
 
 template <class Functor>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void for_each(
     device_local_execution policy,
     subgrid3 subgrid,
@@ -250,7 +250,7 @@ class simd_functor {
     ,m_last_i(last_i_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline auto operator()(Integral i) const
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline auto operator()(Integral i) const
   {
     using mask_type = p3a::simd_mask<T, SimdAbi>;
     auto constexpr width = Integral(mask_type::size());
@@ -279,7 +279,7 @@ class simd_3d_functor {
     ,m_last_i(last_i_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   auto operator()(vector3<Integral> const& p) const
   {
     using mask_type = simd_mask<T, SimdAbi>;

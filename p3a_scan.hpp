@@ -21,7 +21,7 @@ class kokkos_exclusive_scan_functor {
   {
   }
   using difference_type = typename std::iterator_traits<Iterator1>::difference_type;
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void operator()(difference_type const i, T& update, bool const is_final_pass) const
   {
     if (is_final_pass) {

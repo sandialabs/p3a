@@ -6,7 +6,7 @@ namespace p3a {
 
 namespace details {
 
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void decompose_double(double value, int& sign_bit, int& exponent, std::uint64_t& mantissa)
 {
   std::uint64_t const as_int = p3a::bit_cast<std::uint64_t>(value);
@@ -17,7 +17,7 @@ void decompose_double(double value, int& sign_bit, int& exponent, std::uint64_t&
 }
 
 template <class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void decompose_double(
     simd<double, Abi> value,
     simd<std::int32_t, Abi>& sign_bit,
@@ -31,7 +31,7 @@ void decompose_double(
   mantissa = as_int & 0b1111111111111111111111111111111111111111111111111111ull;
 }
 
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 double compose_double(int sign_bit_arg, int exponent_arg, std::uint64_t mantissa_arg)
 {
   std::uint64_t const as_int = mantissa_arg |
@@ -41,7 +41,7 @@ double compose_double(int sign_bit_arg, int exponent_arg, std::uint64_t mantissa
 }
 
 template <class Abi>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 simd<double, Abi> compose_double(
     simd<std::int32_t, Abi> const& sign_bit_arg,
     simd<std::int32_t, Abi> const& exponent_arg,
@@ -54,7 +54,7 @@ simd<double, Abi> compose_double(
 }
 
 // value = significand * (2 ^ exponent)
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void decompose_double(double value, std::int64_t& significand, int& exponent)
 {
   int sign_bit;
@@ -70,7 +70,7 @@ void decompose_double(double value, std::int64_t& significand, int& exponent)
 
 // value = significand * (2 ^ exponent)
 template <class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void decompose_double(
     simd<double, Abi> const& value,
     simd<std::int64_t, Abi>& significand,
@@ -88,7 +88,7 @@ void decompose_double(
   exponent -= 52;
 }
 
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 double compose_double(std::int64_t significand, int exponent)
 {
   int sign_bit;
@@ -128,7 +128,7 @@ double compose_double(std::int64_t significand, int exponent)
   return compose_double(sign_bit, exponent, mantissa);
 }
 
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 std::int64_t fixed_point_right_shift(std::int64_t significand, int shift)
 {
   int sign;
@@ -150,7 +150,7 @@ std::int64_t fixed_point_right_shift(std::int64_t significand, int shift)
 }
 
 template <class Abi>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 simd<std::int64_t, Abi> fixed_point_right_shift(
     simd<std::int64_t, Abi> significand,
     simd<std::int32_t, Abi> const& shift)
@@ -173,7 +173,7 @@ simd<std::int64_t, Abi> fixed_point_right_shift(
   return significand;
 }
 
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 std::int64_t decompose_double(double value, int maximum_exponent)
 {
   int exponent;
@@ -185,7 +185,7 @@ std::int64_t decompose_double(double value, int maximum_exponent)
 }
 
 template <class Abi>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 simd<std::int64_t, Abi> decompose_double(
     simd<double, Abi> const& value,
     int maximum_exponent)
@@ -196,7 +196,7 @@ simd<std::int64_t, Abi> decompose_double(
   return fixed_point_right_shift(significand, simd<std::int32_t, Abi>(maximum_exponent) - exponent);
 }
 
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 int128 operator+(int128 const& a, int128 const& b) {
   auto high = a.high() + b.high();
   auto const low = a.low() + b.low();
@@ -205,13 +205,13 @@ int128 operator+(int128 const& a, int128 const& b) {
   return int128(high, low);
 }
 
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 void operator+=(int128& a, int128 const& b)
 {
   a = a + b;
 }
 
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 int128 operator-(int128 const& a, int128 const& b) {
   auto high = a.high() - b.high();
   auto const low = a.low() - b.low();
@@ -220,12 +220,12 @@ int128 operator-(int128 const& a, int128 const& b) {
   return int128(high, low);
 }
 
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 int128 operator-(int128 const& x) {
   return int128(0) - x;
 }
 
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 int128 operator>>(int128 const& x, int expo) {
   auto const low =
     (x.low() >> expo) |
@@ -234,18 +234,18 @@ int128 operator>>(int128 const& x, int expo) {
   return int128(high, low);
 }
 
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 void operator>>=(int128& x, int expo)
 {
   x = x >> expo;
 }
 
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 bool operator==(int128 const& lhs, int128 const& rhs) {
   return lhs.high() == rhs.high() && lhs.low() == rhs.low();
 }
 
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 bool operator<(int128 const& lhs, int128 const& rhs) {
   if (lhs.high() != rhs.high()) {
     return lhs.high() < rhs.high();
@@ -253,12 +253,12 @@ bool operator<(int128 const& lhs, int128 const& rhs) {
   return lhs.low() < rhs.low();
 }
 
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 bool operator>(int128 const& lhs, int128 const& rhs) {
   return rhs < lhs;
 }
 
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 double compose_double(int128 significand_128, int exponent)
 {
   int sign;
@@ -286,7 +286,7 @@ double compose_double(int128 significand_128, int exponent)
 // this overload is a way to trick the system into first adding the 64-bit
 // numbers and then converting to a 128-bit class
 template <class Abi>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 details::int128
 reduce(
     const_where_expression<simd_mask<std::int64_t, Abi>, simd<std::int64_t, Abi>> const& we,

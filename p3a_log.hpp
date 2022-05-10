@@ -9,7 +9,7 @@ namespace p3a {
 
 // Matrix square root by product form of Denman-Beavers iteration.
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 sqrt_dbp(matrix3x3<T> const& A, int& k)
 {
   auto const eps      = epsilon_value<T>();
@@ -43,7 +43,7 @@ sqrt_dbp(matrix3x3<T> const& A, int& k)
 
 // Matrix square root
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 sqrt(matrix3x3<T> const& A)
 {
   int i = 0;
@@ -52,7 +52,7 @@ sqrt(matrix3x3<T> const& A)
 
 // Logarithmic map by Padé approximant and partial fractions
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 log_pade_pf(matrix3x3<T> const& A, int const n)
 {
   auto const I = matrix3x3<T>::identity();
@@ -68,7 +68,7 @@ log_pade_pf(matrix3x3<T> const& A, int const n)
 
 // Logarithmic map by inverse scaling and squaring and Padé approximants
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 log_iss(matrix3x3<T> const& A)
 {
   auto const I   = matrix3x3<T>::identity();
@@ -103,7 +103,7 @@ log_iss(matrix3x3<T> const& A)
 
 // Logarithmic map
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 log(matrix3x3<T> const& A)
 {
   return log_iss(A);
@@ -111,7 +111,7 @@ log(matrix3x3<T> const& A)
 
 // Logarithm by Gregory series for verification. Convergence guaranteed for symmetric A
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 log_gregory(matrix3x3<T> const& A)
 {
   auto const max_iter = 8192;

@@ -12,7 +12,7 @@ class matrix2x2 {
   T m_yy;
  public:
   P3A_ALWAYS_INLINE constexpr matrix2x2() = default;
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   matrix2x2(
       T const& a, T const& b,
       T const& c, T const& d)
@@ -22,23 +22,23 @@ class matrix2x2 {
     ,m_yy(d)
   {
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xx() const { return m_xx; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xy() const { return m_xy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& yx() const { return m_yx; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& yy() const { return m_yy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& xx() { return m_xx; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& xy() { return m_xy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& yx() { return m_yx; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& yy() { return m_yy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE static constexpr
   matrix2x2<T> zero()
   {
     return matrix2x2<T>(
@@ -48,7 +48,7 @@ class matrix2x2 {
 };
 
 template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 void operator+=(matrix2x2<T>& a, matrix2x2<T> const& b)
 {
   a.xx() += b.xx();
@@ -58,7 +58,7 @@ void operator+=(matrix2x2<T>& a, matrix2x2<T> const& b)
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<B>, matrix2x2<decltype(A() / B())>>::type
 operator/(matrix2x2<A> const& a, B const& b)
 {
@@ -69,7 +69,7 @@ operator/(matrix2x2<A> const& a, B const& b)
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto operator*(matrix2x2<A> const& a, vector2<B> const& b)
 {
   using result_type = decltype(a.xx() * b.x());
@@ -79,7 +79,7 @@ auto operator*(matrix2x2<A> const& a, vector2<B> const& b)
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto outer_product(vector2<A> const& a, vector2<B> const& b)
 {
   using result_type = decltype(a.x() * b.x());
@@ -89,7 +89,7 @@ auto outer_product(vector2<A> const& a, vector2<B> const& b)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto determinant(matrix2x2<T> const& m)
 {
   T const& a = m.xx();
@@ -100,7 +100,7 @@ auto determinant(matrix2x2<T> const& m)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto adjugate(matrix2x2<T> const& m)
 {
   T const& a = m.xx();
@@ -113,14 +113,14 @@ auto adjugate(matrix2x2<T> const& m)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto inverse(matrix2x2<T> const& m)
 {
   return adjugate(m) / determinant(m);
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 matrix2x2<T> transpose(matrix2x2<T> const& m)
 {
   return matrix2x2<T>(
@@ -129,7 +129,7 @@ matrix2x2<T> transpose(matrix2x2<T> const& m)
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 auto operator*(
     matrix2x2<A> const& a,
     matrix2x2<B> const& b)

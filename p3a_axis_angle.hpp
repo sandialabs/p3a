@@ -15,7 +15,7 @@ class axis_angle {
  public:
   P3A_ALWAYS_INLINE axis_angle() = default;
 
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   axis_angle(vector3<T> const& vector_arg)
     :m_vector(vector_arg)
   {}
@@ -28,7 +28,7 @@ class axis_angle {
 // logarithm of a rotation tensor in Special Orthogonal Group(3), as the
 // the axis of rotation times the angle of rotation.
 
-  P3A_HOST P3A_DEVICE inline
+  P3A_HOST_DEVICE inline
   axis_angle(matrix3x3<T> const& R)
   {
     T const trR = trace(R);
@@ -89,7 +89,7 @@ class axis_angle {
     }
   }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE inline
+  [[nodiscard]] P3A_HOST_DEVICE inline
   matrix3x3<T> tensor() const
   {
     auto const halfnorm = T(0.5) * magnitude(m_vector);
@@ -101,10 +101,10 @@ class axis_angle {
            (T(2.0) * square(qs) - T(1.0)) * identity3x3;
   }
 
-  [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   vector3<T> const& vector() const { return m_vector; }
 
-  [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE static constexpr
   axis_angle zero()
   {
     return axis_angle(vector3<T>::zero());
@@ -112,7 +112,7 @@ class axis_angle {
 };
 
 template <class T>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 axis_angle<T> load_axis_angle(
     T const* ptr,
     int stride,
@@ -122,7 +122,7 @@ axis_angle<T> load_axis_angle(
 }
 
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void store(
     axis_angle<T> const& aa,
     T* ptr,
@@ -133,7 +133,7 @@ void store(
 }
 
 template <class T, class Mask>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 std::enable_if_t<!std::is_same_v<Mask, bool>, axis_angle<T>>
 condition(
     Mask const& a,

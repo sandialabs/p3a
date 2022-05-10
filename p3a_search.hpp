@@ -7,7 +7,7 @@ namespace p3a {
 template <class T = void>
 class less {
  public:
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
   auto operator()(T const& lhs, T const& rhs ) const
   {
     return lhs < rhs;
@@ -15,7 +15,7 @@ class less {
 };
 
 template <class ForwardIt, class T, class Compare>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 ForwardIt upper_bound(
     ForwardIt first,
     ForwardIt last,
@@ -38,7 +38,7 @@ ForwardIt upper_bound(
 }
 
 template<class ForwardIt, class T, class Compare>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value, Compare comp)
 {
   auto count = last - first;
@@ -57,7 +57,7 @@ ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value, Compare c
 }
 
 template <class ForwardIt, class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 ForwardIt upper_bound(
     ForwardIt first,
     ForwardIt last,
@@ -67,7 +67,7 @@ ForwardIt upper_bound(
 }
 
 template <class ForwardIt, class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 ForwardIt lower_bound(
     ForwardIt first,
     ForwardIt last,

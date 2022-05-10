@@ -33,27 +33,27 @@ class kokkos_reducer {
     ,m_result_view(&result_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void join(value_type& dest, value_type const& src) const
   {
     dest = m_binary_op(dest, src);
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void init(value_type& val) const
   {
     val = m_init;
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   value_type& reference() const
   {
     return *m_result_view.data();
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   result_view_type view() const
   {
     return m_result_view;
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   bool references_scalar() const
   {
     return true;
@@ -72,7 +72,7 @@ class kokkos_reduce_functor {
     ,m_unary_op(unary_op_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline void operator()(Integral i, T& updated) const
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline void operator()(Integral i, T& updated) const
   {
     updated = m_binary_op(updated, m_unary_op(i));
   }
@@ -146,7 +146,7 @@ class kokkos_3d_reduce_functor {
     ,m_unary_op(unary_op_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void operator()(Integral i, Integral j, Integral k, T& updated) const
   {
     updated = m_binary_op(updated, m_unary_op(i, j, k));
@@ -204,7 +204,7 @@ class simd_reduce_wrapper {
   {
   }
   template <class Indices, class Abi>
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   auto operator()(Indices const& indices, p3a::simd_mask<T, Abi> const& mask) const
   {
     auto const simd_result = m_unary_op(indices, mask);
@@ -388,20 +388,20 @@ class int128 {
   std::uint64_t m_low;
  public:
   P3A_ALWAYS_INLINE inline int128() = default;
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
   int128(std::int64_t high_arg, std::uint64_t low_arg)
     :m_high(high_arg)
     ,m_low(low_arg)
   {}
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
   int128(std::int64_t value)
     :int128(
         std::int64_t(-1) * (value < 0),
         std::uint64_t(value))
   {}
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
   std::int64_t high() const { return m_high; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
   std::uint64_t low() const { return m_low; }
 };
 
@@ -463,7 +463,7 @@ class associative_sum_iterator_functor {
     ,values(values_arg)
     ,unary_op(unary_op_arg)
   {}
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE void operator()(SizeType i) const {
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE void operator()(SizeType i) const {
     values[i] = unary_op(first[i]);
   }
 };
@@ -482,7 +482,7 @@ class associative_sum_subgrid_functor {
     ,values(values_arg)
     ,unary_op(unary_op_arg)
   {}
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE void operator()(vector3<int> const& grid_point) const {
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE void operator()(vector3<int> const& grid_point) const {
     int const index = grid.index(grid_point);
     values[index] = unary_op(grid_point);
   }

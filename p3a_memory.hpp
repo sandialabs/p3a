@@ -24,7 +24,7 @@ class uninitialized_move_functor {
     ,m_d_first(d_first_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void operator()(difference_type i) const
   {
     auto addr = &(m_d_first[i]);
@@ -46,7 +46,7 @@ class uninitialized_copy_functor {
     ,m_d_first(d_first_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void operator()(difference_type i) const
   {
     auto addr = &(m_d_first[i]);
@@ -59,7 +59,7 @@ class destroy_functor {
  public:
   using reference = typename std::iterator_traits<ForwardIt>::reference;
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void operator()(reference r) const
   {
     r.~value_type();
@@ -71,7 +71,7 @@ class uninitialized_default_construct_functor {
  public:
   using reference = typename std::iterator_traits<ForwardIt>::reference;
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void operator()(reference r) const
   {
     ::new (static_cast<void*>(&r)) value_type;
@@ -88,7 +88,7 @@ class uninitialized_fill_functor {
   }
   using reference = typename std::iterator_traits<ForwardIt>::reference;
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void operator()(reference r) const
   {
     ::new (static_cast<void*>(&r)) value_type(m_value);
@@ -109,7 +109,7 @@ class copy_functor {
     ,m_d_first(d_first_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void operator()(difference_type i) const
   {
     m_d_first[i] = m_first[i];
@@ -130,7 +130,7 @@ class move_functor {
     ,m_d_first(d_first_arg)
   {
   }
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void operator()(difference_type i) const
   {
     m_d_first[i] = std::move(m_first[i]);
@@ -147,7 +147,7 @@ class fill_functor {
   }
   using reference = typename std::iterator_traits<ForwardIt>::reference;
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   void operator()(reference r) const
   {
     r = m_value;
@@ -401,7 +401,7 @@ void copy(
 }
 
 template <class ForwardIt1, class ForwardIt2>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void copy(
     device_local_execution,
     ForwardIt1 first,
@@ -479,7 +479,7 @@ void fill(
 }
 
 template <class ForwardIt, class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void fill(
     device_local_execution,
     ForwardIt first,

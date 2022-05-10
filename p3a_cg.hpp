@@ -80,7 +80,7 @@ P3A_NEVER_INLINE double dot_product(
   return adder.transform_reduce(
       counting_iterator<size_type>(0),
       counting_iterator<size_type>(a.size()),
-  [=] P3A_HOST P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
+  [=] P3A_HOST_DEVICE (size_type i) P3A_ALWAYS_INLINE {
     return a_ptr[i] * b_ptr[i];
   });
 }
@@ -102,7 +102,7 @@ P3A_NEVER_INLINE void axpy(
   for_each(x.get_execution_policy(),
       counting_iterator<size_type>(0),
       counting_iterator<size_type>(x.size()),
-  [=] P3A_HOST P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
+  [=] P3A_HOST_DEVICE (size_type i) P3A_ALWAYS_INLINE {
     result_ptr[i] = a * x_ptr[i] + y_ptr[i];
   });
 }
