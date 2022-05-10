@@ -8,7 +8,7 @@ namespace p3a {
 template <
   class T,
   class Allocator = allocator<T>,
-  class ExecutionPolicy = serial_execution>
+  class ExecutionPolicy = serial_local_execution>
 class conjugate_gradient {
  public:
   using array_type = dynamic_array<T, Allocator, ExecutionPolicy>;
@@ -36,7 +36,7 @@ class conjugate_gradient {
 template <
   class T,
   class Allocator = allocator<T>,
-  class ExecutionPolicy = serial_execution>
+  class ExecutionPolicy = kokkos_serial_execution>
 class preconditioned_conjugate_gradient {
  public:
   using array_type = dynamic_array<T, Allocator, ExecutionPolicy>;

@@ -434,7 +434,7 @@ class fixed_point_double_sum {
   values_type& values() { return m_values; }
 };
 
-extern template class fixed_point_double_sum<allocator<double>, serial_execution>;
+extern template class fixed_point_double_sum<allocator<double>, kokkos_serial_execution>;
 #ifdef KOKKOS_ENABLE_CUDA
 extern template class fixed_point_double_sum<cuda_device_allocator<double>, cuda_execution>;
 #endif
@@ -539,8 +539,5 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
 template <class T>
 using device_associative_sum = 
   associative_sum<T, device_allocator<T>, device_execution>;
-template <class T>
-using host_associative_sum = 
-  associative_sum<T, allocator<T>, serial_execution>;
 
 }
