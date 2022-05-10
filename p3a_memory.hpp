@@ -78,6 +78,23 @@ class uninitialized_default_construct_functor {
   }
 };
 
+template <class ForwardIt, class T>
+class uninitialized_fill_functor {
+  T m_value;
+ public:
+  uninitialized_fill_functor(T const& value_arg)
+    :m_value(value_arg)
+  {
+  }
+  using reference = typename std::iterator_traits<ForwardIt>::reference;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void operator()(reference r) const
+  {
+    ::new (static_cast<void*>(&r)) value_type(m_value);
+  }
+};
+
 }
 
 template <class ExecutionPolicy, class InputIt, class ForwardIt>
@@ -192,17 +209,14 @@ void uninitialized_default_construct(
   }
 }
 
-template <class ForwardIt, class T>
+template <class ExecutionPolicy, class ForwardIt, class T>
 P3A_NEVER_INLINE void uninitialized_fill(
-    serial_execution,
+    ExecutionPolicy policy,
     ForwardIt first,
     ForwardIt last,
     T const& value)
 {
-  for (; first != last; ++first) {
-    ::new (static_cast<void*>(std::addressof(*first)))
-      typename std::iterator_traits<ForwardIt>::value_type(value);
-  }
+  p3a::for_each(policy, first, last, details::uninitialized_fill_functor<ForwardIt, T>(value));
 }
 
 template <class ForwardIt, class T>
@@ -218,40 +232,6 @@ void uninitialized_fill(
       typename std::iterator_traits<ForwardIt>::value_type(value);
   }
 }
-
-#ifdef __CUDACC__
-
-template <class ForwardIt, class T>
-P3A_NEVER_INLINE void uninitialized_fill(
-    cuda_execution policy,
-    ForwardIt first,
-    ForwardIt last,
-    T value)
-{
-  for_each(policy, first, last,
-  [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
-    ::new (static_cast<void*>(&ref)) T(value);
-  });
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class ForwardIt, class T>
-P3A_NEVER_INLINE void uninitialized_fill(
-    hip_execution policy,
-    ForwardIt first,
-    ForwardIt last,
-    T value)
-{
-  for_each(policy, first, last,
-  [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
-    ::new (static_cast<void*>(&ref)) T(value);
-  });
-}
-
-#endif
 
 template <class ForwardIt1, class ForwardIt2>
 P3A_NEVER_INLINE void copy(
