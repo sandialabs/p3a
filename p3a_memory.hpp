@@ -54,6 +54,18 @@ class uninitialized_copy_functor {
   }
 };
 
+template <class ForwardIt>
+class destroy_functor {
+ public:
+  using reference = typename std::iterator_traits<ForwardIt>::reference;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void operator()(reference r) const
+  {
+    r.~value_type();
+  }
+};
+
 }
 
 template <class ExecutionPolicy, class InputIt, class ForwardIt>
@@ -114,25 +126,15 @@ void uninitialized_copy(
   }
 }
 
-template <class T>
-P3A_ALWAYS_INLINE inline void destroy_at(
-    serial_execution,
-    T* p)
-{
-  p->~T();
-}
-
-template <class ForwardIt>
+template <class ExecutionPolicy, class ForwardIt>
 P3A_NEVER_INLINE void destroy(
-    serial_execution policy,
+    ExecutionPolicy policy,
     ForwardIt first,
     ForwardIt last)
 {
   using T = typename std::iterator_traits<ForwardIt>::value_type;
   if constexpr (!std::is_trivially_destructible_v<T>) {
-    for (; first != last; ++first) {
-      destroy_at(policy, std::addressof(*first));
-    }
+    for_each(policy, first, last, details::destroy_functor<ForwardIt>());
   }
 }
 
@@ -150,58 +152,6 @@ void destroy(
     }
   }
 }
-
-#ifdef __CUDACC__
-
-template <class T>
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
-void destroy_at(cuda_execution, T* p)
-{
-  p->~T();
-}
-
-template <class ForwardIt>
-P3A_NEVER_INLINE void destroy(
-    cuda_execution policy,
-    ForwardIt first,
-    ForwardIt last)
-{
-  using T = typename std::iterator_traits<ForwardIt>::value_type;
-  if constexpr (!std::is_trivially_destructible_v<T>) {
-    for_each(policy, first, last,
-    [=] P3A_DEVICE (T& ref) P3A_ALWAYS_INLINE {
-      destroy_at(policy, &ref);
-    });
-  }
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class T>
-__host__ __device__ P3A_ALWAYS_INLINE inline
-void destroy_at(hip_execution, T* p)
-{
-  p->~T();
-}
-
-template <class ForwardIt>
-P3A_NEVER_INLINE void destroy(
-    hip_execution policy,
-    ForwardIt first,
-    ForwardIt last)
-{
-  using T = typename std::iterator_traits<ForwardIt>::value_type;
-  if constexpr (!std::is_trivially_destructible_v<T>) {
-    for_each(policy, first, last,
-    [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
-      destroy_at(policy, &ref);
-    });
-  }
-}
-
-#endif
 
 template <class ForwardIt>
 P3A_NEVER_INLINE void uninitialized_default_construct(
