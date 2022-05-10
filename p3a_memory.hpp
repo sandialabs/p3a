@@ -137,6 +137,23 @@ class move_functor {
   }
 };
 
+template <class ForwardIt, class T>
+class fill_functor {
+  T m_value;
+ public:
+  fill_functor(T const& value_arg)
+    :m_value(value_arg)
+  {
+  }
+  using reference = typename std::iterator_traits<ForwardIt>::reference;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void operator()(reference r) const
+  {
+    r = m_value;
+  }
+};
+
 }
 
 template <class ExecutionPolicy, class InputIt, class ForwardIt>
@@ -437,74 +454,37 @@ void move_backward(
   }
 }
 
-template <class ForwardIt, class T>
+template <class ExecutionPolicy, class ForwardIt, class T>
 P3A_NEVER_INLINE void fill(
-    serial_execution,
+    ExecutionPolicy policy,
     ForwardIt first,
     ForwardIt last,
-    const T& value)
+    T const& value)
 {
-  for (; first != last; ++first) {
-    *first = value;
-  }
+  using functor = details::fill_functor<ForwardIt, T>;
+  p3a::for_each(policy, first, last, functor(value));
 }
 
 template <class ForwardIt, class T>
-P3A_ALWAYS_INLINE inline
+P3A_ALWAYS_INLINE inline constexpr
 void fill(
     serial_local_execution,
     ForwardIt first,
-    ForwardIt last,
-    const T& value)
+    ForwardIt const& last,
+    T const& value)
 {
   for (; first != last; ++first) {
     *first = value;
   }
 }
 
-#ifdef __CUDACC__
-
 template <class ForwardIt, class T>
-P3A_NEVER_INLINE void fill(
-    cuda_execution policy,
-    ForwardIt first,
-    ForwardIt last,
-    T value)
-{
-  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  p3a::for_each(policy, first, last,
-  [=] __device__ (value_type& range_value) P3A_ALWAYS_INLINE {
-    range_value = value;
-  });
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class ForwardIt, class T>
-P3A_NEVER_INLINE void fill(
-    hip_execution policy,
-    ForwardIt first,
-    ForwardIt last,
-    T value)
-{
-  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  p3a::for_each(policy, first, last,
-  [=] __device__ (value_type& range_value) P3A_ALWAYS_INLINE {
-    range_value = value;
-  });
-}
-
-#endif
-
-template <class ForwardIt, class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
 void fill(
     device_local_execution,
     ForwardIt first,
     ForwardIt const& last,
-    const T& value)
+    T const& value)
 {
   for (; first != last; ++first) {
     *first = value;
