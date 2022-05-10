@@ -20,7 +20,7 @@ P3A_NEVER_INLINE void uninitialized_move(
   for_each(policy,
       counting_iterator<difference_type>(0),
       counting_iterator<difference_type>(last - first),
-  [=] (difference_type i) P3A_ALWAYS_INLINE {
+  [=] P3A_HOST P3A_DEVICE (difference_type i) P3A_ALWAYS_INLINE {
     auto addr = &(d_first[i]);
     ::new (static_cast<void*>(addr)) value_type(std::move(first[i]));
   });
