@@ -66,6 +66,18 @@ class destroy_functor {
   }
 };
 
+template <class ForwardIt>
+class uninitialized_default_construct_functor {
+ public:
+  using reference = typename std::iterator_traits<ForwardIt>::reference;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void operator()(reference r) const
+  {
+    ::new (static_cast<void*>(&r)) value_type;
+  }
+};
+
 }
 
 template <class ExecutionPolicy, class InputIt, class ForwardIt>
@@ -153,17 +165,15 @@ void destroy(
   }
 }
 
-template <class ForwardIt>
+template <class ExecutionPolicy, class ForwardIt>
 P3A_NEVER_INLINE void uninitialized_default_construct(
-    serial_execution,
+    ExecutionPolicy policy,
     ForwardIt first,
     ForwardIt last)
 {
   using T = typename std::iterator_traits<ForwardIt>::value_type;
   if constexpr (!std::is_trivially_default_constructible_v<T>) {
-    for (; first != last; ++first) {
-      ::new (static_cast<void*>(std::addressof(*first))) T;
-    }
+    for_each(policy, first, last, details::uninitialized_default_construct_functor<ForwardIt>());
   }
 }
 
@@ -181,44 +191,6 @@ void uninitialized_default_construct(
     }
   }
 }
-
-#ifdef __CUDACC__
-
-template <class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_default_construct(
-    cuda_execution policy,
-    ForwardIt first,
-    ForwardIt last)
-{
-  using T = typename std::iterator_traits<ForwardIt>::value_type;
-  if constexpr (!std::is_trivially_default_constructible_v<T>) {
-    for_each(policy, first, last,
-    [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
-      ::new (static_cast<void*>(&ref)) T;
-    });
-  }
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_default_construct(
-    hip_execution policy,
-    ForwardIt first,
-    ForwardIt last)
-{
-  using T = typename std::iterator_traits<ForwardIt>::value_type;
-  if constexpr (!std::is_trivially_default_constructible_v<T>) {
-    for_each(policy, first, last,
-    [=] __device__ (T& ref) P3A_ALWAYS_INLINE {
-      ::new (static_cast<void*>(&ref)) T;
-    });
-  }
-}
-
-#endif
 
 template <class ForwardIt, class T>
 P3A_NEVER_INLINE void uninitialized_fill(
