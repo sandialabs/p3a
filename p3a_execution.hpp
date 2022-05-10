@@ -19,15 +19,6 @@
 
 namespace p3a {
 
-class kokkos_serial_execution {
- public:
-  void synchronize() const {}
-  using simd_abi_type = simd_abi::host_native;
-  using kokkos_execution_space = Kokkos::Serial;
-};
-
-inline constexpr kokkos_serial_execution kokkos_serial = {};
-
 class host_execution {
  public:
   P3A_ALWAYS_INLINE constexpr void synchronize() const {}
@@ -36,14 +27,23 @@ class host_execution {
 
 inline constexpr host_execution host = {};
 
-class device_local_execution {
+class host_device_execution {
  public:
   P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   void synchronize() const {}
   using simd_abi_type = simd_abi::scalar;
 };
 
-inline constexpr device_local_execution device_local = {};
+inline constexpr host_device_execution host_device = {};
+
+class kokkos_serial_execution {
+ public:
+  void synchronize() const {}
+  using simd_abi_type = simd_abi::host_native;
+  using kokkos_execution_space = Kokkos::Serial;
+};
+
+inline constexpr kokkos_serial_execution kokkos_serial = {};
 
 #ifdef KOKKOS_ENABLE_CUDA
 

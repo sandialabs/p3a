@@ -403,7 +403,7 @@ void copy(
 template <class ForwardIt1, class ForwardIt2>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void copy(
-    device_local_execution,
+    host_device_execution,
     ForwardIt1 first,
     ForwardIt1 const& last,
     ForwardIt2 d_first)
@@ -481,7 +481,7 @@ void fill(
 template <class ForwardIt, class T>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void fill(
-    device_local_execution,
+    host_device_execution,
     ForwardIt first,
     ForwardIt const& last,
     T const& value)

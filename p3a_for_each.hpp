@@ -141,7 +141,7 @@ P3A_ALWAYS_INLINE inline constexpr void for_each(
 template <class Functor, class Integral>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void for_each(
-    device_local_execution,
+    host_device_execution,
     counting_iterator3<Integral> const& first,
     counting_iterator3<Integral> const& last,
     Functor const& functor)
@@ -182,7 +182,7 @@ P3A_ALWAYS_INLINE inline constexpr void for_each(
 template <class Functor>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void for_each(
-    device_local_execution policy,
+    host_device_execution policy,
     grid3 const& grid,
     Functor const& functor)
 {
@@ -207,7 +207,7 @@ void for_each(
 template <class Functor>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void for_each(
-    device_local_execution policy,
+    host_device_execution policy,
     subgrid3 subgrid,
     Functor const& functor)
 {
