@@ -34,9 +34,9 @@ class uninitialized_move_functor {
 
 }
 
-template <class InputIt, class ForwardIt>
+template <class ExecutionPolicy, class InputIt, class ForwardIt>
 P3A_NEVER_INLINE void uninitialized_move(
-    serial_execution policy,
+    ExecutionPolicy policy,
     InputIt first,
     InputIt last,
     ForwardIt d_first)
@@ -62,45 +62,6 @@ void uninitialized_move(
       typename std::iterator_traits<ForwardIt>::value_type(std::move(*first));
   }
 }
-
-#ifdef __CUDACC__
-
-template <class InputIt, class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_move(
-    cuda_execution policy,
-    InputIt first,
-    InputIt last,
-    ForwardIt d_first)
-{
-  using difference_type = typename std::iterator_traits<InputIt>::difference_type;
-  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  using functor = details::uninitialized_move_functor<InputIt, ForwardIt>;
-  for_each(policy,
-      counting_iterator<difference_type>(0),
-      counting_iterator<difference_type>(last - first),
-  functor(first, d_first));
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class InputIt, class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_move(
-    hip_execution policy,
-    InputIt first,
-    InputIt last,
-    ForwardIt d_first)
-{
-  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  for_each(policy, first, last,
-  [=] __device__ (value_type& src_value) P3A_ALWAYS_INLINE {
-    auto addr = &(d_first[&src_value - &(*first)]);
-    ::new (static_cast<void*>(addr)) value_type(std::move(src_value));
-  });
-}
-
-#endif
 
 template <class InputIt, class ForwardIt>
 P3A_NEVER_INLINE void uninitialized_copy(
