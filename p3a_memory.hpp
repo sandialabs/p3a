@@ -425,23 +425,10 @@ void move(
 }
 
 template <class BidirIt1, class BidirIt2>
-P3A_NEVER_INLINE
-void move_backward(
-    serial_execution,
-    BidirIt1 first,
-    BidirIt1 last,
-    BidirIt2 d_last)
-{
-  while (first != last) {
-    *(--d_last) = std::move(*(--last));
-  }
-}
-
-template <class BidirIt1, class BidirIt2>
-P3A_ALWAYS_INLINE inline
+P3A_ALWAYS_INLINE inline constexpr
 void move_backward(
     serial_local_execution,
-    BidirIt1 first,
+    BidirIt1 const& first,
     BidirIt1 last,
     BidirIt2 d_last)
 {
