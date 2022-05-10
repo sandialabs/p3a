@@ -108,7 +108,6 @@ using device_execution = hip_execution;
 #else
 using device_execution = serial_execution;
 #endif
-using host_execution = serial_execution;
 inline constexpr device_execution device = {};
 
 }
