@@ -74,13 +74,11 @@ P3A_NEVER_INLINE void uninitialized_move(
 {
   using difference_type = typename std::iterator_traits<InputIt>::difference_type;
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  using functor = details::uninitialized_move_functor<InputIt, ForwardIt>;
   for_each(policy,
       counting_iterator<difference_type>(0),
       counting_iterator<difference_type>(last - first),
-  [=] __device__ (difference_type i) P3A_ALWAYS_INLINE {
-    auto addr = &(d_first[i]);
-    ::new (static_cast<void*>(addr)) value_type(std::move(first[i]));
-  });
+  functor(first, d_first));
 }
 
 #endif
