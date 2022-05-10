@@ -26,7 +26,7 @@ void handle_cuda_error(cudaError_t error)
 
 void cuda_execution::synchronize() const {
   details::handle_cuda_error(
-      cudaStreamSynchronize(stream));
+      cudaStreamSynchronize(nullptr));
 }
 
 #endif
@@ -55,7 +55,7 @@ void handle_hip_error(hipError_t error)
 
 void hip_execution::synchronize() const {
   details::handle_hip_error(
-      hipStreamSynchronize(stream));
+      hipStreamSynchronize(nullptr));
 }
 
 #endif

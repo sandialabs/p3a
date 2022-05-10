@@ -62,7 +62,6 @@ void handle_cuda_error(cudaError_t error);
 }
 
 class cuda_execution {
- cudaStream_t stream{nullptr};
  public:
   void synchronize() const;
   using simd_abi_type = simd_abi::scalar;
@@ -90,7 +89,6 @@ void handle_hip_error(hipError_t error);
 }
 
 class hip_execution {
-  hipStream_t stream{nullptr};
  public:
   void synchronize() const;
   using simd_abi_type = simd_abi::scalar;
