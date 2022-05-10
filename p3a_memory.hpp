@@ -32,6 +32,28 @@ class uninitialized_move_functor {
   }
 };
 
+template <class InputIt, class ForwardIt>
+class uninitialized_copy_functor {
+  InputIt m_first;
+  ForwardIt m_d_first;
+ public:
+  using difference_type = typename std::iterator_traits<InputIt>::difference_type;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  uninitialized_copy_functor(
+      InputIt first_arg,
+      ForwardIt d_first_arg)
+    :m_first(first_arg)
+    ,m_d_first(d_first_arg)
+  {
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void operator()(difference_type i) const
+  {
+    auto addr = &(m_d_first[i]);
+    ::new (static_cast<void*>(addr)) value_type(m_first[i]);
+  }
+};
+
 }
 
 template <class ExecutionPolicy, class InputIt, class ForwardIt>
@@ -63,17 +85,19 @@ void uninitialized_move(
   }
 }
 
-template <class InputIt, class ForwardIt>
+template <class ExecutionPolicy, class InputIt, class ForwardIt>
 P3A_NEVER_INLINE void uninitialized_copy(
-    serial_execution,
+    ExecutionPolicy policy,
     InputIt first,
     InputIt last,
     ForwardIt d_first)
 {
-  for (; first != last; ++first, ++d_first) {
-    ::new (static_cast<void*>(std::addressof(*d_first)))
-      typename std::iterator_traits<ForwardIt>::value_type(*first);
-  }
+  using difference_type = typename std::iterator_traits<InputIt>::difference_type;
+  using functor = details::uninitialized_copy_functor<InputIt, ForwardIt>;
+  for_each(policy,
+      counting_iterator<difference_type>(0),
+      counting_iterator<difference_type>(last - first),
+  functor(first, d_first));
 }
 
 template <class InputIt, class ForwardIt>
@@ -89,46 +113,6 @@ void uninitialized_copy(
       typename std::iterator_traits<ForwardIt>::value_type(*first);
   }
 }
-
-#ifdef __CUDACC__
-
-template <class InputIt, class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_copy(
-    cuda_execution policy,
-    InputIt first,
-    InputIt last,
-    ForwardIt d_first)
-{
-  using input_reference_type = typename std::iterator_traits<InputIt>::reference;
-  using output_value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  for_each(policy, first, last,
-  [=] __device__ (input_reference_type input_reference) P3A_ALWAYS_INLINE {
-    auto addr = &(d_first[&input_reference - &(*first)]);
-    ::new (static_cast<void*>(addr)) output_value_type(input_reference);
-  });
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class InputIt, class ForwardIt>
-P3A_NEVER_INLINE void uninitialized_copy(
-    hip_execution policy,
-    InputIt first,
-    InputIt last,
-    ForwardIt d_first)
-{
-  using input_reference_type = typename std::iterator_traits<InputIt>::reference;
-  using output_value_type = typename std::iterator_traits<ForwardIt>::value_type;
-  for_each(policy, first, last,
-  [=] __device__ (input_reference_type input_reference) P3A_ALWAYS_INLINE {
-    auto addr = &(d_first[&input_reference - &(*first)]);
-    ::new (static_cast<void*>(addr)) output_value_type(input_reference);
-  });
-}
-
-#endif
 
 template <class T>
 P3A_ALWAYS_INLINE inline void destroy_at(
