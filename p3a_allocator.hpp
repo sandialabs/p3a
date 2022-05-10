@@ -25,10 +25,10 @@ class allocation_failure : public std::bad_alloc {
 };
 
 template <class T>
-class allocator {
+class host_allocator {
  public:
   using size_type = std::int64_t;
-  template <class U> struct rebind { using other = p3a::allocator<U>; };
+  template <class U> struct rebind { using other = p3a::host_allocator<U>; };
   static T* allocate(size_type n)
   {
     auto const result = std::malloc(std::size_t(n) * sizeof(T));
@@ -46,10 +46,10 @@ class allocator {
 #ifdef KOKKOS_ENABLE_CUDA
 
 template <class T>
-class cuda_host_allocator {
+class cuda_mirror_allocator {
  public:
   using size_type = std::int64_t;
-  template <class U> struct rebind { using other = p3a::cuda_host_allocator<U>; };
+  template <class U> struct rebind { using other = p3a::cuda_mirror_allocator<U>; };
   P3A_NEVER_INLINE static T* allocate(size_type n)
   {
     void* ptr = nullptr;
@@ -90,10 +90,10 @@ class cuda_device_allocator {
 #ifdef KOKKOS_ENABLE_HIP
 
 template <class T>
-class hip_host_allocator {
+class hip_mirror_allocator {
  public:
   using size_type = std::int64_t;
-  template <class U> struct rebind { using other = p3a::hip_host_allocator<U>; };
+  template <class U> struct rebind { using other = p3a::hip_mirror_allocator<U>; };
   P3A_NEVER_INLINE static T* allocate(size_type n)
   {
     void* ptr = nullptr;
@@ -139,18 +139,18 @@ template <class T>
 using device_allocator = hip_device_allocator<T>;
 #else
 template <class T>
-using device_allocator = allocator<T>;
+using device_allocator = host_allocator<T>;
 #endif
 
 #if defined(KOKKOS_ENABLE_CUDA)
 template <class T>
-using mirror_allocator = cuda_host_allocator<T>;
+using mirror_allocator = cuda_mirror_allocator<T>;
 #elif defined(KOKKOS_ENABLE_HIP)
 template <class T>
-using mirror_allocator = hip_host_allocator<T>;
+using mirror_allocator = hip_mirror_allocator<T>;
 #else
 template <class T>
-using mirror_allocator = allocator<T>;
+using mirror_allocator = host_allocator<T>;
 #endif
 
 }

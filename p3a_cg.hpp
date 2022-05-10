@@ -7,7 +7,7 @@ namespace p3a {
 
 template <
   class T,
-  class Allocator = allocator<T>,
+  class Allocator = host_allocator<T>,
   class ExecutionPolicy = host_execution>
 class conjugate_gradient {
  public:
@@ -35,7 +35,7 @@ class conjugate_gradient {
 
 template <
   class T,
-  class Allocator = allocator<T>,
+  class Allocator = host_allocator<T>,
   class ExecutionPolicy = kokkos_serial_execution>
 class preconditioned_conjugate_gradient {
  public:

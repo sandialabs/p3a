@@ -8,7 +8,7 @@ namespace p3a {
 
 template <
   class T,
-  class Allocator = allocator<T>,
+  class Allocator = host_allocator<T>,
   class ExecutionPolicy = host_execution>
 class dynamic_array {
  public:

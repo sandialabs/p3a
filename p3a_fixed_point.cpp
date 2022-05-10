@@ -98,7 +98,7 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
 // explicitly instantiate for host and device so the actual reduction
 // code can stay in this translation unit
 //
-template class fixed_point_double_sum<allocator<double>, kokkos_serial_execution>;
+template class fixed_point_double_sum<host_allocator<double>, kokkos_serial_execution>;
 #ifdef KOKKOS_ENABLE_CUDA
 template class fixed_point_double_sum<cuda_device_allocator<double>, cuda_execution>;
 #endif
