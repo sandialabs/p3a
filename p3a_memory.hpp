@@ -95,6 +95,27 @@ class uninitialized_fill_functor {
   }
 };
 
+template <class InputIt, class ForwardIt>
+class copy_functor {
+  InputIt m_first;
+  ForwardIt m_d_first;
+ public:
+  using difference_type = typename std::iterator_traits<InputIt>::difference_type;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+  copy_functor(
+      InputIt first_arg,
+      ForwardIt d_first_arg)
+    :m_first(first_arg)
+    ,m_d_first(d_first_arg)
+  {
+  }
+  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  void operator()(difference_type i) const
+  {
+    m_d_first[i] = m_first[i];
+  }
+};
+
 }
 
 template <class ExecutionPolicy, class InputIt, class ForwardIt>
@@ -233,24 +254,107 @@ void uninitialized_fill(
   }
 }
 
-template <class ForwardIt1, class ForwardIt2>
+namespace details {
+
+template <class Iterator1, class Iterator2>
+bool are_in_same_space(Iterator1, Iterator2) { return true; }
+
+template <class Iterator1, class Iterator2>
+void copy_between_spaces(Iterator1, Iterator2, std::size_t)
+{
+  throw std::logic_error("copying between spaces with something other than pointers to the same type");
+}
+
+}
+
+#ifdef __CUDACC__
+
+namespace details {
+
+template <class T, class U>
+bool are_in_same_space(T* from, U* to)
+{
+  cudaPointerAttributes from_attributes;
+  cudaPointerAttributes to_attributes;
+  details::handle_cuda_error(cudaPointerGetAttributes(&from_attributes, from));
+  details::handle_cuda_error(cudaPointerGetAttributes(&to_attributes, to));
+  return from_attributes.type == to_attributes.type;
+}
+
+template <class T>
+void copy_between_spaces(T const* from, T* to, std::size_t n)
+{
+  details::handle_cuda_error(
+      cudaMemcpy(
+        to,
+        from,
+        sizeof(T) * n,
+        cudaMemcpyDefault));
+}
+
+}
+
+#endif
+
+#ifdef __HIPCC__
+
+namespace details {
+
+template <class T, class U>
+bool are_in_same_space(T* from, U* to)
+{
+  hipPointerAttributes from_attributes;
+  hipPointerAttributes to_attributes;
+  details::handle_hip_error(hipPointerGetAttributes(&from_attributes, from));
+  details::handle_hip_error(hipPointerGetAttributes(&to_attributes, to));
+  return from_attributes.type == to_attributes.type;
+}
+
+template <class T>
+void copy_between_spaces(T const* from, T* to, std::size_t n)
+{
+  details::handle_hip_error(
+      hipMemcpy(
+        to,
+        from,
+        sizeof(T) * n,
+        hipMemcpyDefault));
+}
+
+}
+
+#endif
+
+template <class ExecutionPolicy, class ForwardIt1, class ForwardIt2>
 P3A_NEVER_INLINE void copy(
-    serial_execution,
+    ExecutionPolicy policy,
     ForwardIt1 first,
     ForwardIt1 last,
     ForwardIt2 d_first)
 {
-  while (first != last) {
-    *d_first++ = *first++;
+  using value_type = typename std::iterator_traits<ForwardIt2>::value_type;
+  using difference_type = typename std::iterator_traits<ForwardIt1>::difference_type;
+  using functor = details::copy_functor<ForwardIt1, ForwardIt2>;
+  if (details::are_in_same_space(first, d_first)) {
+    p3a::for_each(policy,
+        counting_iterator<difference_type>(0),
+        counting_iterator<difference_type>(last - first),
+        functor(first, d_first));
+  } else {
+    if constexpr (std::is_trivially_copyable_v<value_type>) {
+      details::copy_between_spaces(first, d_first, std::size_t(last - first));
+    } else {
+      throw std::runtime_error("p3a::copy will not copy non-trivially-copyable objects between host and device");
+    }
   }
 }
 
 template <class ForwardIt1, class ForwardIt2>
-P3A_ALWAYS_INLINE inline
+P3A_ALWAYS_INLINE inline constexpr
 void copy(
     serial_local_execution,
     ForwardIt1 first,
-    ForwardIt1 last,
+    ForwardIt1 const& last,
     ForwardIt2 d_first)
 {
   while (first != last) {
@@ -270,74 +374,6 @@ void copy(
     *d_first++ = *first++;
   }
 }
-
-#ifdef __CUDACC__
-
-template <class ForwardIt1, class ForwardIt2>
-P3A_NEVER_INLINE void copy(
-    cuda_execution policy,
-    ForwardIt1 first,
-    ForwardIt1 last,
-    ForwardIt2 d_first)
-{
-  using value_type = typename std::iterator_traits<ForwardIt2>::value_type;
-  if constexpr (std::is_trivially_copyable_v<value_type>) {
-    details::handle_cuda_error(
-      cudaMemcpy(
-        &*d_first,
-        &*first,
-        sizeof(value_type) * std::size_t(last - first), 
-        cudaMemcpyDefault));
-  } else {
-    p3a::for_each(policy, first, last,
-    [=] P3A_DEVICE (value_type& ref) P3A_ALWAYS_INLINE {
-      auto& d_ref = *(d_first + (&ref - &*first));
-      d_ref = ref;
-    });
-  }
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-template <class ForwardIt1, class ForwardIt2>
-P3A_NEVER_INLINE void copy(
-    hip_execution policy,
-    ForwardIt1 first,
-    ForwardIt1 last,
-    ForwardIt2 d_first)
-{
-  using value_type = typename std::iterator_traits<ForwardIt2>::value_type;
-  if constexpr (std::is_trivially_copyable_v<value_type>) {
-    details::handle_hip_error(
-      hipMemcpy(
-        &*d_first,
-        &*first,
-        sizeof(value_type) * std::size_t(last - first), 
-        hipMemcpyDefault));
-  } else {
-    p3a::for_each(policy, first, last,
-    [=] __device__ (value_type& ref) P3A_ALWAYS_INLINE {
-      auto& d_ref = *(d_first + (&ref - &*first));
-      d_ref = ref;
-    });
-  }
-}
-
-template <class ForwardIt1, class ForwardIt2>
-__device__ P3A_ALWAYS_INLINE void copy(
-    hip_local_execution,
-    ForwardIt1 first,
-    ForwardIt1 last,
-    ForwardIt2 d_first)
-{
-  while (first != last) {
-    *d_first++ = *first++;
-  }
-}
-
-#endif
 
 template <class ForwardIt1, class ForwardIt2>
 P3A_NEVER_INLINE void move(
