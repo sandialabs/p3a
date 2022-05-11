@@ -7,7 +7,6 @@ enable_testing()
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-option(p3a_ENABLE_AVX512 "Enable AVX-512" OFF)
 set(p3a_ARCHITECTURES "" CACHE STRING "GPU architectures (either CUDA_ARCHITECTURES or HIP_ARCHITECTURES)")
 
 find_package(mpicpp REQUIRED)
@@ -101,10 +100,6 @@ target_include_directories(p3a
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 set_target_properties(p3a PROPERTIES ${p3a_LANGUAGE}_ARCHITECTURES "${p3a_ARCHITECTURES}")
-
-if (p3a_ENABLE_AVX512)
-  target_compile_options(p3a PUBLIC -mavx512f -mavx512vl -mavx512dq)
-endif()
 
 target_link_libraries(p3a PUBLIC mpicpp::mpicpp)
 target_link_libraries(p3a PUBLIC Kokkos::kokkoscore)
