@@ -434,13 +434,7 @@ class fixed_point_double_sum {
   values_type& values() { return m_values; }
 };
 
-extern template class fixed_point_double_sum<host_allocator<double>, kokkos_serial_execution>;
-#ifdef KOKKOS_ENABLE_CUDA
-extern template class fixed_point_double_sum<cuda_device_allocator<double>, cuda_execution>;
-#endif
-#ifdef KOKKOS_ENABLE_HIP
-extern template class fixed_point_double_sum<hip_device_allocator<double>, hip_execution>;
-#endif
+extern template class fixed_point_double_sum<device_allocator<double>, device_execution>;
 
 }
 

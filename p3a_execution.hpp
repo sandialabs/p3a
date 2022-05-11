@@ -99,10 +99,25 @@ inline constexpr hip_execution hip = {};
 
 #endif
 
+#ifdef KOKKOS_ENABLE_OPENMP
+
+class openmp_execution {
+ public:
+  void synchronize() const {}
+  using simd_abi_type = simd_abi::host_native;
+  using kokkos_execution_space = Kokkos::OpenMP;
+};
+
+inline constexpr openmp_execution openmp = {};
+
+#endif
+
 #if defined(KOKKOS_ENABLE_CUDA)
 using device_execution = cuda_execution;
 #elif defined(KOKKOS_ENABLE_HIP)
 using device_execution = hip_execution;
+#elif defined(KOKKOS_ENABLE_OPENMP)
+using device_execution = openmp_execution;
 #else
 using device_execution = kokkos_serial_execution;
 #endif
