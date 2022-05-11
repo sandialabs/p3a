@@ -5,7 +5,7 @@
 #include "p3a_scalar.hpp"
 #include "p3a_constants.hpp"
 #include "p3a_functions.hpp"
-#include "p3a_simd_common.hpp"
+#include "p3a_simd.hpp"
 
 namespace p3a {
 
