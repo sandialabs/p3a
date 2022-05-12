@@ -16,9 +16,10 @@ using Kokkos::element_aligned_tag;
 namespace simd_abi = Kokkos::simd_abi;
 using Kokkos::device_simd;
 using Kokkos::device_simd_mask;
+using Kokkos::condition;
 
 template <class T, class U, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 simd<T, Abi> load(T const* ptr, int i, simd_mask<U, Abi> const& mask)
 {
   simd<T, Abi> result;
@@ -27,7 +28,7 @@ simd<T, Abi> load(T const* ptr, int i, simd_mask<U, Abi> const& mask)
 }
 
 template <class T, class U, class Integral, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 simd<T, Abi> load(T const* ptr, simd<Integral, Abi> const& indices, simd_mask<U, Abi> const& mask)
 {
   simd<T, Abi> result;
@@ -50,7 +51,7 @@ void store(simd<T, Abi> const& value, T* ptr, simd<Integral, Abi> const& indices
 }
 
 template<class M, class V, class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 typename V::value_type
 reduce(
     const_where_expression<M, V> const& x,
@@ -61,7 +62,18 @@ reduce(
 }
 
 template<class M, class V, class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+typename V::value_type
+reduce(
+    const_where_expression<M, V> const& x,
+    typename V::value_type identity_element,
+    minimizer<T> binary_op)
+{
+  return Kokkos::hmin(x);
+}
+
+template<class M, class V, class T>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 typename V::value_type
 reduce(
     const_where_expression<M, V> const& x,
@@ -69,6 +81,20 @@ reduce(
     adder<T> binary_op)
 {
   return Kokkos::reduce(x, identity_element, std::plus<>());
+}
+
+template <class T, class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<T, Abi> square_root(simd<T, Abi> const& x)
+{
+  return Kokkos::sqrt(x);
+}
+
+template <class T, class Abi>
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+simd<T, Abi> absolute_value(simd<T, Abi> const& x)
+{
+  return Kokkos::abs(x);
 }
 
 }

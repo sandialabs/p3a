@@ -50,31 +50,31 @@ struct epsilon<double> {
   double value() { return DBL_EPSILON; }
 };
 
-}
-
 template <class T>
-struct zero_value_helper {
+struct zero {
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
   T value() { return T::zero(); }
 };
 
 template <>
-struct zero_value_helper<int> {
+struct zero<int> {
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
   int value() { return 0; }
 };
 
 template <>
-struct zero_value_helper<float> {
+struct zero<float> {
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
   float value() { return 0.0f; }
 };
 
 template <>
-struct zero_value_helper<double> {
+struct zero<double> {
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
   double value() { return 0.0; }
 };
+
+}
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
@@ -90,7 +90,7 @@ template <class T>
 T epsilon_value() { return constants::epsilon<T>::value(); }
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-T zero_value() { return zero_value_helper<T>::value(); }
+T zero_value() { return constants::zero<T>::value(); }
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T one_value() { return T(1); }
