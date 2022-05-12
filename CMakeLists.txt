@@ -57,10 +57,7 @@ set(P3A_HEADERS
   p3a_dimension.hpp
   p3a_unit.hpp
   p3a_cstring.hpp
-  p3a_avx512.hpp
   p3a_simd.hpp
-  p3a_simd_common.hpp
-  p3a_simd_scalar.hpp
   p3a_fixed_point.hpp
   p3a_counting_iterator.hpp
   p3a_dynamic_matrix.hpp

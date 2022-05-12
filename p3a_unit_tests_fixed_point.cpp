@@ -32,8 +32,8 @@ TEST(fixed_point, sum){
     p3a::simd<std::int64_t, abi_type> significand;
     p3a::details::decompose_double(value, significand, exponent);
     double const recomposed_again = p3a::details::compose_double(
-        p3a::get(significand, 0), p3a::get(exponent, 0));
-    EXPECT_EQ(p3a::get(value, 0), recomposed_again);
+        significand[0], exponent[0]);
+    EXPECT_EQ(value[0], recomposed_again);
     nonassociative_sum += 
         reduce(where(mask, value), 0.0, p3a::adder<double>());
     maximum_exponent = std::max(maximum_exponent,
