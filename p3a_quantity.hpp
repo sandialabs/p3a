@@ -776,9 +776,10 @@ auto cube_root(quantity<Unit, ValueType, Origin> const& q)
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> natural_exponential(unitless<ValueType> const& q)
+unitless<ValueType> exp(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(natural_exponential(q.value()));
+  using std::exp;
+  return unitless<ValueType>(exp(q.value()));
 }
 
 template <class ValueType>

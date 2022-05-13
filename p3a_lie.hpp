@@ -100,10 +100,8 @@ symmetric3x3<T> spd_exponential(symmetric3x3<T> const& log_m)
   diagonal3x3<T> l;
   matrix3x3<T> q;
   eigendecompose(log_m, l, q);
-  diagonal3x3<T> const exp_l(
-      natural_exponential(l.xx()),
-      natural_exponential(l.yy()),
-      natural_exponential(l.zz()));
+  using std::exp;
+  diagonal3x3<T> const exp_l(exp(l.xx()), exp(l.yy()), exp(l.zz()));
   return multiply_a_b_at(q, exp_l);
 }
 
