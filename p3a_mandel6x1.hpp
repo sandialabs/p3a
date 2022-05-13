@@ -187,9 +187,6 @@ class mandel6x1
     m_x6(a.xy()),
     applyTransform(Xform)
   {
-    if(!compare(a.yz(),a.zy()) && compare(a.zx(),a.xz()) && compare(a.xy(),a.yx()))
-        throw std::invalid_argument(
-                "Initialization ERROR of p3a::mandel6x6 from p3a::matrix3x3, matrix3x3 not symmetric!");
     if (applyTransform)
         this->MandelXform();
   }
@@ -204,9 +201,6 @@ class mandel6x1
     m_x6(a(0,1)),
     applyTransform(true)
   {
-    if(!compare(a(1,2),a(2,1)) && compare(a(0,2),a(2,0)) && compare(a(0,1),a(1,0)))
-        throw std::invalid_argument(
-                "Initialization ERROR of p3a::mandel6x1 from p3a::static_matrix<3,3>, static_matrix<3,3> not symmetric!");
     this->MandelXform();
   }
 
@@ -220,9 +214,6 @@ class mandel6x1
     m_x6(a(0,1)),
     applyTransform(Xform)
   {
-    if(!compare(a(1,2),a(2,1)) && compare(a(0,2),a(2,0)) && compare(a(0,1),a(1,0)))
-        throw std::invalid_argument(
-                "Initialization ERROR of p3a::mandel6x1 from p3a::static_matrix<3,3>, static_matrix<3,3> not symmetric!");
     if (applyTransform)
         this->MandelXform();
   }
@@ -363,12 +354,6 @@ class mandel6x1
   mandel6x1<U> operator=(
       static_matrix<U,3,3> const& t)
   {
-        /*mandel6x1<U>(t(0,0), t(1,1), t(2,2), t(1,2), t(0,2), t(0,1), true);
-    if(compare(a(1,2),a(2,1)) && compare(a(0,2),a(2,0)) && compare(a(0,1),a(1,0)))
-        throw std::invalid_argument(
-                "Initialization ERROR of p3a::mandel6x1 from p3a::static_matrix<3,3>, static_matrix<3,3> not symmetric!");
-        this->MandelXform();
-  }*/
       return mandel6x1<U>(t , true);
   }
 

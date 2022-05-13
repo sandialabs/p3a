@@ -10,13 +10,6 @@
 namespace p3a {
 
 template <class T>
-P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
-bool compare(T a, T b)
-{
-   return std::abs(a-b) <= T(2.0)*epsilon_value<T>();
-}
-
-template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto square(T const& a)
 {
