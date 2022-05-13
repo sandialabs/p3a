@@ -43,12 +43,6 @@ double cube_root(double a)
 }
 
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double natural_logarithm(double a)
-{
-  return std::log(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 double exponentiate(double a, double b)
 {
   return std::pow(a, b);

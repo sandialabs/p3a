@@ -57,10 +57,11 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
 diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
 {
+  using std::log;
   return diagonal3x3<T>(
-      natural_logarithm(m.xx()),
-      natural_logarithm(m.yy()),
-      natural_logarithm(m.zz()));
+      log(m.xx()),
+      log(m.yy()),
+      log(m.zz()));
 }
 
 /* Polar Decomposition:
@@ -112,10 +113,11 @@ symmetric3x3<T> spd_logarithm(symmetric3x3<T> const& exp_m)
   diagonal3x3<T> l;
   matrix3x3<T> q;
   eigendecompose(exp_m, l, q);
+  using std::log;
   diagonal3x3<T> const log_l(
-      natural_logarithm(l.xx()),
-      natural_logarithm(l.yy()),
-      natural_logarithm(l.zz()));
+      log(l.xx()),
+      log(l.yy()),
+      log(l.zz()));
   return multiply_a_b_at(q, log_l);
 }
 

@@ -784,9 +784,10 @@ unitless<ValueType> exp(unitless<ValueType> const& q)
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> natural_logarithm(unitless<ValueType> const& q)
+unitless<ValueType> log(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(natural_logarithm(q.value()));
+  using std::log;
+  return unitless<ValueType>(log(q.value()));
 }
 
 template <class ValueType>
