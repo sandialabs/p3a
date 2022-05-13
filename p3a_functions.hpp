@@ -31,12 +31,6 @@ T average(T const& a, T const& b)
 }
 
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double absolute_value(double a)
-{
-  return std::abs(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 double ceiling(double a)
 {
   return std::ceil(a);
@@ -220,8 +214,10 @@ void swap(T& t1, T& t2) {
 // Second radius: (120 * EPS)^(.25)
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
-T sin_x_over_x(T const& x) {
-  auto const y = absolute_value(x);
+T sin_x_over_x(T const& x)
+{
+  using std::abs;
+  auto const y = abs(x);
   auto constexpr epsilon = epsilon_value<T>();
   auto const e2 = square_root(epsilon);
   auto const e4 = square_root(e2);

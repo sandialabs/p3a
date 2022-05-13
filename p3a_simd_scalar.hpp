@@ -151,7 +151,9 @@ class simd<T, simd_abi::scalar> {
 };
 
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline simd<T, simd_abi::scalar> absolute_value(simd<T, simd_abi::scalar> const& a) {
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
+simd<T, simd_abi::scalar> abs(simd<T, simd_abi::scalar> const& a)
+{
   return simd<T, simd_abi::scalar>(std::abs(a.get()));
 }
 

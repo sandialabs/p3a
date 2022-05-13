@@ -460,13 +460,14 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 T maximum_norm(symmetric3x3<T> const& a)
 {
+  using std::abs;
   return maximum(
-      absolute_value(a.xx()),
-      absolute_value(a.xy()),
-      absolute_value(a.xz()),
-      absolute_value(a.yy()),
-      absolute_value(a.yz()),
-      absolute_value(a.zz()));
+      abs(a.xx()),
+      abs(a.xy()),
+      abs(a.xz()),
+      abs(a.yy()),
+      abs(a.yz()),
+      abs(a.zz()));
 }
 
 }

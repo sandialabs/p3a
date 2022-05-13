@@ -517,7 +517,10 @@ P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512_fixed_size<8>> copysign(s
       );
 }
 
-P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512_fixed_size<8>> absolute_value(simd<double, simd_abi::avx512_fixed_size<8>> const& a) {
+P3A_ALWAYS_INLINE inline
+simd<double, simd_abi::avx512_fixed_size<8>>
+abs(simd<double, simd_abi::avx512_fixed_size<8>> const& a)
+{
   __m512d const rhs = a.get();
   return reinterpret_cast<__m512d>(_mm512_and_epi64(_mm512_set1_epi64(0x7FFFFFFFFFFFFFFF),
         reinterpret_cast<__m512i>(rhs)));

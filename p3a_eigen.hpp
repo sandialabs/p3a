@@ -42,13 +42,14 @@ void maximum_off_diagonal_indices(
     int& p,
     int& q)
 {
+  using std::abs;
   p = 0;
   q = 0;
   T s = -1.0;
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
       if (i != j) {
-        T const s2 = absolute_value(a(i, j));
+        T const s2 = abs(a(i, j));
         if (s2 > s) {
           p = i;
           q = j;

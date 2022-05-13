@@ -842,11 +842,12 @@ exponentiate(unitless<ValueType> const& a, Arithmetic const& b)
 
 template <class Unit, class ValueType, class Origin>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-quantity<Unit, ValueType, Origin> absolute_value(quantity<Unit, ValueType, Origin> const& q)
+quantity<Unit, ValueType, Origin> abs(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
       "not allowed to take absolute values of absolute quantities");
-  return quantity<Unit, ValueType, Origin>(absolute_value(q.value()));
+  using std::abs;
+  return quantity<Unit, ValueType, Origin>(abs(q.value()));
 }
 
 namespace quantity_literals {

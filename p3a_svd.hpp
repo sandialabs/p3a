@@ -17,10 +17,11 @@ void givens(
     T& c,
     T& s)
 {
+  using std::abs;
   c = 1.0;
   s = 0.0;
   if (b != 0.0) {
-    if (absolute_value(b) > absolute_value(a)) {
+    if (abs(b) > abs(a)) {
       auto const t = -a / b;
       s = 1.0 / square_root(1.0 + t * t);
       c = t * s;
@@ -50,9 +51,10 @@ void svd_bidiagonal(
     matrix2x2<T>& S,
     matrix2x2<T>& V)
 {
-  T fa = absolute_value(f);
-  T ga = absolute_value(g);
-  T ha = absolute_value(h);
+  using std::abs;
+  T fa = abs(f);
+  T ga = abs(g);
+  T ha = abs(h);
   T s0 = 0.0;
   T s1 = 0.0;
   T cu = 1.0;
@@ -87,7 +89,7 @@ void svd_bidiagonal(
     T const tt = t * t;
     T const s = square_root(tt + mm);  // s \in [1,1 + 1/macheps]
     T const r = ((l != 0.0) ? (square_root(l * l + mm))
-                               : (absolute_value(m)));  // r \in [0,1 + 1/macheps]
+                               : (abs(m)));  // r \in [0,1 + 1/macheps]
     T const a = 0.5 * (s + r);                 // a \in [1,1 + |m|]
     s1 = ha / a;
     s0 = fa * a;

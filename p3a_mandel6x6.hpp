@@ -8,6 +8,7 @@
 #include "p3a_mandel6x1.hpp"
 #include "p3a_static_vector.hpp"
 #include "p3a_static_matrix.hpp"
+
 /********************************* NOTES ************************************
  * This header provides the class: 
  *
@@ -679,7 +680,7 @@ mandel6x6<U> inverse(
     w(5,3)=T.x64();
     w(5,4)=T.x65();
     w(5,5)=T.x66();
-
+    using std::abs;
     //Locate maximum value in each row and normalize by that value
     for(row=0;row<n;row++)
     {
@@ -687,13 +688,13 @@ mandel6x6<U> inverse(
         for(col=0;col<n;col++)
         {
             //find max value of each row
-            if(absolute_value(w(row,col))>absolute_value(wmax))
+            if(abs(w(row,col)) > abs(wmax))
             {
                 wmax = w(row,col);
             }
         }
         //if the row is empty: error
-        if(absolute_value(wmax) <= minimum_value<U>())
+        if(abs(wmax) <= minimum_value<U>())
         {
            throw std::invalid_argument(
                    "p3a_mandel6x6::Inverse: ERROR, row is zero during inversion of 4th order Mandel Tensor");
@@ -714,9 +715,9 @@ mandel6x6<U> inverse(
         startrow = -1;
         for(row=col;row<n;row++)
         {
-            if(absolute_value(w(row,col))>wmax)
+            if(abs(w(row,col))>wmax)
             {
-                wmax = absolute_value(w(row,col));
+                wmax = abs(w(row,col));
                 
                 startrow=row;
             }
@@ -732,7 +733,7 @@ mandel6x6<U> inverse(
         wmax = w(col,col);
 
         //check for ill conditioned tensor
-        if(absolute_value(wmax) < wcond)
+        if(abs(wmax) < wcond)
         {
             throw std::invalid_argument(
                     "p3a_mandel6x6::Inverse: illconditioned 4th order Mandel Tensor");
