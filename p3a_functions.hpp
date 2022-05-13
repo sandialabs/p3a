@@ -31,12 +31,6 @@ T average(T const& a, T const& b)
 }
 
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double ceiling(double a)
-{
-  return std::ceil(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 double square_root(double a)
 {
   return std::sqrt(a);
