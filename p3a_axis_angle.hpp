@@ -94,10 +94,11 @@ class axis_angle {
   [[nodiscard]] P3A_HOST_DEVICE inline
   matrix3x3<T> tensor() const
   {
+    using std::cos;
     auto const halfnorm = T(0.5) * magnitude(m_vector);
     auto const temp = T(0.5) * sin_x_over_x(halfnorm);
     auto const qv = temp * m_vector;
-    auto const qs = cosine(halfnorm);
+    auto const qs = cos(halfnorm);
     return T(2.0) * outer_product(qv) +
            T(2.0) * qs * cross_product_matrix(qv) +
            (T(2.0) * square(qs) - T(1.0)) * identity3x3;

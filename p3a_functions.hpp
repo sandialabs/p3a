@@ -119,12 +119,6 @@ P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr double sign(double x)
 }
 
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double cosine(double a)
-{
-  return std::cos(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 double tangent(double a)
 {
   return std::tan(a);
