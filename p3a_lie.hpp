@@ -180,6 +180,7 @@ polar_errc polar_rotation(
   // Implementation inspired by the routine polarDecompositionRMB in the Uintah
   // MPM framework.  There, it was found this that algorithm was faster and more
   // robust than other analytic or iterative methods.
+  using std::sqrt;
   matrix3x3<T> const identity{
     T(1.0), T(0.0), T(0.0),
     T(0.0), T(1.0), T(0.0),
@@ -204,7 +205,7 @@ polar_errc polar_rotation(
   E = (E * scale - identity) * T(0.5);
   // First guess for [R] equal to the scaled [F] matrix,
   // [A]=Sqrt[3]F/magnitude[F]
-  scale = square_root(scale);
+  scale = sqrt(scale);
   auto A = scale * F;
   // The matrix [A] equals the rotation if and only if [E] equals [0]
   T err1 = E.xx() * E.xx() + E.yy() * E.yy() + E.zz() * E.zz()

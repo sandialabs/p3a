@@ -270,8 +270,10 @@ auto magnitude_squared(vector3<T> const& a) {
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-T magnitude(vector3<T> const& a) {
-  return square_root(magnitude_squared(a));
+T magnitude(vector3<T> const& a)
+{
+  using std::sqrt;
+  return sqrt(magnitude_squared(a));
 }
 
 template <class T>

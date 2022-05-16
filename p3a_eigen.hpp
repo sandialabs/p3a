@@ -11,19 +11,21 @@ template <class T, int N>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 T norm(static_matrix<T, N, N> const& a)
 {
+  using std::sqrt;
   T result(0);
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
       result += square(a(i, j));
     }
   }
-  return square_root(result);
+  return sqrt(result);
 }
 
 template <class T, int N>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 T off_diagonal_norm(static_matrix<T, N, N> const& a)
 {
+  using std::sqrt;
   T result(0);
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
@@ -32,7 +34,7 @@ T off_diagonal_norm(static_matrix<T, N, N> const& a)
       }
     }
   }
-  return square_root(result);
+  return sqrt(result);
 }
 
 template <class T, int N>
@@ -73,16 +75,17 @@ void symmetric_schur(
     T& c,
     T& s)
 {
+  using std::sqrt;
   c = 1.0;
   s = 0.0;
   if (g != 0.0) {
     T t = (h - f) / (2.0 * g);
     if (t >= 0.0) {
-      t = 1.0 / (square_root(1.0 + square(t)) + t);
+      t = 1.0 / (sqrt(1.0 + square(t)) + t);
     } else {
-      t = -1.0 / (square_root(1.0 + square(t)) - t);
+      t = -1.0 / (sqrt(1.0 + square(t)) - t);
     }
-    c = 1.0 / square_root(1.0 + square(t));
+    c = 1.0 / sqrt(1.0 + square(t));
     s = t * c;
   }
 }

@@ -31,6 +31,7 @@ class axis_angle {
   P3A_HOST_DEVICE inline
   axis_angle(matrix3x3<T> const& R)
   {
+    using std::sqrt;
     T const trR = trace(R);
     T maxm = trR;
     int maxi = 3;
@@ -69,7 +70,7 @@ class axis_angle {
       q0 = T(1.0) + trR;
     }
     auto const qnorm =
-      square_root(
+      sqrt(
           square(q0) +
           square(q1) +
           square(q2) +
@@ -79,7 +80,7 @@ class axis_angle {
     q2 /= qnorm;
     q3 /= qnorm;
     // convert quaternion to axis-angle
-    auto const divisor = square_root(T(1.0) - square(q0));
+    auto const divisor = sqrt(T(1.0) - square(q0));
     auto constexpr epsilon = epsilon_value<T>();
     if (divisor <= epsilon) {
       m_vector = vector3<T>::zero();

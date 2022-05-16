@@ -158,8 +158,11 @@ simd<T, simd_abi::scalar> abs(simd<T, simd_abi::scalar> const& a)
 }
 
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline simd<T, simd_abi::scalar> square_root(simd<T, simd_abi::scalar> const& a) {
-  return simd<T, simd_abi::scalar>(std::sqrt(a.get()));
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
+simd<T, simd_abi::scalar> sqrt(simd<T, simd_abi::scalar> const& a)
+{
+  using std::sqrt;
+  return simd<T, simd_abi::scalar>(sqrt(a.get()));
 }
 
 template <class T>

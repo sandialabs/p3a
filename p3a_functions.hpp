@@ -31,12 +31,6 @@ T average(T const& a, T const& b)
 }
 
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double square_root(double a)
-{
-  return std::sqrt(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 double cube_root(double a)
 {
   return std::cbrt(a);
@@ -199,10 +193,11 @@ template <class T>
 T sin_x_over_x(T const& x)
 {
   using std::abs;
+  using std::sqrt;
   auto const y = abs(x);
   auto constexpr epsilon = epsilon_value<T>();
-  auto const e2 = square_root(epsilon);
-  auto const e4 = square_root(e2);
+  auto const e2 = sqrt(epsilon);
+  auto const e4 = sqrt(e2);
   if (y > e4) {
     return sine(y) / y;
   } else if (y > e2) {

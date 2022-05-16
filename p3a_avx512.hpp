@@ -526,7 +526,10 @@ abs(simd<double, simd_abi::avx512_fixed_size<8>> const& a)
         reinterpret_cast<__m512i>(rhs)));
 }
 
-P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512_fixed_size<8>> square_root(simd<double, simd_abi::avx512_fixed_size<8>> const& a) {
+P3A_ALWAYS_INLINE inline
+simd<double, simd_abi::avx512_fixed_size<8>>
+sqrt(simd<double, simd_abi::avx512_fixed_size<8>> const& a)
+{
   return simd<double, simd_abi::avx512_fixed_size<8>>(_mm512_sqrt_pd(a.get()));
 }
 

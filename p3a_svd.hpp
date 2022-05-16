@@ -18,16 +18,17 @@ void givens(
     T& s)
 {
   using std::abs;
+  using std::sqrt;
   c = 1.0;
   s = 0.0;
   if (b != 0.0) {
     if (abs(b) > abs(a)) {
       auto const t = -a / b;
-      s = 1.0 / square_root(1.0 + t * t);
+      s = 1.0 / sqrt(1.0 + t * t);
       c = t * s;
     } else {
       auto const t = -b / a;
-      c = 1.0 / square_root(1.0 + t * t);
+      c = 1.0 / sqrt(1.0 + t * t);
       s = t * c;
     }
   }
@@ -87,10 +88,9 @@ void svd_bidiagonal(
     T const t = 2.0 - l;  // t \in [1,2]
     T const mm = m * m;
     T const tt = t * t;
-    T const s = square_root(tt + mm);  // s \in [1,1 + 1/macheps]
-    T const r = ((l != 0.0) ? (square_root(l * l + mm))
-                               : (abs(m)));  // r \in [0,1 + 1/macheps]
-    T const a = 0.5 * (s + r);                 // a \in [1,1 + |m|]
+    T const s = sqrt(tt + mm);  // s \in [1,1 + 1/macheps]
+    T const r = ((l != 0.0) ? (sqrt(l * l + mm)) : (abs(m)));  // r \in [0,1 + 1/macheps]
+    T const a = 0.5 * (s + r);  // a \in [1,1 + |m|]
     s1 = ha / a;
     s0 = fa * a;
     // Compute singular vectors
@@ -102,8 +102,7 @@ void svd_bidiagonal(
       tau = (l == 0.0) ? (std::copysign(2.0, f) * std::copysign(1.0, g))
                        : (g / std::copysign(d, f) + m / t);
     }
-    T const lv =
-        square_root(tau * tau + 4.0);  // second assignment to L in DLASV2
+    T const lv = sqrt(tau * tau + 4.0);  // second assignment to L in DLASV2
     cv = 2.0 / lv;
     sv = tau / lv;
     cu = (cv + sv * m) / a;

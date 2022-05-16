@@ -756,11 +756,12 @@ operator/(
 
 template <class Unit, class ValueType, class Origin>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-auto square_root(quantity<Unit, ValueType, Origin> const& q)
+auto sqrt(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
       "not allowed to take square roots of absolute quantities");
-  return quantity<unit_root<Unit, 2>, ValueType, Origin>(square_root(q.value()));
+  using std::sqrt;
+  return quantity<unit_root<Unit, 2>, ValueType, Origin>(sqrt(q.value()));
 }
 
 template <class Unit, class ValueType, class Origin>
