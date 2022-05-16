@@ -32,6 +32,7 @@ class axis_angle {
   axis_angle(matrix3x3<T> const& R)
   {
     using std::sqrt;
+    using std::acos;
     T const trR = trace(R);
     T maxm = trR;
     int maxi = 3;
@@ -85,7 +86,7 @@ class axis_angle {
     if (divisor <= epsilon) {
       m_vector = vector3<T>::zero();
     } else {
-      auto const factor = T(2.0) * arccos(q0) / divisor;
+      auto const factor = T(2.0) * acos(q0) / divisor;
       m_vector = vector3<T>(q1, q2, q3) * factor;
     }
   }

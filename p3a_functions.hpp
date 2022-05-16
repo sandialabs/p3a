@@ -119,12 +119,6 @@ P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr double sign(double x)
 }
 
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double arccos(double a)
-{
-  return std::acos(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 double sine(double a)
 {
   return std::sin(a);
