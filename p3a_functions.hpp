@@ -30,12 +30,6 @@ T average(T const& a, T const& b)
   return (a + b) / 2;
 }
 
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double exponentiate(double a, double b)
-{
-  return std::pow(a, b);
-}
-
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr T const&
 condition(bool a, T const& b, T const& c)

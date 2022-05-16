@@ -231,14 +231,15 @@ simd<T, Abi> exp(simd<T, Abi> a)
 
 template <class T, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
-simd<T, Abi> exponentiate(simd<T, Abi> a, simd<T, Abi> const& b)
+simd<T, Abi> pow(simd<T, Abi> a, simd<T, Abi> const& b)
 {
+  using std::pow;
   T a_array[simd<T, Abi>::size()];
   T b_array[simd<T, Abi>::size()];
   a.copy_to(a_array, element_aligned_tag());
   b.copy_to(b_array, element_aligned_tag());
   for (int i = 0; i < simd<T, Abi>::size(); ++i) {
-    a_array[i] = exponentiate(a_array[i], b_array[i]);
+    a_array[i] = pow(a_array[i], b_array[i]);
   }
   a.copy_from(a_array, element_aligned_tag());
   return a;

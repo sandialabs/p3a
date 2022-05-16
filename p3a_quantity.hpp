@@ -829,9 +829,10 @@ unitless<ValueType> arccos(unitless<ValueType> const& q)
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> exponentiate(unitless<ValueType> const& a, unitless<ValueType> const& b)
+unitless<ValueType> pow(unitless<ValueType> const& a, unitless<ValueType> const& b)
 {
-  return unitless<ValueType>(exponentiate(a.value(), b.value()));
+  using std::pow;
+  return unitless<ValueType>(pow(a.value(), b.value()));
 }
 
 // allow the exponent to be a raw arithmetic type
@@ -839,9 +840,10 @@ unitless<ValueType> exponentiate(unitless<ValueType> const& a, unitless<ValueTyp
 template <class ValueType, class Arithmetic>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, unitless<ValueType>>
-exponentiate(unitless<ValueType> const& a, Arithmetic const& b)
+pow(unitless<ValueType> const& a, Arithmetic const& b)
 {
-  return unitless<ValueType>(exponentiate(a.value(), ValueType(b)));
+  using std::pow;
+  return unitless<ValueType>(pow(a.value(), ValueType(b)));
 }
 
 template <class Unit, class ValueType, class Origin>
