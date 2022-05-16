@@ -31,12 +31,6 @@ T average(T const& a, T const& b)
 }
 
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double cube_root(double a)
-{
-  return std::cbrt(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 double exponentiate(double a, double b)
 {
   return std::pow(a, b);

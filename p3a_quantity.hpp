@@ -766,11 +766,12 @@ auto sqrt(quantity<Unit, ValueType, Origin> const& q)
 
 template <class Unit, class ValueType, class Origin>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-auto cube_root(quantity<Unit, ValueType, Origin> const& q)
+auto cbrt(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
       "not allowed to take cube roots of absolute quantities");
-  return quantity<unit_root<Unit, 3>, ValueType, Origin>(cube_root(q.value()));
+  using std::cbrt;
+  return quantity<unit_root<Unit, 3>, ValueType, Origin>(cbrt(q.value()));
 }
 
 // transcendental functions act on unitless quantities
