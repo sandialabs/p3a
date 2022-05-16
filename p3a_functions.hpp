@@ -10,13 +10,6 @@
 namespace p3a {
 
 template <class T>
-P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
-bool compare(T a, T b)
-{
-   return std::abs(a-b) <= T(2.0)*epsilon_value<T>();
-}
-
-template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto square(T const& a)
 {
@@ -35,48 +28,6 @@ template <class T>
 T average(T const& a, T const& b)
 {
   return (a + b) / 2;
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double absolute_value(double a)
-{
-  return std::abs(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double ceiling(double a)
-{
-  return std::ceil(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double square_root(double a)
-{
-  return std::sqrt(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double cube_root(double a)
-{
-  return std::cbrt(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double natural_exponential(double a)
-{
-  return std::exp(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double natural_logarithm(double a)
-{
-  return std::log(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double exponentiate(double a, double b)
-{
-  return std::pow(a, b);
 }
 
 template <class T>
@@ -167,41 +118,12 @@ P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr double sign(double x)
   return (x < 0.0) ? -1.0 : 1.0;
 }
 
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double arcsin(double a)
-{
-  return std::asin(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double arccos(double a)
-{
-  return std::acos(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double sine(double a)
-{
-  return std::sin(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double cosine(double a)
-{
-  return std::cos(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double tangent(double a)
-{
-  return std::tan(a);
-}
-
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 T cotangent(T const& a)
 {
-  return T(1.0) / tangent(a);
+  using std::tan;
+  return 1.0 / tan(a);
 }
 
 template <typename T>
@@ -227,13 +149,17 @@ void swap(T& t1, T& t2) {
 // Second radius: (120 * EPS)^(.25)
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
-T sin_x_over_x(T const& x) {
-  auto const y = absolute_value(x);
+T sin_x_over_x(T const& x)
+{
+  using std::abs;
+  using std::sqrt;
+  using std::sin;
+  auto const y = abs(x);
   auto constexpr epsilon = epsilon_value<T>();
-  auto const e2 = square_root(epsilon);
-  auto const e4 = square_root(e2);
+  auto const e2 = sqrt(epsilon);
+  auto const e4 = sqrt(e2);
   if (y > e4) {
-    return sine(y) / y;
+    return sin(y) / y;
   } else if (y > e2) {
     return T(1.0) - (y * y) / T(6.0);
   } else {

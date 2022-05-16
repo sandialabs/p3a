@@ -330,22 +330,23 @@ auto frobenius_inner_product(
        a.zz() * b.zz();
 }
 
-template <class A>
-P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
-auto l2_norm(symmetric3x3<A> const& a)
+template <class T>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+auto l2_norm(symmetric3x3<T> const& a)
 {
-  return .5 * square_root(frobenius_inner_product(a, a));
+  using std::sqrt;
+  return 0.5 * sqrt(frobenius_inner_product(a, a));
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T determinant(symmetric3x3<T> const& a)
 {
   return
     a.xx() * a.yy() * a.zz() -
     a.xx() * a.yz() * a.yz() -
     a.xy() * a.xy() * a.zz() +
-    T(2.0) * a.xy() * a.xz() * a.yz() -
+    2.0 * a.xy() * a.xz() * a.yz() -
     a.xz() * a.xz() * a.yy();
 }
 
@@ -460,13 +461,14 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 T maximum_norm(symmetric3x3<T> const& a)
 {
+  using std::abs;
   return maximum(
-      absolute_value(a.xx()),
-      absolute_value(a.xy()),
-      absolute_value(a.xz()),
-      absolute_value(a.yy()),
-      absolute_value(a.yz()),
-      absolute_value(a.zz()));
+      abs(a.xx()),
+      abs(a.xy()),
+      abs(a.xz()),
+      abs(a.yy()),
+      abs(a.yz()),
+      abs(a.zz()));
 }
 
 }

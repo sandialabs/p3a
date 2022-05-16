@@ -57,10 +57,11 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
 diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
 {
+  using std::log;
   return diagonal3x3<T>(
-      natural_logarithm(m.xx()),
-      natural_logarithm(m.yy()),
-      natural_logarithm(m.zz()));
+      log(m.xx()),
+      log(m.yy()),
+      log(m.zz()));
 }
 
 /* Polar Decomposition:
@@ -100,10 +101,8 @@ symmetric3x3<T> spd_exponential(symmetric3x3<T> const& log_m)
   diagonal3x3<T> l;
   matrix3x3<T> q;
   eigendecompose(log_m, l, q);
-  diagonal3x3<T> const exp_l(
-      natural_exponential(l.xx()),
-      natural_exponential(l.yy()),
-      natural_exponential(l.zz()));
+  using std::exp;
+  diagonal3x3<T> const exp_l(exp(l.xx()), exp(l.yy()), exp(l.zz()));
   return multiply_a_b_at(q, exp_l);
 }
 
@@ -114,10 +113,11 @@ symmetric3x3<T> spd_logarithm(symmetric3x3<T> const& exp_m)
   diagonal3x3<T> l;
   matrix3x3<T> q;
   eigendecompose(exp_m, l, q);
+  using std::log;
   diagonal3x3<T> const log_l(
-      natural_logarithm(l.xx()),
-      natural_logarithm(l.yy()),
-      natural_logarithm(l.zz()));
+      log(l.xx()),
+      log(l.yy()),
+      log(l.zz()));
   return multiply_a_b_at(q, log_l);
 }
 
@@ -180,6 +180,7 @@ polar_errc polar_rotation(
   // Implementation inspired by the routine polarDecompositionRMB in the Uintah
   // MPM framework.  There, it was found this that algorithm was faster and more
   // robust than other analytic or iterative methods.
+  using std::sqrt;
   matrix3x3<T> const identity{
     T(1.0), T(0.0), T(0.0),
     T(0.0), T(1.0), T(0.0),
@@ -204,7 +205,7 @@ polar_errc polar_rotation(
   E = (E * scale - identity) * T(0.5);
   // First guess for [R] equal to the scaled [F] matrix,
   // [A]=Sqrt[3]F/magnitude[F]
-  scale = square_root(scale);
+  scale = sqrt(scale);
   auto A = scale * F;
   // The matrix [A] equals the rotation if and only if [E] equals [0]
   T err1 = E.xx() * E.xx() + E.yy() * E.yy() + E.zz() * E.zz()

@@ -319,14 +319,14 @@ bool are_in_same_space(T* from, U* to)
   return from_attributes.type == to_attributes.type;
 }
 
-template <class T>
-void copy_between_spaces(T const* from, T* to, std::size_t n)
+template <class T, class U>
+void copy_between_spaces(T* from, U* to, std::size_t n)
 {
   details::handle_cuda_error(
       cudaMemcpy(
         to,
         from,
-        sizeof(T) * n,
+        sizeof(U) * n,
         cudaMemcpyDefault));
 }
 

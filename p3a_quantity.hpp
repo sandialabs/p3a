@@ -740,78 +740,88 @@ operator/(
 
 template <class Unit, class ValueType, class Origin>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-auto square_root(quantity<Unit, ValueType, Origin> const& q)
+auto sqrt(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
       "not allowed to take square roots of absolute quantities");
-  return quantity<unit_root<Unit, 2>, ValueType, Origin>(square_root(q.value()));
+  using std::sqrt;
+  return quantity<unit_root<Unit, 2>, ValueType, Origin>(sqrt(q.value()));
 }
 
 template <class Unit, class ValueType, class Origin>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-auto cube_root(quantity<Unit, ValueType, Origin> const& q)
+auto cbrt(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
       "not allowed to take cube roots of absolute quantities");
-  return quantity<unit_root<Unit, 3>, ValueType, Origin>(cube_root(q.value()));
+  using std::cbrt;
+  return quantity<unit_root<Unit, 3>, ValueType, Origin>(cbrt(q.value()));
 }
 
 // transcendental functions act on unitless quantities
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> natural_exponential(unitless<ValueType> const& q)
+unitless<ValueType> exp(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(natural_exponential(q.value()));
+  using std::exp;
+  return unitless<ValueType>(exp(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> natural_logarithm(unitless<ValueType> const& q)
+unitless<ValueType> log(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(natural_logarithm(q.value()));
+  using std::log;
+  return unitless<ValueType>(log(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> sine(unitless<ValueType> const& q)
+unitless<ValueType> sin(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(sine(q.value()));
+  using std::sin;
+  return unitless<ValueType>(sin(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> cosine(unitless<ValueType> const& q)
+unitless<ValueType> cos(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(cosine(q.value()));
+  using std::cos;
+  return unitless<ValueType>(cos(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> tangent(unitless<ValueType> const& q)
+unitless<ValueType> tan(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(tangent(q.value()));
+  using std::tan;
+  return unitless<ValueType>(tan(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> arcsin(unitless<ValueType> const& q)
+unitless<ValueType> asin(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(arcsin(q.value()));
+  using std::asin;
+  return unitless<ValueType>(asin(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> arccos(unitless<ValueType> const& q)
+unitless<ValueType> acos(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(arccos(q.value()));
+  using std::acos;
+  return unitless<ValueType>(acos(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> exponentiate(unitless<ValueType> const& a, unitless<ValueType> const& b)
+unitless<ValueType> pow(unitless<ValueType> const& a, unitless<ValueType> const& b)
 {
-  return unitless<ValueType>(exponentiate(a.value(), b.value()));
+  using std::pow;
+  return unitless<ValueType>(pow(a.value(), b.value()));
 }
 
 // allow the exponent to be a raw arithmetic type
@@ -819,18 +829,20 @@ unitless<ValueType> exponentiate(unitless<ValueType> const& a, unitless<ValueTyp
 template <class ValueType, class Arithmetic>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, unitless<ValueType>>
-exponentiate(unitless<ValueType> const& a, Arithmetic const& b)
+pow(unitless<ValueType> const& a, Arithmetic const& b)
 {
-  return unitless<ValueType>(exponentiate(a.value(), ValueType(b)));
+  using std::pow;
+  return unitless<ValueType>(pow(a.value(), ValueType(b)));
 }
 
 template <class Unit, class ValueType, class Origin>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-quantity<Unit, ValueType, Origin> absolute_value(quantity<Unit, ValueType, Origin> const& q)
+quantity<Unit, ValueType, Origin> abs(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
       "not allowed to take absolute values of absolute quantities");
-  return quantity<Unit, ValueType, Origin>(absolute_value(q.value()));
+  using std::abs;
+  return quantity<Unit, ValueType, Origin>(abs(q.value()));
 }
 
 namespace quantity_literals {
