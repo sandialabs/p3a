@@ -247,12 +247,13 @@ simd<T, Abi> pow(simd<T, Abi> a, simd<T, Abi> const& b)
 
 template <class T, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
-simd<T, Abi> sine(simd<T, Abi> a)
+simd<T, Abi> sin(simd<T, Abi> a)
 {
+  using std::sin;
   T a_array[simd<T, Abi>::size()];
   a.copy_to(a_array, element_aligned_tag());
   for (int i = 0; i < simd<T, Abi>::size(); ++i) {
-    a_array[i] = sine(a_array[i]);
+    a_array[i] = sin(a_array[i]);
   }
   a.copy_from(a_array, element_aligned_tag());
   return a;

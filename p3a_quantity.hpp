@@ -794,9 +794,10 @@ unitless<ValueType> log(unitless<ValueType> const& q)
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> sine(unitless<ValueType> const& q)
+unitless<ValueType> sin(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(sine(q.value()));
+  using std::sin;
+  return unitless<ValueType>(sin(q.value()));
 }
 
 template <class ValueType>

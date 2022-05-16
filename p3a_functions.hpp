@@ -119,12 +119,6 @@ P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr double sign(double x)
 }
 
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double sine(double a)
-{
-  return std::sin(a);
-}
-
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 double cosine(double a)
 {
   return std::cos(a);
@@ -170,12 +164,13 @@ T sin_x_over_x(T const& x)
 {
   using std::abs;
   using std::sqrt;
+  using std::sin;
   auto const y = abs(x);
   auto constexpr epsilon = epsilon_value<T>();
   auto const e2 = sqrt(epsilon);
   auto const e4 = sqrt(e2);
   if (y > e4) {
-    return sine(y) / y;
+    return sin(y) / y;
   } else if (y > e2) {
     return T(1.0) - (y * y) / T(6.0);
   } else {
