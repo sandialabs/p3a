@@ -83,18 +83,4 @@ reduce(
   return Kokkos::reduce(x, identity_element, std::plus<>());
 }
 
-template <class T, class Abi>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-simd<T, Abi> square_root(simd<T, Abi> const& x)
-{
-  return Kokkos::sqrt(x);
-}
-
-template <class T, class Abi>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-simd<T, Abi> absolute_value(simd<T, Abi> const& x)
-{
-  return Kokkos::abs(x);
-}
-
 }
