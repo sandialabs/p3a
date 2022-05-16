@@ -118,17 +118,12 @@ P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr double sign(double x)
   return (x < 0.0) ? -1.0 : 1.0;
 }
 
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-double tangent(double a)
-{
-  return std::tan(a);
-}
-
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 T cotangent(T const& a)
 {
-  return T(1.0) / tangent(a);
+  using std::tan;
+  return T(1.0) / tan(a);
 }
 
 template <typename T>

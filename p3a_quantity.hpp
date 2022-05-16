@@ -810,9 +810,10 @@ unitless<ValueType> cos(unitless<ValueType> const& q)
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> tangent(unitless<ValueType> const& q)
+unitless<ValueType> tan(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(tangent(q.value()));
+  using std::tan;
+  return unitless<ValueType>(tan(q.value()));
 }
 
 template <class ValueType>
