@@ -123,7 +123,7 @@ template <class T>
 T cotangent(T const& a)
 {
   using std::tan;
-  return T(1.0) / tan(a);
+  return 1.0 / tan(a);
 }
 
 template <typename T>
