@@ -815,9 +815,10 @@ unitless<ValueType> tangent(unitless<ValueType> const& q)
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> arcsin(unitless<ValueType> const& q)
+unitless<ValueType> asin(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(arcsin(q.value()));
+  using std::asin;
+  return unitless<ValueType>(asin(q.value()));
 }
 
 template <class ValueType>
