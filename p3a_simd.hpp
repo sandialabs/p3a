@@ -8,15 +8,15 @@
 
 namespace p3a {
 
-using Kokkos::simd;
-using Kokkos::simd_mask;
-using Kokkos::const_where_expression;
-using Kokkos::where_expression;
-using Kokkos::element_aligned_tag;
-namespace simd_abi = Kokkos::simd_abi;
-using Kokkos::device_simd;
-using Kokkos::device_simd_mask;
-using Kokkos::condition;
+using Kokkos::Experimental::simd;
+using Kokkos::Experimental::simd_mask;
+using Kokkos::Experimental::const_where_expression;
+using Kokkos::Experimental::where_expression;
+using Kokkos::Experimental::element_aligned_tag;
+namespace simd_abi = Kokkos::Experimental::simd_abi;
+using Kokkos::Experimental::device_simd;
+using Kokkos::Experimental::device_simd_mask;
+using Kokkos::Experimental::condition;
 
 template <class T, class U, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
@@ -58,7 +58,7 @@ reduce(
     typename V::value_type identity_element,
     maximizer<T> binary_op)
 {
-  return Kokkos::hmax(x);
+  return Kokkos::Experimental::hmax(x);
 }
 
 template<class M, class V, class T>
@@ -69,7 +69,7 @@ reduce(
     typename V::value_type identity_element,
     minimizer<T> binary_op)
 {
-  return Kokkos::hmin(x);
+  return Kokkos::Experimental::hmin(x);
 }
 
 template<class M, class V, class T>
@@ -80,7 +80,7 @@ reduce(
     typename V::value_type identity_element,
     adder<T> binary_op)
 {
-  return Kokkos::reduce(x, identity_element, std::plus<>());
+  return Kokkos::Experimental::reduce(x, identity_element, std::plus<>());
 }
 
 }
