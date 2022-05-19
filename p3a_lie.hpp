@@ -11,49 +11,6 @@
 namespace p3a {
 
 template <class T>
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-matrix3x3<T> pack_polar(
-    symmetric3x3<T> const& spd,
-    vector3<T> const& aa)
-{
-  return matrix3x3<T>(
-    spd.xx(),
-    spd.xy(),
-    spd.xz(),
-    aa.x(),
-    spd.yy(),
-    spd.yz(),
-    aa.y(),
-    aa.z(),
-    spd.zz());
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-symmetric3x3<T> unpack_polar_spd(
-    matrix3x3<T> const& packed)
-{
-  return symmetric3x3<T>(
-      packed.xx(),
-      packed.xy(),
-      packed.xz(),
-      packed.yy(),
-      packed.yz(),
-      packed.zz());
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-vector3<T> unpack_polar_axis_angle(
-    matrix3x3<T> const& packed)
-{
-  return vector3<T>(
-      packed.yx(),
-      packed.zx(),
-      packed.zy());
-}
-
-template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
 diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
 {
@@ -82,20 +39,6 @@ diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
-matrix3x3<T> polar_logarithm(matrix3x3<T> const& a)
-{
-  matrix3x3<T> w, vt;
-  diagonal3x3<T> s;
-  decompose_singular_values(a, w, s, vt);
-  auto const u = w * vt;
-  auto const log_u = axis_angle_from_tensor(u);
-  auto const log_s = logarithm(s);
-  auto const log_p = multiply_at_b_a(vt, log_s);
-  return pack_polar(log_p, log_u);
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST_DEVICE inline
 symmetric3x3<T> spd_exponential(symmetric3x3<T> const& log_m)
 {
   diagonal3x3<T> l;
@@ -119,18 +62,6 @@ symmetric3x3<T> spd_logarithm(symmetric3x3<T> const& exp_m)
       log(l.yy()),
       log(l.zz()));
   return multiply_a_b_at(q, log_l);
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST_DEVICE inline
-matrix3x3<T> polar_exponential(matrix3x3<T> const& packed)
-{
-  auto const log_u = unpack_polar_axis_angle(packed);
-  auto const u = tensor_from_axis_angle(log_u);
-  auto const log_p = unpack_polar_spd(packed);
-  auto const p = spd_exponential(log_p);
-  auto const a = u * p;
-  return a;
 }
 
 enum class polar_errc {

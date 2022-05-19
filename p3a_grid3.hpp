@@ -50,6 +50,16 @@ class grid3 {
            p.y() < m_extents.y() &&
            p.z() < m_extents.z();
   }
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+  bool operator==(grid3 const& other) const
+  {
+    return m_extents == other.m_extents;
+  }
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+  bool operator!=(grid3 const& other) const
+  {
+    return !operator==(other);
+  }
 };
 
 class subgrid3 {
