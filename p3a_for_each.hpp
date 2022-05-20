@@ -290,7 +290,11 @@ class simd_3d_functor {
     auto constexpr width = Integral(mask_type::size());
     auto const real_i = p.x() * width + m_first_i;
     auto const lane_count = p3a::minimum(width, m_last_i - real_i);
-    return m_functor(vector3<Integral>(real_i, p.y(), p.z()), mask_type::first_n(lane_count));
+    auto mask = mask_type(true);
+    for (std::size_t i = std::size_t(lane_count); i < mask_type::size(); ++i) {
+      mask[i] = false;
+    }
+    return m_functor(vector3<Integral>(real_i, p.y(), p.z()), mask);
   }
 };
 
