@@ -255,7 +255,7 @@ class simd_functor {
     using mask_type = p3a::simd_mask<T, SimdAbi>;
     auto constexpr width = Integral(mask_type::size());
     auto const real_i = i * width + m_first_i;
-    auto const lane_count = p3a::minimum(width, m_last_i - real_i);
+    auto const lane_count = p3a::min(width, m_last_i - real_i);
     auto mask = mask_type(true);
     for (std::size_t i = std::size_t(lane_count); i < mask_type::size(); ++i) {
       mask[i] = false;
@@ -289,7 +289,7 @@ class simd_3d_functor {
     using mask_type = simd_mask<T, SimdAbi>;
     auto constexpr width = Integral(mask_type::size());
     auto const real_i = p.x() * width + m_first_i;
-    auto const lane_count = p3a::minimum(width, m_last_i - real_i);
+    auto const lane_count = p3a::min(width, m_last_i - real_i);
     auto mask = mask_type(true);
     for (std::size_t i = std::size_t(lane_count); i < mask_type::size(); ++i) {
       mask[i] = false;

@@ -9,7 +9,7 @@ class minimizer {
  public:
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T operator()(T const& a, T const& b) const {
-    return minimum(a, b);
+    return min(a, b);
   }
 };
 template <class T> inline constexpr minimizer<T> minimizes = {};
@@ -19,7 +19,7 @@ class maximizer {
  public:
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T operator()(T const& a, T const& b) const {
-    return maximum(a, b);
+    return max(a, b);
   }
 };
 template <class T> inline constexpr maximizer<T> maximizes = {};

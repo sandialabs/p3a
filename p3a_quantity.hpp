@@ -1021,4 +1021,22 @@ struct zero<quantity<Unit, T, Origin>> {
 
 }
 
+template <class T, class Unit, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+quantity<Unit, T, Origin> min(
+    quantity<Unit, T, Origin> const& a,
+    quantity<Unit, T, Origin> const& b)
+{
+  return quantity<Unit, T, Origin>(min(a.value(), b.value()));
+}
+
+template <class T, class Unit, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+quantity<Unit, T, Origin> max(
+    quantity<Unit, T, Origin> const& a,
+    quantity<Unit, T, Origin> const& b)
+{
+  return quantity<Unit, T, Origin>(max(a.value(), b.value()));
+}
+
 }
