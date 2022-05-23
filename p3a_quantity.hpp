@@ -1009,4 +1009,14 @@ quantity<Unit, simd<T, Abi>, Origin> condition(
   return quantity<Unit, simd<T, Abi>, Origin>(condition(a, b.value(), c.value()));
 }
 
+template <class T, class Unit, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+quantity<Unit, T, Origin> min(
+    quantity<Unit, T, Origin> const& a,
+    quantity<Unit, T, Origin> const& b)
+{
+  using std::min;
+  return quantity<Unit, T, Origin>(min(a.value(), b.value()));
+}
+
 }

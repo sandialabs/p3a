@@ -119,7 +119,7 @@ class dynamic_array {
     auto const range_size = last - first;
     std::remove_const_t<decltype(range_size)> constexpr zero(0);
     auto const left_uninit_size =
-      minimum(range_size,
+      std::min(range_size,
         maximum(zero, first - d_first));
     auto const init_size =
       maximum(zero,
@@ -145,7 +145,7 @@ class dynamic_array {
     std::remove_const_t<decltype(range_size)> constexpr zero(0);
     auto const d_last = d_first + range_size;
     auto const right_uninit_size =
-      minimum(range_size,
+      std::min(range_size,
         maximum(zero, d_last - last));
     auto const init_size =
       maximum(zero,
@@ -173,7 +173,7 @@ class dynamic_array {
   {
     if (m_size == count) return;
     reserve(count);
-    size_type const common_size = minimum(m_size, count);
+    size_type const common_size = std::min(m_size, count);
     destroy(m_execution_policy, m_begin + common_size, m_begin + m_size);
     uninitialized_default_construct(m_execution_policy, m_begin + common_size, m_begin + count);
     m_size = count;
@@ -187,7 +187,7 @@ class dynamic_array {
   {
     if (m_size == count) return;
     reserve(count);
-    size_type const common_size = minimum(m_size, count);
+    size_type const common_size = std::min(m_size, count);
     destroy(m_execution_policy, m_begin + common_size, m_begin + m_size);
     uninitialized_fill(m_execution_policy, m_begin + common_size, m_begin + count, value);
     m_size = count;

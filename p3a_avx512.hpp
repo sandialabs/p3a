@@ -565,7 +565,7 @@ maximum(
 
 P3A_ALWAYS_INLINE inline
 simd<double, simd_abi::avx512_fixed_size<8>>
-minimum(
+min(
     simd<double, simd_abi::avx512_fixed_size<8>> const& a,
     simd<double, simd_abi::avx512_fixed_size<8>> const& b)
 {
