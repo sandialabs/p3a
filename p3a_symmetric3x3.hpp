@@ -77,15 +77,15 @@ class symmetric3x3 {
     if (i == 0) {
       if (j == 0) return m_xx;
       if (j == 1) return m_xy;
-      if (j == 2) return m_xz;
+      else return m_xz;
     } else if (i == 1) {
       if (j == 0) return m_xy;
       if (j == 1) return m_yy;
-      if (j == 2) return m_yz;
-    } else if (i == 2) {
+      else return m_yz;
+    } else {
       if (j == 0) return m_xz;
       if (j == 1) return m_yz;
-      if (j == 2) return m_zz;
+      else return m_zz;
     }
   }
   [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr

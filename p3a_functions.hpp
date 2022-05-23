@@ -3,7 +3,6 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
-#include <algorithm> // std::min
 
 #include "p3a_macros.hpp"
 #include "p3a_constants.hpp"
@@ -39,6 +38,13 @@ condition(bool a, T const& b, T const& c)
 }
 
 template <class T>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+T const& min(T const& a, T const& b)
+{
+  return (b < a) ? b : a;
+}
+
+template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr auto
 maximum(T const& a, T const& b)
 {
@@ -49,7 +55,6 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr auto
 clamp(T const& v, T const& lo, T const& hi)
 {
-  using std::min;
   return min(maximum(v, lo), hi);
 }
 

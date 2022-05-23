@@ -84,7 +84,6 @@ class box3 {
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
   void include_point(vector3<T> const& point)
   {
-    using std::min;
     m_lower.x() = min(m_lower.x(), point.x());
     m_lower.y() = min(m_lower.y(), point.y());
     m_lower.z() = min(m_lower.z(), point.z());
@@ -98,7 +97,6 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 box3<T> intersect(box3<T> const& a, box3<T> const& b)
 {
-  using std::min;
   auto const lower = vector3<T>(
       maximum(a.lower().x(), b.lower().x()),
       maximum(a.lower().y(), b.lower().y()),

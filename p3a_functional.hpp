@@ -9,7 +9,6 @@ class minimizer {
  public:
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T operator()(T const& a, T const& b) const {
-    using std::min;
     return min(a, b);
   }
 };

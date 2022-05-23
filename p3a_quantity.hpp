@@ -1015,7 +1015,6 @@ quantity<Unit, T, Origin> min(
     quantity<Unit, T, Origin> const& a,
     quantity<Unit, T, Origin> const& b)
 {
-  using std::min;
   return quantity<Unit, T, Origin>(min(a.value(), b.value()));
 }
 
