@@ -45,24 +45,24 @@ T const& min(T const& a, T const& b)
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr auto
-maximum(T const& a, T const& b)
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+T const& max(T const& a, T const& b)
 {
-  return condition(a < b, b, a);
+  return (a < b) ? b : a;
 }
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr auto
 clamp(T const& v, T const& lo, T const& hi)
 {
-  return min(maximum(v, lo), hi);
+  return min(max(v, lo), hi);
 }
 
 template <class Head, class... Tail>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr auto
 recursive_maximum(Head const& head, Tail... tail)
 {
-  return maximum(head, recursive_maximum(std::forward<Tail>(tail)...));
+  return max(head, recursive_maximum(std::forward<Tail>(tail)...));
 }
 
 // only call recursive_maximum for three or more arguments

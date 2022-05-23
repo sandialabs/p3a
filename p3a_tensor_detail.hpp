@@ -75,7 +75,7 @@ norm_1(matrix3x3<T> const& A)
   auto const v0 = abs(A(0, 0) + A(1, 0) + A(2, 0));
   auto const v1 = abs(A(0, 1) + A(1, 1) + A(2, 1));
   auto const v2 = abs(A(0, 2) + A(1, 2) + A(2, 2));
-  return maximum(maximum(v0, v1), v2);
+  return max(max(v0, v1), v2);
 }
 
 // \f$ \max_{i \in {0,\cdots,N}}\Sigma_{j=0}^N |A_{ij}| \f$
@@ -87,7 +87,7 @@ norm_infinity(matrix3x3<T> const& A)
   auto const v0 = abs(A(0, 0) + A(0, 1) + A(0, 2));
   auto const v1 = abs(A(1, 0) + A(1, 1) + A(1, 2));
   auto const v2 = abs(A(2, 0) + A(2, 1) + A(2, 2));
-  return maximum(maximum(v0, v1), v2);
+  return max(max(v0, v1), v2);
 }
 
 // Scaling parameter theta for scaling and squaring exponential.

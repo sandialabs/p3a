@@ -556,7 +556,7 @@ P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512_fixed_size<8>> fma(
 
 P3A_ALWAYS_INLINE inline
 simd<double, simd_abi::avx512_fixed_size<8>>
-maximum(
+max(
     simd<double, simd_abi::avx512_fixed_size<8>> const& a,
     simd<double, simd_abi::avx512_fixed_size<8>> const& b)
 {

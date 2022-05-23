@@ -87,9 +87,9 @@ class box3 {
     m_lower.x() = min(m_lower.x(), point.x());
     m_lower.y() = min(m_lower.y(), point.y());
     m_lower.z() = min(m_lower.z(), point.z());
-    m_upper.x() = maximum(m_upper.x(), point.x());
-    m_upper.y() = maximum(m_upper.y(), point.y());
-    m_upper.z() = maximum(m_upper.z(), point.z());
+    m_upper.x() = max(m_upper.x(), point.x());
+    m_upper.y() = max(m_upper.y(), point.y());
+    m_upper.z() = max(m_upper.z(), point.z());
   }
 };
 
@@ -98,13 +98,13 @@ template <class T>
 box3<T> intersect(box3<T> const& a, box3<T> const& b)
 {
   auto const lower = vector3<T>(
-      maximum(a.lower().x(), b.lower().x()),
-      maximum(a.lower().y(), b.lower().y()),
-      maximum(a.lower().z(), b.lower().z()));
+      max(a.lower().x(), b.lower().x()),
+      max(a.lower().y(), b.lower().y()),
+      max(a.lower().z(), b.lower().z()));
   auto const upper = vector3<T>(
-      maximum(lower.x(), min(a.upper().x(), b.upper().x())),
-      maximum(lower.y(), min(a.upper().y(), b.upper().y())),
-      maximum(lower.z(), min(a.upper().z(), b.upper().z())));
+      max(lower.x(), min(a.upper().x(), b.upper().x())),
+      max(lower.y(), min(a.upper().y(), b.upper().y())),
+      max(lower.z(), min(a.upper().z(), b.upper().z())));
   return box3<T>(lower, upper);
 }
 

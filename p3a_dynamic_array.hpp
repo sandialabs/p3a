@@ -119,10 +119,10 @@ class dynamic_array {
     auto const range_size = last - first;
     std::remove_const_t<decltype(range_size)> constexpr zero(0);
     auto const left_uninit_size =
-      std::min(range_size,
-        maximum(zero, first - d_first));
+      p3a::min(range_size,
+        p3a::max(zero, first - d_first));
     auto const init_size =
-      maximum(zero,
+      p3a::max(zero,
           range_size
           - left_uninit_size);
     uninitialized_move(
@@ -145,10 +145,10 @@ class dynamic_array {
     std::remove_const_t<decltype(range_size)> constexpr zero(0);
     auto const d_last = d_first + range_size;
     auto const right_uninit_size =
-      std::min(range_size,
-        maximum(zero, d_last - last));
+      p3a::min(range_size,
+        p3a::max(zero, d_last - last));
     auto const init_size =
-      maximum(zero,
+      p3a::max(zero,
           range_size
           - right_uninit_size);
     uninitialized_move(
@@ -166,7 +166,7 @@ class dynamic_array {
   void reserve(size_type const count)
   {
     if (count <= m_capacity) return;
-    size_type const new_capacity = maximum(count, 2 * m_capacity);
+    size_type const new_capacity = p3a::max(count, 2 * m_capacity);
     increase_capacity(new_capacity);
   }
   void resize(size_type const count)
