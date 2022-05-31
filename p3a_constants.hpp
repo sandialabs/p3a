@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cfloat>
+#include <limits>
 
 #include "p3a_macros.hpp"
 
