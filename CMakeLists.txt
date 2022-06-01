@@ -79,7 +79,6 @@ set(P3A_HEADERS
   p3a_svd.hpp
   p3a_symmetric3x3.hpp
   p3a_tensor_detail.hpp
-  p3a_tuple.hpp
   p3a_type_traits.hpp
   p3a_unit.hpp
   p3a_vector2.hpp
