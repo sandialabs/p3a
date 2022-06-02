@@ -8,7 +8,7 @@ namespace p3a {
 template <
   class T,
   class Allocator = host_allocator<T>,
-  class ExecutionPolicy = host_execution>
+  class ExecutionPolicy = execution::sequenced_policy>
 class conjugate_gradient {
  public:
   using array_type = dynamic_array<T, Allocator, ExecutionPolicy>;
@@ -36,7 +36,7 @@ class conjugate_gradient {
 template <
   class T,
   class Allocator = host_allocator<T>,
-  class ExecutionPolicy = kokkos_serial_execution>
+  class ExecutionPolicy = execution::sequenced_policy>
 class preconditioned_conjugate_gradient {
  public:
   using array_type = dynamic_array<T, Allocator, ExecutionPolicy>;
@@ -132,7 +132,7 @@ P3A_NEVER_INLINE int conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
   T const absolute_tolerance = b_magnitude * relative_tolerance;
   A_action(x, Ax);
   axpy(T(-1), Ax, b, r); // r = A * x - b
-  copy(device, r.cbegin(), r.cend(), p.begin()); // p = r
+  copy(p.get_execution_policy(), r.cbegin(), r.cend(), p.begin()); // p = r
   T r_dot_r_old = dot_product(m_adder, r, r);
   T residual_magnitude = sqrt(r_dot_r_old);
   if (residual_magnitude <= absolute_tolerance) return 0;
@@ -186,7 +186,7 @@ int preconditioned_conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
   if (residual_magnitude <= absolute_tolerance) return 0;
   M_inv_action(r, z);  // z = M^-1 * r
   T r_dot_z_old = dot_product(m_adder, r, z); // r^T * z
-  copy(device, z.cbegin(), z.cend(), p.begin()); // p = z
+  copy(p.get_execution_policy(), z.cbegin(), z.cend(), p.begin()); // p = z
   for (int k = 1; true; ++k) {
     A_action(p, Ap);
     T const pAp = dot_product(m_adder, p, Ap);

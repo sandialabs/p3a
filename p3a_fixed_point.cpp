@@ -98,7 +98,7 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
 // explicitly instantiate for host and device so the actual reduction
 // code can stay in this translation unit
 //
-template class fixed_point_double_sum<device_allocator<double>, device_execution>;
+template class fixed_point_double_sum<device_allocator<double>, execution::parallel_policy>;
 
 }
 
