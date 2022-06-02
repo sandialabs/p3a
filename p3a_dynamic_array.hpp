@@ -281,6 +281,28 @@ class dynamic_array {
     m_size -= (last - first);
     return nonconst_first;
   }
+  template <class InputIt>
+  void assign(InputIt first, InputIt last)
+  {
+    resize(0);
+    auto const new_size = size_type(last - first);
+    reserve(new_size);
+    uninitialized_copy(m_execution_policy, first, last, m_begin);
+    m_size = new_size;
+  }
+  template <class U>
+  void assign(U const* first, U const* last)
+  {
+    resize(0);
+    auto const new_size = size_type(last - first);
+    reserve(new_size);
+    if (details::are_in_same_space(first, data())) {
+      uninitialized_copy(m_execution_policy, first, last, m_begin);
+    } else {
+      details::copy_between_spaces(first, data(), std::size_t(new_size));
+    }
+    m_size = new_size;
+  }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T* data() { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T const* data() const { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr iterator begin() { return m_begin; }
