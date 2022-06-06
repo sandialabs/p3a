@@ -82,8 +82,6 @@ struct quiet_NaN<double> {
   }
 };
 
-}
-
 template <class T>
 struct zero {
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
@@ -124,14 +122,10 @@ template <class T>
 T epsilon_value() { return constants::epsilon<T>::value(); }
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-<<<<<<< HEAD
-T zero_value() { return constants::zero<T>::value(); }
-=======
 T quiet_NaN_value() { return constants::quiet_NaN<T>::value(); }
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-T zero_value() { return zero_value_helper<T>::value(); }
->>>>>>> main
+T zero_value() { return constants::zero<T>::value(); }
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T one_value() { return T(1); }
