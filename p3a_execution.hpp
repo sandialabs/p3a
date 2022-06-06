@@ -19,31 +19,35 @@
 
 namespace p3a {
 
-class host_execution {
+namespace execution {
+
+class sequenced_policy {
  public:
   P3A_ALWAYS_INLINE constexpr void synchronize() const {}
   using simd_abi_type = simd_abi::scalar;
 };
 
-inline constexpr host_execution host = {};
+inline constexpr sequenced_policy seq = {};
 
-class host_device_execution {
+class hot_policy {
  public:
   P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   void synchronize() const {}
   using simd_abi_type = simd_abi::scalar;
 };
 
-inline constexpr host_device_execution host_device = {};
+inline constexpr hot_policy hot = {};
 
-class kokkos_serial_execution {
+class kokkos_serial_policy {
  public:
   void synchronize() const {}
   using simd_abi_type = simd_abi::host_native;
   using kokkos_execution_space = Kokkos::Serial;
 };
 
-inline constexpr kokkos_serial_execution kokkos_serial = {};
+inline constexpr kokkos_serial_policy kokkos_serial = {};
+
+}
 
 #ifdef KOKKOS_ENABLE_CUDA
 
@@ -61,14 +65,18 @@ void handle_cuda_error(cudaError_t error);
 
 }
 
-class cuda_execution {
+namespace execution {
+
+class cuda_policy {
  public:
   void synchronize() const;
   using simd_abi_type = simd_abi::scalar;
   using kokkos_execution_space = Kokkos::Cuda;
 };
 
-inline constexpr cuda_execution cuda = {};
+inline constexpr cuda_policy cuda = {};
+
+}
 
 #endif
 
@@ -88,39 +96,51 @@ void handle_hip_error(hipError_t error);
 
 }
 
-class hip_execution {
+namespace execution {
+
+class hip_policy {
  public:
   void synchronize() const;
   using simd_abi_type = simd_abi::scalar;
   using kokkos_execution_space = Kokkos::Hip;
 };
 
-inline constexpr hip_execution hip = {};
+inline constexpr hip_policy hip = {};
+
+}
 
 #endif
 
 #ifdef KOKKOS_ENABLE_OPENMP
 
-class openmp_execution {
+namespace execution {
+
+class openmp_policy {
  public:
   void synchronize() const {}
   using simd_abi_type = simd_abi::host_native;
   using kokkos_execution_space = Kokkos::OpenMP;
 };
 
-inline constexpr openmp_execution openmp = {};
+inline constexpr openmp_policy openmp = {};
+
+}
 
 #endif
+
+namespace execution {
 
 #if defined(KOKKOS_ENABLE_CUDA)
-using device_execution = cuda_execution;
+using parallel_policy = cuda_policy;
 #elif defined(KOKKOS_ENABLE_HIP)
-using device_execution = hip_execution;
+using parallel_policy = hip_policy;
 #elif defined(KOKKOS_ENABLE_OPENMP)
-using device_execution = openmp_execution;
+using parallel_policy = openmp_policy;
 #else
-using device_execution = kokkos_serial_execution;
+using parallel_policy = kokkos_serial_policy;
 #endif
-inline constexpr device_execution device = {};
+inline constexpr parallel_policy par = {};
+
+}
 
 }

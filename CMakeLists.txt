@@ -28,30 +28,37 @@ if (BUILD_TESTING)
 endif()
 
 set(P3A_HEADERS
-  p3a_macros.hpp
-  p3a_type_traits.hpp
-  p3a_static_array.hpp
-  p3a_constants.hpp
-  p3a_functions.hpp
-  p3a_vector2.hpp
-  p3a_vector3.hpp
-  p3a_static_vector.hpp
+  p3a_allocator.hpp
+  p3a_avx512.hpp
+  p3a_axis_angle.hpp
   p3a_box3.hpp
-  p3a_grid3.hpp
-  p3a_scaled_identity3x3.hpp
+  p3a_cg.hpp
+  p3a_constants.hpp
+  p3a_counting_iterator.hpp
+  p3a_cstring.hpp
   p3a_diagonal3x3.hpp
-  p3a_symmetric3x3.hpp
-  p3a_matrix2x2.hpp
-  p3a_matrix3x3.hpp
-  p3a_execution.hpp
+  p3a_dimension.hpp
   p3a_dynamic_array.hpp
+  p3a_dynamic_matrix.hpp
+  p3a_eigen.hpp
+  p3a_execution.hpp
+  p3a_exp.hpp
+  p3a_fixed_point.hpp
   p3a_for_each.hpp
   p3a_functional.hpp
-  p3a_reduce.hpp
-  p3a_scan.hpp
-  p3a_quantity.hpp
-  p3a_scalar.hpp
+  p3a_functions.hpp
+  p3a_grid3.hpp
   p3a_identity3x3.hpp
+  p3a_iostream.hpp
+  p3a_lie.hpp
+  p3a_log.hpp
+  p3a_macros.hpp
+  p3a_mandel3x6.hpp
+  p3a_mandel6x1.hpp
+  p3a_mandel6x3.hpp
+  p3a_mandel6x6.hpp
+  p3a_matrix2x2.hpp
+  p3a_matrix3x3.hpp
   p3a_memory.hpp
   p3a_allocator.hpp
   p3a_dimension.hpp
@@ -62,22 +69,16 @@ set(P3A_HEADERS
   p3a_counting_iterator.hpp
   p3a_dynamic_matrix.hpp
   p3a_skew3x3.hpp
+  p3a_static_array.hpp
   p3a_static_matrix.hpp
-  p3a_eigen.hpp
+  p3a_static_vector.hpp
   p3a_svd.hpp
-  p3a_lie.hpp
-  p3a_exp.hpp
-  p3a_opts.hpp
-  p3a_mandel6x1.hpp
-  p3a_mandel6x6.hpp
-  p3a_mandel3x6.hpp
-  p3a_mandel6x3.hpp
-  p3a_tuple.hpp
-  p3a_axis_angle.hpp
-  p3a_search.hpp
-  p3a_cg.hpp
-  p3a_simd_view.hpp
-  p3a_iostream.hpp
+  p3a_symmetric3x3.hpp
+  p3a_tensor_detail.hpp
+  p3a_type_traits.hpp
+  p3a_unit.hpp
+  p3a_vector2.hpp
+  p3a_vector3.hpp
   )
 
 set(P3A_SOURCES

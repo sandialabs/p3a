@@ -10,7 +10,7 @@ namespace p3a {
 template <
   class T,
   class Allocator = host_allocator<T>,
-  class ExecutionPolicy = host_execution>
+  class ExecutionPolicy = execution::sequenced_policy>
 class dynamic_matrix {
   int m_row_count;
   int m_column_count;

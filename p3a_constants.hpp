@@ -1,8 +1,13 @@
 #pragma once
 
 #include <cfloat>
+#include <limits>
 
 #include "p3a_macros.hpp"
+
+#ifdef __CUDA_ARCH__
+#include <math_constants.h>
+#endif
 
 namespace p3a {
 
@@ -51,6 +56,35 @@ struct epsilon<double> {
 };
 
 template <class T>
+struct quiet_NaN;
+
+template <>
+struct quiet_NaN<float> {
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  float value() {
+#ifdef __CUDA_ARCH__
+    return CUDART_NAN_F;
+#else
+    return std::numeric_limits<float>::quiet_NaN();
+#endif
+  }
+};
+
+template <>
+struct quiet_NaN<double> {
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  float value() {
+#ifdef __CUDA_ARCH__
+    return CUDART_NAN;
+#else
+    return std::numeric_limits<double>::quiet_NaN();
+#endif
+  }
+};
+
+}
+
+template <class T>
 struct zero {
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
   T value() { return T::zero(); }
@@ -90,7 +124,14 @@ template <class T>
 T epsilon_value() { return constants::epsilon<T>::value(); }
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+<<<<<<< HEAD
 T zero_value() { return constants::zero<T>::value(); }
+=======
+T quiet_NaN_value() { return constants::quiet_NaN<T>::value(); }
+template <class T>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+T zero_value() { return zero_value_helper<T>::value(); }
+>>>>>>> main
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 T one_value() { return T(1); }

@@ -174,7 +174,7 @@ P3A_NEVER_INLINE void uninitialized_move(
 template <class InputIt, class ForwardIt>
 P3A_ALWAYS_INLINE inline
 void uninitialized_move(
-    host_execution,
+    execution::sequenced_policy,
     InputIt first,
     InputIt const& last,
     ForwardIt d_first)
@@ -203,7 +203,7 @@ P3A_NEVER_INLINE void uninitialized_copy(
 template <class InputIt, class ForwardIt>
 P3A_ALWAYS_INLINE inline
 void uninitialized_copy(
-    host_execution,
+    execution::sequenced_policy,
     InputIt first,
     InputIt const& last,
     ForwardIt d_first)
@@ -229,7 +229,7 @@ P3A_NEVER_INLINE void destroy(
 template <class ForwardIt>
 P3A_ALWAYS_INLINE inline
 void destroy(
-    host_execution,
+    execution::sequenced_policy,
     ForwardIt first,
     ForwardIt const& last)
 {
@@ -256,7 +256,7 @@ P3A_NEVER_INLINE void uninitialized_default_construct(
 template <class ForwardIt>
 P3A_ALWAYS_INLINE inline
 void uninitialized_default_construct(
-    host_execution,
+    execution::sequenced_policy,
     ForwardIt first,
     ForwardIt const& last)
 {
@@ -281,7 +281,7 @@ P3A_NEVER_INLINE void uninitialized_fill(
 template <class ForwardIt, class T>
 P3A_ALWAYS_INLINE inline
 void uninitialized_fill(
-    host_execution,
+    execution::sequenced_policy,
     ForwardIt first,
     ForwardIt const& last,
     T const& value)
@@ -319,15 +319,21 @@ bool are_in_same_space(T* from, U* to)
   return from_attributes.type == to_attributes.type;
 }
 
-template <class T, class U>
-void copy_between_spaces(T* from, U* to, std::size_t n)
+template <class T>
+void copy_between_spaces(T const* from, T* to, std::size_t n)
 {
   details::handle_cuda_error(
       cudaMemcpy(
         to,
         from,
-        sizeof(U) * n,
+        sizeof(T) * n,
         cudaMemcpyDefault));
+}
+
+template <class T>
+void copy_between_spaces(T* from, T* to, std::size_t n)
+{
+  copy_between_spaces(static_cast<T const*>(from), to, n);
 }
 
 }
@@ -390,7 +396,7 @@ P3A_NEVER_INLINE void copy(
 template <class ForwardIt1, class ForwardIt2>
 P3A_ALWAYS_INLINE inline constexpr
 void copy(
-    host_execution,
+    execution::sequenced_policy,
     ForwardIt1 first,
     ForwardIt1 const& last,
     ForwardIt2 d_first)
@@ -403,7 +409,7 @@ void copy(
 template <class ForwardIt1, class ForwardIt2>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void copy(
-    host_device_execution,
+    execution::hot_policy,
     ForwardIt1 first,
     ForwardIt1 const& last,
     ForwardIt2 d_first)
@@ -431,7 +437,7 @@ P3A_NEVER_INLINE void move(
 template <class ForwardIt1, class ForwardIt2>
 P3A_ALWAYS_INLINE inline constexpr
 void move(
-    host_execution,
+    execution::sequenced_policy,
     ForwardIt1 first,
     ForwardIt1 last,
     ForwardIt2 d_first)
@@ -444,7 +450,7 @@ void move(
 template <class BidirIt1, class BidirIt2>
 P3A_ALWAYS_INLINE inline constexpr
 void move_backward(
-    host_execution,
+    execution::sequenced_policy,
     BidirIt1 const& first,
     BidirIt1 last,
     BidirIt2 d_last)
@@ -468,7 +474,7 @@ P3A_NEVER_INLINE void fill(
 template <class ForwardIt, class T>
 P3A_ALWAYS_INLINE inline constexpr
 void fill(
-    host_execution,
+    execution::sequenced_policy,
     ForwardIt first,
     ForwardIt const& last,
     T const& value)
@@ -481,7 +487,7 @@ void fill(
 template <class ForwardIt, class T>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void fill(
-    host_device_execution,
+    execution::hot_policy,
     ForwardIt first,
     ForwardIt const& last,
     T const& value)

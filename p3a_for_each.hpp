@@ -112,7 +112,7 @@ void for_each(
 template <class ForwardIt, class UnaryFunction>
 P3A_ALWAYS_INLINE inline constexpr
 void for_each(
-    host_execution,
+    execution::sequenced_policy,
     ForwardIt first,
     ForwardIt const& last,
     UnaryFunction const& f)
@@ -124,7 +124,7 @@ void for_each(
 
 template <class Functor, class Integral>
 P3A_ALWAYS_INLINE inline constexpr void for_each(
-    host_execution,
+    execution::sequenced_policy,
     counting_iterator3<Integral> const& first,
     counting_iterator3<Integral> const& last,
     Functor const& functor)
@@ -141,7 +141,7 @@ P3A_ALWAYS_INLINE inline constexpr void for_each(
 template <class Functor, class Integral>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void for_each(
-    host_device_execution,
+    execution::hot_policy,
     counting_iterator3<Integral> const& first,
     counting_iterator3<Integral> const& last,
     Functor const& functor)
@@ -157,7 +157,7 @@ void for_each(
 
 template <class Functor>
 P3A_ALWAYS_INLINE inline constexpr void for_each(
-    host_execution policy,
+    execution::sequenced_policy policy,
     subgrid3 const& subgrid,
     Functor const& functor)
 {
@@ -169,7 +169,7 @@ P3A_ALWAYS_INLINE inline constexpr void for_each(
 
 template <class Functor>
 P3A_ALWAYS_INLINE inline constexpr void for_each(
-    host_execution policy,
+    execution::sequenced_policy policy,
     grid3 const& grid,
     Functor const& functor)
 {
@@ -182,7 +182,7 @@ P3A_ALWAYS_INLINE inline constexpr void for_each(
 template <class Functor>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void for_each(
-    host_device_execution policy,
+    execution::hot_policy policy,
     grid3 const& grid,
     Functor const& functor)
 {
@@ -207,7 +207,7 @@ void for_each(
 template <class Functor>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void for_each(
-    host_device_execution policy,
+    execution::hot_policy policy,
     subgrid3 subgrid,
     Functor const& functor)
 {

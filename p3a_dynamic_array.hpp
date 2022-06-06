@@ -9,7 +9,7 @@ namespace p3a {
 template <
   class T,
   class Allocator = host_allocator<T>,
-  class ExecutionPolicy = host_execution>
+  class ExecutionPolicy = execution::sequenced_policy>
 class dynamic_array {
  public:
   using size_type = std::int64_t;
@@ -78,6 +78,39 @@ class dynamic_array {
     reserve(other.capacity());
     m_size = other.size();
     uninitialized_copy(m_execution_policy, other.begin(), other.end(), m_begin);
+    return *this;
+  }
+  template <
+    class Allocator2,
+    class ExecutionSpace2,
+    typename std::enable_if<!std::is_same_v<Allocator2, Allocator>,
+      bool>::type = false>
+  dynamic_array(dynamic_array<T, Allocator2, ExecutionSpace2> const& other)
+    :m_begin(nullptr)
+    ,m_size(0)
+    ,m_capacity(0)
+  {
+    reserve(other.capacity());
+    m_size = other.size();
+    details::copy_between_spaces(
+        other.data(),
+        this->data(),
+        std::size_t(this->size()));
+  }
+  template <
+    class Allocator2,
+    class ExecutionSpace2,
+    typename std::enable_if<!std::is_same_v<Allocator2, Allocator>,
+      bool>::type = false>
+  dynamic_array& operator=(dynamic_array<T, Allocator2, ExecutionSpace2> const& other)
+  {
+    resize(0);
+    reserve(other.capacity());
+    m_size = other.size();
+    details::copy_between_spaces(
+        other.data(),
+        this->data(),
+        std::size_t(this->size()));
     return *this;
   }
   explicit dynamic_array(size_type size_in)
@@ -248,6 +281,28 @@ class dynamic_array {
     m_size -= (last - first);
     return nonconst_first;
   }
+  template <class InputIt>
+  void assign(InputIt first, InputIt last)
+  {
+    resize(0);
+    auto const new_size = size_type(last - first);
+    reserve(new_size);
+    uninitialized_copy(m_execution_policy, first, last, m_begin);
+    m_size = new_size;
+  }
+  template <class U>
+  void assign(U const* first, U const* last)
+  {
+    resize(0);
+    auto const new_size = size_type(last - first);
+    reserve(new_size);
+    if (details::are_in_same_space(first, data())) {
+      uninitialized_copy(m_execution_policy, first, last, m_begin);
+    } else {
+      details::copy_between_spaces(first, data(), std::size_t(new_size));
+    }
+    m_size = new_size;
+  }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T* data() { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T const* data() const { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr iterator begin() { return m_begin; }
@@ -272,8 +327,8 @@ class dynamic_array {
 };
 
 template <class T>
-using device_array = dynamic_array<T, device_allocator<T>, device_execution>;
+using device_array = dynamic_array<T, device_allocator<T>, execution::parallel_policy>;
 template <class T>
-using mirror_array = dynamic_array<T, mirror_allocator<T>, host_execution>;
+using mirror_array = dynamic_array<T, mirror_allocator<T>, execution::sequenced_policy>;
 
 }

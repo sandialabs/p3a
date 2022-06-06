@@ -434,7 +434,7 @@ class fixed_point_double_sum {
   values_type& values() { return m_values; }
 };
 
-extern template class fixed_point_double_sum<device_allocator<double>, device_execution>;
+extern template class fixed_point_double_sum<device_allocator<double>, execution::parallel_policy>;
 
 }
 
@@ -532,6 +532,6 @@ class associative_sum<double, Allocator, ExecutionPolicy> {
 
 template <class T>
 using device_associative_sum = 
-  associative_sum<T, device_allocator<T>, device_execution>;
+  associative_sum<T, device_allocator<T>, execution::parallel_policy>;
 
 }
