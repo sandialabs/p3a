@@ -29,7 +29,6 @@ endif()
 
 set(P3A_HEADERS
   p3a_allocator.hpp
-  p3a_avx512.hpp
   p3a_axis_angle.hpp
   p3a_box3.hpp
   p3a_cg.hpp
@@ -60,6 +59,7 @@ set(P3A_HEADERS
   p3a_matrix2x2.hpp
   p3a_matrix3x3.hpp
   p3a_memory.hpp
+  p3a_opts.hpp
   p3a_allocator.hpp
   p3a_dimension.hpp
   p3a_unit.hpp
@@ -68,6 +68,11 @@ set(P3A_HEADERS
   p3a_fixed_point.hpp
   p3a_counting_iterator.hpp
   p3a_dynamic_matrix.hpp
+  p3a_quantity.hpp
+  p3a_reduce.hpp
+  p3a_scalar.hpp
+  p3a_scaled_identity3x3.hpp
+  p3a_search.hpp
   p3a_skew3x3.hpp
   p3a_static_array.hpp
   p3a_static_matrix.hpp
