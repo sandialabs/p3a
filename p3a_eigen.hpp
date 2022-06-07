@@ -8,22 +8,24 @@
 namespace p3a {
 
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 T norm(static_matrix<T, N, N> const& a)
 {
+  using std::sqrt;
   T result(0);
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
       result += square(a(i, j));
     }
   }
-  return square_root(result);
+  return sqrt(result);
 }
 
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 T off_diagonal_norm(static_matrix<T, N, N> const& a)
 {
+  using std::sqrt;
   T result(0);
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
@@ -32,23 +34,24 @@ T off_diagonal_norm(static_matrix<T, N, N> const& a)
       }
     }
   }
-  return square_root(result);
+  return sqrt(result);
 }
 
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void maximum_off_diagonal_indices(
     static_matrix<T, N, N> const& a,
     int& p,
     int& q)
 {
+  using std::abs;
   p = 0;
   q = 0;
   T s = -1.0;
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
       if (i != j) {
-        T const s2 = absolute_value(a(i, j));
+        T const s2 = abs(a(i, j));
         if (s2 > s) {
           p = i;
           q = j;
@@ -64,7 +67,7 @@ void maximum_off_diagonal_indices(
 // \param \f$ A = [f, g; g, h] \in S(2) \f$
 // \return \f$ c, s \rightarrow [c, -s; s, c]\f diagonalizes A$
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void symmetric_schur(
     T const& f,
     T const& g,
@@ -72,23 +75,24 @@ void symmetric_schur(
     T& c,
     T& s)
 {
+  using std::sqrt;
   c = 1.0;
   s = 0.0;
   if (g != 0.0) {
     T t = (h - f) / (2.0 * g);
     if (t >= 0.0) {
-      t = 1.0 / (square_root(1.0 + square(t)) + t);
+      t = 1.0 / (sqrt(1.0 + square(t)) + t);
     } else {
-      t = -1.0 / (square_root(1.0 + square(t)) - t);
+      t = -1.0 / (sqrt(1.0 + square(t)) - t);
     }
-    c = 1.0 / square_root(1.0 + square(t));
+    c = 1.0 / sqrt(1.0 + square(t));
     s = t * c;
   }
 }
 
 /* Apply Givens-Jacobi rotation on the left */
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void rotate_givens_left(
     T const& c,
     T const& s,
@@ -106,7 +110,7 @@ void rotate_givens_left(
 
 /* Apply Givens-Jacobi rotation on the right */
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void rotate_givens_right(
     T const& c,
     T const& s,
@@ -123,7 +127,7 @@ void rotate_givens_right(
 }
 
 template <class T, int N>
-P3A_HOST P3A_DEVICE inline
+P3A_HOST_DEVICE inline
 void eigendecompose(
     static_matrix<T, N, N>& a,
     static_matrix<T, N, N>& q,
@@ -148,7 +152,7 @@ void eigendecompose(
 }
 
 template <class T, int N>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 T eigen_tolerance(
     static_matrix<T, N, N> const& a)
 {
@@ -158,7 +162,7 @@ T eigen_tolerance(
 }
 
 template <class T, int N>
-P3A_HOST P3A_DEVICE inline
+P3A_HOST_DEVICE inline
 void eigendecompose(
     static_matrix<T, N, N>& a,
     static_matrix<T, N, N>& q)
@@ -167,7 +171,7 @@ void eigendecompose(
 }
 
 template <class T>
-P3A_HOST P3A_DEVICE inline
+P3A_HOST_DEVICE inline
 void eigendecompose(
     symmetric3x3<T> const& a,
     diagonal3x3<T>& l,

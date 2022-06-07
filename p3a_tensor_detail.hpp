@@ -5,28 +5,28 @@
 namespace p3a {
 
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 symm(matrix3x3<T> const A)
 {
   return 0.5 * (A + transpose(A));
 }
 
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 skew(matrix3x3<T> const A)
 {
   return 0.5 * (A - transpose(A));
 }
 
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 check(vector3<T> const w)
 {
   return matrix3x3<T>(0.0, -w(2), w(1), w(2), 0.0, -w(0), -w(1), w(0), 0.0);
 }
 
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 uncheck(matrix3x3<T> const A)
 {
   auto const W = skew(A);
@@ -34,21 +34,21 @@ uncheck(matrix3x3<T> const A)
 }
 
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 isotropic_part(matrix3x3<T> const x) noexcept
 {
   return ((1.0 / 3.0) * trace(x)) * matrix3x3<T>::identity();
 }
 
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 vol(matrix3x3<T> const A) noexcept
 {
   return isotropic_part(A);
 }
 
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 deviatoric_part(matrix3x3<T> x) noexcept
 {
   auto       x_dev = matrix3x3<T>(x);
@@ -60,7 +60,7 @@ deviatoric_part(matrix3x3<T> x) noexcept
 }
 
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 dev(matrix3x3<T> const A) noexcept
 {
   return deviatoric_part(A);
@@ -68,32 +68,33 @@ dev(matrix3x3<T> const A) noexcept
 
 // \f$ \max_{j \in {0,\cdots,N}}\Sigma_{i=0}^N |A_{ij}| \f$
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 norm_1(matrix3x3<T> const& A)
 {
-  auto const v0 = absolute_value(A(0, 0) + A(1, 0) + A(2, 0));
-  auto const v1 = absolute_value(A(0, 1) + A(1, 1) + A(2, 1));
-  auto const v2 = absolute_value(A(0, 2) + A(1, 2) + A(2, 2));
-  return maximum(maximum(v0, v1), v2);
+  using std::abs;
+  auto const v0 = abs(A(0, 0) + A(1, 0) + A(2, 0));
+  auto const v1 = abs(A(0, 1) + A(1, 1) + A(2, 1));
+  auto const v2 = abs(A(0, 2) + A(1, 2) + A(2, 2));
+  return max(max(v0, v1), v2);
 }
 
 // \f$ \max_{i \in {0,\cdots,N}}\Sigma_{j=0}^N |A_{ij}| \f$
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 norm_infinity(matrix3x3<T> const& A)
 {
-  auto const v0 = absolute_value(A(0, 0) + A(0, 1) + A(0, 2));
-  auto const v1 = absolute_value(A(1, 0) + A(1, 1) + A(1, 2));
-  auto const v2 = absolute_value(A(2, 0) + A(2, 1) + A(2, 2));
-  return maximum(maximum(v0, v1), v2);
+  using std::abs;
+  auto const v0 = abs(A(0, 0) + A(0, 1) + A(0, 2));
+  auto const v1 = abs(A(1, 0) + A(1, 1) + A(1, 2));
+  auto const v2 = abs(A(2, 0) + A(2, 1) + A(2, 2));
+  return max(max(v0, v1), v2);
 }
 
 // Scaling parameter theta for scaling and squaring exponential.
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 scaling_squaring_theta(int const order)
 {
-  assert(order > 0 && order < 22);
   T const theta[] = {0.0e-0, 3.7e-8, 5.3e-4, 1.5e-2, 8.5e-2, 2.5e-1, 5.4e-1, 9.5e-1, 1.5e-0, 2.1e-0, 2.8e-0, 3.6e-0,
                      4.5e-0, 5.4e-0, 6.3e-0, 7.3e-0, 8.4e-0, 9,      4e-0,   1.1e+1, 1.2e+1, 1.3e+1, 1.4e+1};
   return theta[order];
@@ -101,10 +102,9 @@ scaling_squaring_theta(int const order)
 
 // Polynomial coefficients for Padé approximants.
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 polynomial_coefficient(int const order, int const index)
 {
-  assert(index <= order);
   T c = 0.0;
   switch (order) {
     case 3: {
@@ -142,16 +142,14 @@ polynomial_coefficient(int const order, int const index)
           1.0};
       c = b[index];
     } break;
-    default: auto const incorrect_order_in_pade_polynomial = false; assert(incorrect_order_in_pade_polynomial == true);
   }
   return c;
 }
 
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 pade_coefficients(int n) noexcept
 {
-  assert(0 <= n && n < 64);
   T const c[] = {
       1.100343044625278e-05, 1.818617533662554e-03, 1.620628479501567e-02, 5.387353263138127e-02, 1.135280226762866e-01,
       1.866286061354130e-01, 2.642960831111435e-01, 3.402172331985299e-01, 4.108235000556820e-01, 4.745521256007768e-01,
@@ -170,10 +168,9 @@ pade_coefficients(int n) noexcept
 }
 
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 gauss_legendre_abscissae(int const m, int const n) noexcept
 {
-  assert(0 < m && m <= 64 && 0 <= n && n < m);
   T x = 0.0;
   switch (m) {
     default: break;
@@ -1823,10 +1820,9 @@ gauss_legendre_abscissae(int const m, int const n) noexcept
 }
 
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 gauss_legendre_weights(int const m, int const n) noexcept
 {
-  assert(0 < m && m <= 64 && n < m);
   T x = 0.0;
   switch (m) {
     default: break;

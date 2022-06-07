@@ -4,7 +4,7 @@
 
 namespace p3a {
 
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 char* copy_c_string(char* dest, char const* src)
 {
   char* const result = dest;
@@ -17,7 +17,7 @@ char* copy_c_string(char* dest, char const* src)
   return result;
 }
 
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 char* append_c_string(char* dest, char const* src)
 {
   char* const result = dest;
@@ -28,7 +28,7 @@ char* append_c_string(char* dest, char const* src)
   return result;
 }
 
-P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 int compare_c_strings(char const* s1, char const* s2)
 {
   while ((*s1 != '\0') && (*s1 == *s2)) {

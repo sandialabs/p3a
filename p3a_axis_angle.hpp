@@ -15,7 +15,7 @@ class axis_angle {
  public:
   P3A_ALWAYS_INLINE axis_angle() = default;
 
-  P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
   axis_angle(vector3<T> const& vector_arg)
     :m_vector(vector_arg)
   {}
@@ -28,9 +28,11 @@ class axis_angle {
 // logarithm of a rotation tensor in Special Orthogonal Group(3), as the
 // the axis of rotation times the angle of rotation.
 
-  P3A_HOST P3A_DEVICE inline
+  P3A_HOST_DEVICE inline
   axis_angle(matrix3x3<T> const& R)
   {
+    using std::sqrt;
+    using std::acos;
     T const trR = trace(R);
     T maxm = trR;
     int maxi = 3;
@@ -69,7 +71,7 @@ class axis_angle {
       q0 = T(1.0) + trR;
     }
     auto const qnorm =
-      square_root(
+      sqrt(
           square(q0) +
           square(q1) +
           square(q2) +
@@ -79,32 +81,33 @@ class axis_angle {
     q2 /= qnorm;
     q3 /= qnorm;
     // convert quaternion to axis-angle
-    auto const divisor = square_root(T(1.0) - square(q0));
+    auto const divisor = sqrt(T(1.0) - square(q0));
     auto constexpr epsilon = epsilon_value<T>();
     if (divisor <= epsilon) {
       m_vector = vector3<T>::zero();
     } else {
-      auto const factor = T(2.0) * arccos(q0) / divisor;
+      auto const factor = T(2.0) * acos(q0) / divisor;
       m_vector = vector3<T>(q1, q2, q3) * factor;
     }
   }
 
-  [[nodiscard]] P3A_HOST P3A_DEVICE inline
+  [[nodiscard]] P3A_HOST_DEVICE inline
   matrix3x3<T> tensor() const
   {
+    using std::cos;
     auto const halfnorm = T(0.5) * magnitude(m_vector);
     auto const temp = T(0.5) * sin_x_over_x(halfnorm);
     auto const qv = temp * m_vector;
-    auto const qs = cosine(halfnorm);
+    auto const qs = cos(halfnorm);
     return T(2.0) * outer_product(qv) +
            T(2.0) * qs * cross_product_matrix(qv) +
            (T(2.0) * square(qs) - T(1.0)) * identity3x3;
   }
 
-  [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   vector3<T> const& vector() const { return m_vector; }
 
-  [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE static constexpr
+  [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE static constexpr
   axis_angle zero()
   {
     return axis_angle(vector3<T>::zero());
@@ -112,7 +115,7 @@ class axis_angle {
 };
 
 template <class T>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 axis_angle<T> load_axis_angle(
     T const* ptr,
     int stride,
@@ -122,7 +125,7 @@ axis_angle<T> load_axis_angle(
 }
 
 template <class T>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void store(
     axis_angle<T> const& aa,
     T* ptr,
@@ -133,7 +136,7 @@ void store(
 }
 
 template <class T, class Mask>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 std::enable_if_t<!std::is_same_v<Mask, bool>, axis_angle<T>>
 condition(
     Mask const& a,

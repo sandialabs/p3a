@@ -9,8 +9,8 @@ namespace p3a {
 
 template <
   class T,
-  class Allocator = allocator<T>,
-  class ExecutionPolicy = serial_execution>
+  class Allocator = host_allocator<T>,
+  class ExecutionPolicy = execution::sequenced_policy>
 class dynamic_matrix {
   int m_row_count;
   int m_column_count;
@@ -125,12 +125,13 @@ void gaussian_elimination(
   int const n = a.column_count();
   int h = 0; // pivot row
   int k = 0; // pivot column
+  using std::abs;
   while ((h < m) && (k < n)) {
     // find the k-th pivot
     int i_max = h;
-    T max_magnitude = absolute_value(a(i_max, k));
+    T max_magnitude = abs(a(i_max, k));
     for (int i = h + 1; i < m; ++i) {
-      T const magnitude = absolute_value(a(i, k));
+      T const magnitude = abs(a(i, k));
       if (magnitude > max_magnitude) {
         i_max = i;
         max_magnitude = magnitude;

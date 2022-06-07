@@ -9,7 +9,7 @@ namespace p3a {
 
 // Padé approximant polynomial odd and even terms.
 template <typename T>
-P3A_HOST P3A_DEVICE inline void
+P3A_HOST_DEVICE inline void
 pade_polynomial_terms(matrix3x3<T> const& A, int const order, matrix3x3<T>& U, matrix3x3<T>& V)
 {
   auto B        = matrix3x3<T>::identity();
@@ -28,7 +28,7 @@ pade_polynomial_terms(matrix3x3<T> const& A, int const order, matrix3x3<T>& U, m
 
 // Compute a non-negative integer power of a tensor by binary manipulation.
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 binary_powering(matrix3x3<T> const& A, int const e)
 {
   using bits               = uint64_t;
@@ -65,7 +65,7 @@ binary_powering(matrix3x3<T> const& A, int const e)
 // Exponential map by squaring and scaling and Padé approximants.
 // See algorithm 10.20 in Functions of Matrices, N.J. Higham, SIAM, 2008.
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 exp(matrix3x3<T> const& A)
 {
   auto       B             = matrix3x3<T>::identity();
@@ -121,7 +121,7 @@ exp(matrix3x3<T> const& A)
 
 // Exponential map by power series for verification, radius of convergence is infinity
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 exp_taylor(matrix3x3<T> const& A)
 {
   auto const max_iter = 1024;

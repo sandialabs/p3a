@@ -517,13 +517,19 @@ P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512_fixed_size<8>> copysign(s
       );
 }
 
-P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512_fixed_size<8>> absolute_value(simd<double, simd_abi::avx512_fixed_size<8>> const& a) {
+P3A_ALWAYS_INLINE inline
+simd<double, simd_abi::avx512_fixed_size<8>>
+abs(simd<double, simd_abi::avx512_fixed_size<8>> const& a)
+{
   __m512d const rhs = a.get();
   return reinterpret_cast<__m512d>(_mm512_and_epi64(_mm512_set1_epi64(0x7FFFFFFFFFFFFFFF),
         reinterpret_cast<__m512i>(rhs)));
 }
 
-P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512_fixed_size<8>> square_root(simd<double, simd_abi::avx512_fixed_size<8>> const& a) {
+P3A_ALWAYS_INLINE inline
+simd<double, simd_abi::avx512_fixed_size<8>>
+sqrt(simd<double, simd_abi::avx512_fixed_size<8>> const& a)
+{
   return simd<double, simd_abi::avx512_fixed_size<8>>(_mm512_sqrt_pd(a.get()));
 }
 
@@ -550,7 +556,7 @@ P3A_ALWAYS_INLINE inline simd<double, simd_abi::avx512_fixed_size<8>> fma(
 
 P3A_ALWAYS_INLINE inline
 simd<double, simd_abi::avx512_fixed_size<8>>
-maximum(
+max(
     simd<double, simd_abi::avx512_fixed_size<8>> const& a,
     simd<double, simd_abi::avx512_fixed_size<8>> const& b)
 {
@@ -559,7 +565,7 @@ maximum(
 
 P3A_ALWAYS_INLINE inline
 simd<double, simd_abi::avx512_fixed_size<8>>
-minimum(
+min(
     simd<double, simd_abi::avx512_fixed_size<8>> const& a,
     simd<double, simd_abi::avx512_fixed_size<8>> const& b)
 {
@@ -725,7 +731,7 @@ double reduce(
 }
 
 template <class To>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_same_v<To, simd<std::uint64_t, simd_abi::avx512_fixed_size<8>>>, simd<std::uint64_t, simd_abi::avx512_fixed_size<8>>>
 bit_cast(simd<double, simd_abi::avx512_fixed_size<8>> const& src)
 {
@@ -734,7 +740,7 @@ bit_cast(simd<double, simd_abi::avx512_fixed_size<8>> const& src)
 }
 
 template <class To>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_same_v<To, simd<double, simd_abi::avx512_fixed_size<8>>>, simd<double, simd_abi::avx512_fixed_size<8>>>
 bit_cast(simd<std::uint64_t, simd_abi::avx512_fixed_size<8>> const& src)
 {

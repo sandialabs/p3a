@@ -13,7 +13,7 @@ class skew3x3 {
  public:
   P3A_ALWAYS_INLINE constexpr
   skew3x3() = default;
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   skew3x3(
       T const& a,
       T const& b,
@@ -23,31 +23,31 @@ class skew3x3 {
     ,m_yz(c)
   {
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T xx() const { return zero_value<T>; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xy() const { return m_xy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& xy() { return m_xy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xz() const { return m_xz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& xz() { return m_xz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T yx() const { return -m_xy; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T yy() const { return zero_value<T>; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& yz() const { return m_yz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& yz() { return m_yz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T zx() const { return -m_xz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T zy() const { return -m_yz; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T zz() const { return zero_value<T>; }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE static constexpr
   skew3x3 zero()
   {
     return skew3x3(T(0), T(0), T(0));
@@ -55,14 +55,14 @@ class skew3x3 {
 };
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 skew3x3<T> cross_product_matrix(vector3<T> const& a)
 {
   return skew3x3<T>(-a.z(), a.y(), -a.x());
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto square(skew3x3<T> const& a)
 {
   using C = decltype(a.xy() * a.xy());
@@ -79,7 +79,7 @@ auto square(skew3x3<T> const& a)
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<B>, skew3x3<decltype(A() * B())>>::type
 operator*(
     skew3x3<A> const& a,
@@ -92,7 +92,7 @@ operator*(
 }
 
 template <class A, class B>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 typename std::enable_if<is_scalar<A>, skew3x3<decltype(A() * B())>>::type
 operator*(
     A const& a,

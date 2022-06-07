@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <iterator>
 
 #include "p3a_execution.hpp"
 #include "p3a_functions.hpp"
@@ -12,10 +13,106 @@
 
 namespace p3a {
 
+namespace details {
+
+template <class ExecutionSpace, class Integral, class Functor>
+void kokkos_for_each(
+    p3a::counting_iterator<Integral> first,
+    p3a::counting_iterator<Integral> last,
+    Functor functor)
+{
+  Kokkos::parallel_for("p3a::details::kokkos_for_each(1D)",
+      Kokkos::RangePolicy<
+        ExecutionSpace,
+        Kokkos::IndexType<Integral>>(*first, *last),
+      functor);
+}
+
+template <class OriginalIterator, class OriginalFunctor>
+class kokkos_iterator_functor {
+  OriginalIterator m_first;
+  OriginalFunctor m_functor;
+ public:
+  using difference_type = typename std::iterator_traits<OriginalIterator>::difference_type;
+  kokkos_iterator_functor(
+      OriginalIterator first_arg,
+      OriginalFunctor functor_arg)
+    :m_first(first_arg)
+    ,m_functor(functor_arg)
+  {}
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE auto operator()(difference_type i) const
+  {
+    return m_functor(m_first[i]);
+  }
+};
+
+template <class ExecutionSpace, class Iterator, class Functor>
+void kokkos_for_each(
+    Iterator first,
+    Iterator last,
+    Functor functor)
+{
+  using difference_type = typename std::iterator_traits<Iterator>::difference_type;
+  difference_type const n = last - first;
+  kokkos_for_each<ExecutionSpace>(
+      p3a::counting_iterator<difference_type>(0),
+      p3a::counting_iterator<difference_type>(n),
+      kokkos_iterator_functor<Iterator, Functor>(first, functor));
+}
+
+template <class Integral, class OriginalFunctor>
+class kokkos_3d_functor {
+  OriginalFunctor m_functor;
+ public:
+  kokkos_3d_functor(
+      OriginalFunctor functor_arg)
+    :m_functor(functor_arg)
+  {
+  }
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
+  auto operator()(Integral i, Integral j, Integral k) const
+  {
+    return m_functor(p3a::vector3<Integral>(i, j, k));
+  }
+};
+
+template <class ExecutionSpace, class Integral, class Functor>
+void kokkos_for_each(
+    p3a::counting_iterator3<Integral> first,
+    p3a::counting_iterator3<Integral> last,
+    Functor functor)
+{
+  auto const limits = last.vector - first.vector;
+  if (limits.volume() == 0) return;
+  using kokkos_policy =
+    Kokkos::MDRangePolicy<
+      ExecutionSpace,
+      Kokkos::IndexType<Integral>,
+      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
+  Kokkos::parallel_for("p3a::details::kokkos_for_each(3D)",
+      kokkos_policy(
+        {first.vector.x(), first.vector.y(), first.vector.z()},
+        {last.vector.x(), last.vector.y(), last.vector.z()}),
+  kokkos_3d_functor<Integral, Functor>(functor));
+}
+
+}
+
+template <class ExecutionPolicy, class Iterator, class Functor>
+void for_each(
+    ExecutionPolicy,
+    Iterator first,
+    Iterator last,
+    Functor functor)
+{
+  details::kokkos_for_each<typename ExecutionPolicy::kokkos_execution_space>(
+      first, last, functor);
+}
+
 template <class ForwardIt, class UnaryFunction>
 P3A_ALWAYS_INLINE inline constexpr
 void for_each(
-    serial_local_execution,
+    execution::sequenced_policy,
     ForwardIt first,
     ForwardIt const& last,
     UnaryFunction const& f)
@@ -25,339 +122,214 @@ void for_each(
   }
 }
 
-template <class Integral, class UnaryFunction>
-P3A_NEVER_INLINE
-std::enable_if_t<std::is_integral_v<Integral>>
-for_each(
-    serial_execution,
-    counting_iterator<Integral> first,
-    counting_iterator<Integral> last,
-    UnaryFunction f)
+template <class Functor, class Integral>
+P3A_ALWAYS_INLINE inline constexpr void for_each(
+    execution::sequenced_policy,
+    counting_iterator3<Integral> const& first,
+    counting_iterator3<Integral> const& last,
+    Functor const& functor)
 {
-  for (Integral i = *first; i < *last; ++i) {
-    f(i);
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
+        functor(vector3<Integral>(i, j, k));
+      }
+    }
   }
 }
 
-template <class T, class Integral, class UnaryFunction>
-P3A_NEVER_INLINE
-std::enable_if_t<std::is_integral_v<Integral>>
-simd_for_each(
-    serial_execution,
-    counting_iterator<Integral> first,
-    counting_iterator<Integral> last,
-    UnaryFunction f)
-{
-  using mask_type = host_simd_mask<T>;
-  auto constexpr width = Integral(mask_type::size());
-  auto const quotient = (*last - *first) / width;
-  for (Integral qi = 0; qi < quotient + 1; ++qi) {
-    auto const i = *first + qi * width;
-    auto const lanes = minimum(width, *last - i);
-    auto const mask = mask_type::first_n(lanes);
-    f(i, mask);
-  }
-}
-
-template <class ForwardIt, class UnaryFunction>
-P3A_NEVER_INLINE
+template <class Functor, class Integral>
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 void for_each(
-    serial_execution policy,
-    ForwardIt first,
-    ForwardIt last,
-    UnaryFunction f)
+    execution::hot_policy,
+    counting_iterator3<Integral> const& first,
+    counting_iterator3<Integral> const& last,
+    Functor const& functor)
 {
-  for (; first != last; ++first) {
-    f(*first);
+  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
+    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
+      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
+        functor(vector3<Integral>(i, j, k));
+      }
+    }
   }
 }
 
-template <class T, class ForwardIt, class UnaryFunction>
-P3A_NEVER_INLINE
-void
-simd_for_each(
-    serial_execution policy,
-    ForwardIt first,
-    ForwardIt last,
-    UnaryFunction f)
+template <class Functor>
+P3A_ALWAYS_INLINE inline constexpr void for_each(
+    execution::sequenced_policy policy,
+    subgrid3 const& subgrid,
+    Functor const& functor)
 {
-  auto const n = last - first;
-  using Integral = std::remove_const_t<decltype(n)>;
-  simd_for_each<T>(policy,
-      counting_iterator<Integral>(0),
-      counting_iterator<Integral>(n),
-  [&] (Integral const i) P3A_ALWAYS_INLINE {
-    f(first[i]);
-  });
-}
-
-#ifdef __CUDACC__
-
-template <class Integral, class UnaryFunction>
-P3A_NEVER_INLINE
-std::enable_if_t<std::is_integral_v<Integral>>
-for_each(
-    cuda_execution policy,
-    counting_iterator<Integral> first,
-    counting_iterator<Integral> last,
-    UnaryFunction f)
-{
-  Integral const n = last - first;
-  if (n == 0) return;
-  Kokkos::parallel_for("p3a_cuda",
-      Kokkos::RangePolicy<
-        Kokkos::Cuda,
-        Kokkos::IndexType<Integral>>(
-          *first, *last),
-      f);
-}
-
-template <class ForwardIt, class UnaryFunction>
-P3A_NEVER_INLINE
-void for_each(
-    cuda_execution policy,  
-    ForwardIt first,
-    ForwardIt last,
-    UnaryFunction f)
-{
-  auto const n = last - first;
-  using integral_type = std::remove_const_t<decltype(n)>;
   for_each(policy,
-      counting_iterator<integral_type>(0),
-      counting_iterator<integral_type>(n),
-  [=] __device__ (integral_type i) P3A_ALWAYS_INLINE {
-    f(first[i]);
-  });
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
 }
 
-template <class ForwardIt, class UnaryFunction>
-__device__ P3A_ALWAYS_INLINE inline constexpr
-void for_each(
-    cuda_local_execution,
-    ForwardIt const& first,
-    ForwardIt const& last,
-    UnaryFunction const& f)
+template <class Functor>
+P3A_ALWAYS_INLINE inline constexpr void for_each(
+    execution::sequenced_policy policy,
+    grid3 const& grid,
+    Functor const& functor)
 {
-  for (; first != last; ++first) {
-    f(*first);
-  }
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
 }
 
-#endif
+template <class Functor>
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+void for_each(
+    execution::hot_policy policy,
+    grid3 const& grid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
+}
 
-#ifdef __HIPCC__
+template <class ExecutionPolicy, class Functor>
+void for_each(
+    ExecutionPolicy policy,
+    subgrid3 subgrid,
+    Functor functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
+}
+
+template <class Functor>
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+void for_each(
+    execution::hot_policy policy,
+    subgrid3 subgrid,
+    Functor const& functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{subgrid.lower()},
+      counting_iterator3<int>{subgrid.upper()},
+      functor);
+}
+
+template <class ExecutionPolicy, class Functor>
+void for_each(
+    ExecutionPolicy policy,
+    grid3 grid,
+    Functor functor)
+{
+  for_each(policy,
+      counting_iterator3<int>{vector3<int>::zero()},
+      counting_iterator3<int>{grid.extents()},
+      functor);
+}
 
 namespace details {
 
-template <class F, class Integral>
-__global__
-void hip_for_each(F f, Integral first, Integral last) {
-  auto const i = first + static_cast<Integral>(
-          hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x);
-  if (i < last) f(i);
-}
-
-}
-
-template <class Integral, class UnaryFunction>
-P3A_NEVER_INLINE
-void for_each(
-    hip_execution policy,
-    counting_iterator<Integral> first,
-    counting_iterator<Integral> last,
-    UnaryFunction f)
-{
-  auto const n = last - first;
-  if (n == 0) return;
-  Kokkos::parallel_for("p3a_hip",
-      Kokkos::RangePolicy<
-        Kokkos::Experimental::HIP, 
-        Kokkos::IndexType<Integral>>(
-          *first, *last),
-      f);
-}
-
-template <class ForwardIt, class UnaryFunction>
-P3A_NEVER_INLINE
-void for_each(
-    hip_execution policy,
-    ForwardIt first,
-    ForwardIt last,
-    UnaryFunction f)
-{
-  auto const n = last - first;
-  using integral_type = std::remove_const_t<decltype(n)>;
-  for_each(policy,
-      counting_iterator<integral_type>(0),
-      counting_iterator<integral_type>(n),
-  [=] __device__ (integral_type i) P3A_ALWAYS_INLINE {
-    f(first[i]);
-  });
-}
-
-template <class ForwardIt, class UnaryFunction>
-__device__ P3A_ALWAYS_INLINE inline constexpr
-void for_each(
-    hip_local_execution,
-    ForwardIt first,
-    ForwardIt const& last,
-    UnaryFunction const& f)
-{
-  for (; first != last; ++first) {
-    f(*first);
-  }
-}
-
-#endif
-
-template <class Integral>
-class counting_iterator3 {
+template <
+  class T,
+  class SimdAbi,
+  class Integral,
+  class OriginalFunctor>
+class simd_functor {
+  OriginalFunctor m_functor;
+  Integral m_first_i;
+  Integral m_last_i;
  public:
-  vector3<Integral> vector;
+  simd_functor(
+      OriginalFunctor functor_arg,
+      Integral first_i_arg,
+      Integral last_i_arg)
+    :m_functor(functor_arg)
+    ,m_first_i(first_i_arg)
+    ,m_last_i(last_i_arg)
+  {
+  }
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline auto operator()(Integral i) const
+  {
+    using mask_type = p3a::simd_mask<T, SimdAbi>;
+    auto constexpr width = Integral(mask_type::size());
+    auto const real_i = i * width + m_first_i;
+    auto const lane_count = p3a::min(width, m_last_i - real_i);
+    return m_functor(real_i, mask_type::first_n(lane_count));
+  }
 };
 
-template <class Functor, class Integral>
-P3A_ALWAYS_INLINE constexpr void for_each(
-    serial_local_execution,
-    counting_iterator3<Integral> const& first,
-    counting_iterator3<Integral> const& last,
-    Functor const& functor)
-{
-  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
-    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
-        functor(vector3<Integral>(i, j, k));
-      }
-    }
+template <
+  class T,
+  class SimdAbi,
+  class Integral,
+  class OriginalFunctor>
+class simd_3d_functor {
+  OriginalFunctor m_functor;
+  Integral m_first_i;
+  Integral m_last_i;
+ public:
+  simd_3d_functor(
+      OriginalFunctor functor_arg,
+      Integral first_i_arg,
+      Integral last_i_arg)
+    :m_functor(functor_arg)
+    ,m_first_i(first_i_arg)
+    ,m_last_i(last_i_arg)
+  {
   }
-}
-
-template <class Functor, class Integral>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-void for_each(
-    local_execution,
-    counting_iterator3<Integral> const& first,
-    counting_iterator3<Integral> const& last,
-    Functor const& functor)
-{
-  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
-    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
-        functor(vector3<Integral>(i, j, k));
-      }
-    }
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
+  auto operator()(vector3<Integral> const& p) const
+  {
+    using mask_type = simd_mask<T, SimdAbi>;
+    auto constexpr width = Integral(mask_type::size());
+    auto const real_i = p.x() * width + m_first_i;
+    auto const lane_count = p3a::min(width, m_last_i - real_i);
+    return m_functor(vector3<Integral>(real_i, p.y(), p.z()), mask_type::first_n(lane_count));
   }
+};
+
 }
 
-template <class Functor>
-P3A_ALWAYS_INLINE constexpr void for_each(
-    serial_local_execution policy,
-    subgrid3 const& subgrid,
-    Functor const& functor)
+template <class T, class ExecutionPolicy, class Integral, class Functor>
+void simd_for_each(
+    ExecutionPolicy policy,
+    p3a::counting_iterator<Integral> first,
+    p3a::counting_iterator<Integral> last,
+    Functor functor)
 {
+  using simd_abi_type = typename ExecutionPolicy::simd_abi_type;
+  Integral const extent = *last - *first;
+  Integral constexpr width = Integral(p3a::simd<T, simd_abi_type>::size());
+  Integral const quotient = extent / width;
   for_each(policy,
-      counting_iterator3<int>{subgrid.lower()},
-      counting_iterator3<int>{subgrid.upper()},
-      functor);
+      counting_iterator<Integral>(0),
+      counting_iterator<Integral>(quotient + 1),
+  details::simd_functor<T, simd_abi_type, Integral, Functor>(functor, *first, *last));
 }
 
-template <class Functor>
-P3A_ALWAYS_INLINE constexpr void for_each(
-    serial_local_execution policy,
-    grid3 const& grid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      functor);
-}
-
-template <class Functor>
-P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline constexpr
-void for_each(
-    local_execution policy,
-    grid3 const& grid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      functor);
-}
-
-template <class Functor, class Integral>
-P3A_NEVER_INLINE void for_each(
-    serial_execution,
+template <class T, class ExecutionPolicy, class Integral, class Functor>
+void simd_for_each(
+    ExecutionPolicy policy,
     counting_iterator3<Integral> first,
     counting_iterator3<Integral> last,
     Functor functor)
 {
-  using kokkos_policy_type =
-    Kokkos::MDRangePolicy<
-      Kokkos::Serial,
-      Kokkos::IndexType<Integral>,
-      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
-  Kokkos::parallel_for("p3a_serial_3d",
-      kokkos_policy_type(
-        {first.vector.x(), first.vector.y(), first.vector.z()},
-        {last.vector.x(), last.vector.y(), last.vector.z()}),
-  [=] (Integral i, Integral j, Integral k) P3A_ALWAYS_INLINE {
-    functor(vector3<Integral>(i, j, k));
-  });
-}
-
-template <class Functor>
-P3A_NEVER_INLINE void for_each(
-    serial_execution policy,
-    subgrid3 subgrid,
-    Functor functor)
-{
+  auto const extents = last.vector - first.vector;
+  using simd_abi_type = typename ExecutionPolicy::simd_abi_type;
+  using new_functor = details::simd_3d_functor<T, simd_abi_type, Integral, Functor>;
+  Integral constexpr width = Integral(p3a::simd<T, simd_abi_type>::size());
+  Integral const quotient = extents.x() / width;
   for_each(policy,
-      counting_iterator3<int>{subgrid.lower()},
-      counting_iterator3<int>{subgrid.upper()},
-      functor);
+      counting_iterator3<Integral>(Integral(0), first.vector.y(), first.vector.z()),
+      counting_iterator3<Integral>(Integral(quotient + 1), last.vector.y(), last.vector.z()),
+      new_functor(functor, first.vector.x(), last.vector.x()));
 }
 
-template <class Functor>
-P3A_NEVER_INLINE void for_each(
-    serial_execution policy,
-    grid3 grid,
-    Functor functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      functor);
-}
-
-template <class T, class Functor, class Integral>
+template <class T, class ExecutionPolicy, class Functor>
 P3A_NEVER_INLINE void simd_for_each(
-    serial_execution,
-    counting_iterator3<Integral> first,
-    counting_iterator3<Integral> last,
-    Functor functor)
-{
-  using mask_type = host_simd_mask<T>;
-  auto constexpr width = Integral(mask_type::size());
-  auto const quotient = (last.vector.x() - first.vector.x()) / width;
-  // This doesn't use Kokkos MDRangePolicy because doing so slows
-  // down a user application by 10%
-  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
-    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral qi = 0; qi < quotient + 1; ++qi) {
-        auto const i = first.vector.x() + qi * width;
-        auto const lanes = minimum(width, last.vector.x() - i);
-        auto const mask = mask_type::first_n(lanes);
-        functor(vector3<Integral>(i, j, k), mask);
-      }
-    }
-  }
-}
-
-template <class T, class Functor>
-P3A_NEVER_INLINE void simd_for_each(
-    serial_execution policy,
+    ExecutionPolicy policy,
     subgrid3 subgrid,
     Functor functor)
 {
@@ -367,9 +339,9 @@ P3A_NEVER_INLINE void simd_for_each(
       functor);
 }
 
-template <class T, class Functor>
-P3A_NEVER_INLINE void simd_for_each(
-    serial_execution policy,
+template <class T, class ExecutionPolicy, class Functor>
+void simd_for_each(
+    ExecutionPolicy policy,
     grid3 grid,
     Functor functor)
 {
@@ -378,305 +350,5 @@ P3A_NEVER_INLINE void simd_for_each(
       counting_iterator3<int>{grid.extents()},
       functor);
 }
-
-#ifdef __CUDACC__
-
-namespace details {
-
-template <class F, class Integral>
-P3A_NEVER_INLINE
-void grid_for_each(
-    cuda_execution policy,
-    counting_iterator3<Integral> first,
-    counting_iterator3<Integral> last,
-    F f)
-{
-  auto const limits = last.vector - first.vector;
-  if (limits.volume() == 0) return;
-  using kokkos_policy_type =
-    Kokkos::MDRangePolicy<
-      Kokkos::Cuda,
-      Kokkos::IndexType<Integral>,
-      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
-  Kokkos::parallel_for("p3a_cuda_3d",
-      kokkos_policy_type(
-        {first.vector.x(), first.vector.y(), first.vector.z()},
-        {last.vector.x(), last.vector.y(), last.vector.z()},
-        {32, 1, 1}),
-  [=] __device__ (Integral i, Integral j, Integral k) P3A_ALWAYS_INLINE {
-    f(vector3<Integral>(i, j, k));
-  });
-}
-
-template <class T, class F, class Integral>
-P3A_NEVER_INLINE
-void simd_grid_for_each(
-    cuda_execution policy,
-    counting_iterator3<Integral> first,
-    counting_iterator3<Integral> last,
-    F f)
-{
-  auto const limits = last.vector - first.vector;
-  if (limits.volume() == 0) return;
-  using kokkos_policy_type =
-    Kokkos::MDRangePolicy<
-      Kokkos::Cuda,
-      Kokkos::IndexType<Integral>,
-      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
-  Kokkos::parallel_for("p3a_cuda_3d_simd",
-      kokkos_policy_type(
-        {first.vector.x(), first.vector.y(), first.vector.z()},
-        {last.vector.x(), last.vector.y(), last.vector.z()},
-        {32, 1, 1}),
-  [=] __device__ (Integral i, Integral j, Integral k) P3A_ALWAYS_INLINE {
-    f(vector3<Integral>(i, j, k), device_simd_mask<T>(true));
-  });
-}
-
-}
-
-template <class F>
-P3A_NEVER_INLINE
-void for_each(
-    cuda_execution policy,
-    grid3 grid,
-    F f)
-{
-  details::grid_for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      f);
-}
-
-template <class T, class F>
-P3A_NEVER_INLINE
-void simd_for_each(
-    cuda_execution policy,
-    grid3 grid,
-    F f)
-{
-  details::simd_grid_for_each<T>(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      f);
-}
-
-template <class F>
-P3A_NEVER_INLINE
-void for_each(
-    cuda_execution policy,
-    subgrid3 grid,
-    F f)
-{
-  details::grid_for_each(policy,
-      counting_iterator3<int>{grid.lower()},
-      counting_iterator3<int>{grid.upper()},
-      f);
-}
-
-template <class T, class F>
-P3A_NEVER_INLINE
-void simd_for_each(
-    cuda_execution policy,
-    subgrid3 grid,
-    F f)
-{
-  details::simd_grid_for_each<T>(policy,
-      counting_iterator3<int>{grid.lower()},
-      counting_iterator3<int>{grid.upper()},
-      f);
-}
-
-template <class Functor, class Integral>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    cuda_local_execution,
-    counting_iterator3<Integral> const& first,
-    counting_iterator3<Integral> const& last,
-    Functor const& functor)
-{
-  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
-    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
-        functor(vector3<Integral>(i, j, k));
-      }
-    }
-  }
-}
-
-template <class Functor>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    cuda_local_execution policy,
-    subgrid3 const& subgrid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{subgrid.lower()},
-      counting_iterator3<int>{subgrid.upper()},
-      functor);
-}
-
-template <class Functor>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    cuda_local_execution policy,
-    grid3 const& grid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      functor);
-}
-
-#endif
-
-#ifdef __HIPCC__
-
-namespace details {
-
-template <class F, class Integral>
-P3A_NEVER_INLINE
-void grid_for_each(
-    hip_execution policy,
-    counting_iterator3<Integral> first,
-    counting_iterator3<Integral> last,
-    F f)
-{
-  auto const limits = last.vector - first.vector;
-  if (limits.volume() == 0) return;
-  using kokkos_policy_type =
-    Kokkos::MDRangePolicy<
-      Kokkos::Experimental::HIP,
-      Kokkos::IndexType<Integral>,
-      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
-  Kokkos::parallel_for("p3a_hip_3d",
-      kokkos_policy_type(
-        {first.vector.x(), first.vector.y(), first.vector.z()},
-        {last.vector.x(), last.vector.y(), last.vector.z()},
-        {64, 1, 1}),
-  [=] __device__ (Integral i, Integral j, Integral k) P3A_ALWAYS_INLINE {
-    f(vector3<Integral>(i, j, k));
-  });
-}
-
-template <class T, class F, class Integral>
-P3A_NEVER_INLINE
-void simd_grid_for_each(
-    hip_execution policy,
-    counting_iterator3<Integral> first,
-    counting_iterator3<Integral> last,
-    F f)
-{
-  auto const limits = last.vector - first.vector;
-  if (limits.volume() == 0) return;
-  using kokkos_policy_type =
-    Kokkos::MDRangePolicy<
-      Kokkos::Experimental::HIP,
-      Kokkos::IndexType<Integral>,
-      Kokkos::Rank<3, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
-  Kokkos::parallel_for("p3a_hip_3d_simd",
-      kokkos_policy_type(
-        {first.vector.x(), first.vector.y(), first.vector.z()},
-        {last.vector.x(), last.vector.y(), last.vector.z()},
-        {64, 1, 1}),
-  [=] __device__ (Integral i, Integral j, Integral k) P3A_ALWAYS_INLINE {
-    f(vector3<Integral>(i, j, k), device_simd_mask<T>(true));
-  });
-}
-
-}
-
-template <class F>
-P3A_NEVER_INLINE
-void for_each(
-    hip_execution policy,
-    grid3 grid,
-    F f)
-{
-  details::grid_for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      f);
-}
-
-template <class T, class F>
-P3A_NEVER_INLINE
-void simd_for_each(
-    hip_execution policy,
-    grid3 grid,
-    F f)
-{
-  details::simd_grid_for_each<T>(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      f);
-}
-
-template <class F>
-P3A_NEVER_INLINE
-void for_each(
-    hip_execution policy,
-    subgrid3 grid,
-    F f)
-{
-  details::grid_for_each(policy,
-      counting_iterator3<int>{grid.lower()},
-      counting_iterator3<int>{grid.upper()},
-      f);
-}
-
-template <class T, class F>
-P3A_NEVER_INLINE
-void simd_for_each(
-    hip_execution policy,
-    subgrid3 grid,
-    F f)
-{
-  details::simd_grid_for_each<T>(policy,
-      counting_iterator3<int>{grid.lower()},
-      counting_iterator3<int>{grid.upper()},
-      f);
-}
-
-template <class Functor, class Integral>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    hip_local_execution,
-    counting_iterator3<Integral> const& first,
-    counting_iterator3<Integral> const& last,
-    Functor const& functor)
-{
-  for (Integral k = first.vector.z(); k < last.vector.z(); ++k) {
-    for (Integral j = first.vector.y(); j < last.vector.y(); ++j) {
-      for (Integral i = first.vector.x(); i < last.vector.x(); ++i) {
-        functor(vector3<Integral>(i, j, k));
-      }
-    }
-  }
-}
-
-template <class Functor>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    hip_local_execution policy,
-    subgrid3 const& subgrid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{subgrid.lower()},
-      counting_iterator3<int>{subgrid.upper()},
-      functor);
-}
-
-template <class Functor>
-__device__ P3A_ALWAYS_INLINE constexpr void for_each(
-    hip_local_execution policy,
-    grid3 const& grid,
-    Functor const& functor)
-{
-  for_each(policy,
-      counting_iterator3<int>{vector3<int>::zero()},
-      counting_iterator3<int>{grid.extents()},
-      functor);
-}
-
-#endif
 
 }

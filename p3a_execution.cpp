@@ -2,7 +2,7 @@
 
 namespace p3a {
 
-#ifdef __CUDACC__
+#ifdef KOKKOS_ENABLE_CUDA
 
 cuda_exception::cuda_exception(cudaError_t error)
   :error_string(cudaGetErrorString(error))
@@ -24,14 +24,18 @@ void handle_cuda_error(cudaError_t error)
 
 }
 
-void cuda_execution::synchronize() const {
+namespace execution {
+
+void cuda_policy::synchronize() const {
   details::handle_cuda_error(
-      cudaStreamSynchronize(stream));
+      cudaStreamSynchronize(nullptr));
+}
+
 }
 
 #endif
 
-#ifdef __HIPCC__
+#ifdef KOKKOS_ENABLE_HIP
 
 hip_exception::hip_exception(hipError_t error)
   :error_string(hipGetErrorString(error))
@@ -53,9 +57,13 @@ void handle_hip_error(hipError_t error)
 
 }
 
-void hip_execution::synchronize() const {
+namespace execution {
+
+void hip_policy::synchronize() const {
   details::handle_hip_error(
-      hipStreamSynchronize(stream));
+      hipStreamSynchronize(nullptr));
+}
+
 }
 
 #endif

@@ -7,8 +7,8 @@ namespace p3a {
 
 template <
   class T,
-  class Allocator = allocator<T>,
-  class ExecutionPolicy = serial_execution>
+  class Allocator = host_allocator<T>,
+  class ExecutionPolicy = execution::sequenced_policy>
 class conjugate_gradient {
  public:
   using array_type = dynamic_array<T, Allocator, ExecutionPolicy>;
@@ -35,8 +35,8 @@ class conjugate_gradient {
 
 template <
   class T,
-  class Allocator = allocator<T>,
-  class ExecutionPolicy = serial_execution>
+  class Allocator = host_allocator<T>,
+  class ExecutionPolicy = execution::sequenced_policy>
 class preconditioned_conjugate_gradient {
  public:
   using array_type = dynamic_array<T, Allocator, ExecutionPolicy>;
@@ -80,7 +80,7 @@ P3A_NEVER_INLINE double dot_product(
   return adder.transform_reduce(
       counting_iterator<size_type>(0),
       counting_iterator<size_type>(a.size()),
-  [=] P3A_HOST P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
+  [=] P3A_HOST_DEVICE (size_type i) P3A_ALWAYS_INLINE {
     return a_ptr[i] * b_ptr[i];
   });
 }
@@ -102,7 +102,7 @@ P3A_NEVER_INLINE void axpy(
   for_each(x.get_execution_policy(),
       counting_iterator<size_type>(0),
       counting_iterator<size_type>(x.size()),
-  [=] P3A_HOST P3A_DEVICE (size_type i) P3A_ALWAYS_INLINE {
+  [=] P3A_HOST_DEVICE (size_type i) P3A_ALWAYS_INLINE {
     result_ptr[i] = a * x_ptr[i] + y_ptr[i];
   });
 }
@@ -117,6 +117,7 @@ P3A_NEVER_INLINE int conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
       array_type& x,
       T const& relative_tolerance)
 {
+  using std::sqrt;
   this->m_r.resize(x.size());
   this->m_p.resize(x.size());
   this->m_Ap.resize(x.size());
@@ -127,13 +128,13 @@ P3A_NEVER_INLINE int conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
   array_type& b = this->m_Ap;
   b_filler(b);
   T const b_dot_b = dot_product(m_adder, b, b);
-  T const b_magnitude = square_root(b_dot_b);
+  T const b_magnitude = sqrt(b_dot_b);
   T const absolute_tolerance = b_magnitude * relative_tolerance;
   A_action(x, Ax);
   axpy(T(-1), Ax, b, r); // r = A * x - b
-  copy(device, r.cbegin(), r.cend(), p.begin()); // p = r
+  copy(p.get_execution_policy(), r.cbegin(), r.cend(), p.begin()); // p = r
   T r_dot_r_old = dot_product(m_adder, r, r);
-  T residual_magnitude = square_root(r_dot_r_old);
+  T residual_magnitude = sqrt(r_dot_r_old);
   if (residual_magnitude <= absolute_tolerance) return 0;
   for (int k = 1; true; ++k) {
     A_action(p, Ap);
@@ -142,7 +143,7 @@ P3A_NEVER_INLINE int conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
     axpy(alpha, p, x, x); // x = x + alpha * p
     axpy(-alpha, Ap, r, r); // r = r - alpha * (A * p)
     T const r_dot_r_new = dot_product(m_adder, r, r);
-    residual_magnitude = square_root(r_dot_r_old);
+    residual_magnitude = sqrt(r_dot_r_old);
     if (residual_magnitude <= absolute_tolerance) {
       return k;
     }
@@ -164,6 +165,7 @@ int preconditioned_conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
       array_type& x,
       T const& relative_tolerance)
 {
+  using std::sqrt;
   this->m_r.resize(x.size());
   this->m_z.resize(x.size());
   this->m_p.resize(x.size());
@@ -176,22 +178,22 @@ int preconditioned_conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
   array_type& Ax = this->m_r;
   b_filler(b);
   T const b_dot_b = dot_product(m_adder, b, b);
-  T const b_magnitude = square_root(b_dot_b);
+  T const b_magnitude = sqrt(b_dot_b);
   T const absolute_tolerance = b_magnitude * relative_tolerance;
   A_action(x, Ax); // Ax = A * x
   axpy(T(-1), Ax, b, r); // r = A * x - b
-  T residual_magnitude = square_root(dot_product(m_adder, r, r));
+  T residual_magnitude = sqrt(dot_product(m_adder, r, r));
   if (residual_magnitude <= absolute_tolerance) return 0;
   M_inv_action(r, z);  // z = M^-1 * r
   T r_dot_z_old = dot_product(m_adder, r, z); // r^T * z
-  copy(device, z.cbegin(), z.cend(), p.begin()); // p = z
+  copy(p.get_execution_policy(), z.cbegin(), z.cend(), p.begin()); // p = z
   for (int k = 1; true; ++k) {
     A_action(p, Ap);
     T const pAp = dot_product(m_adder, p, Ap);
     T const alpha = r_dot_z_old / pAp; // alpha = (r^T * z) / (p^T * A * p)
     axpy(alpha, p, x, x); // x = x + alpha * p
     axpy(-alpha, Ap, r, r); // r = r - alpha * (A * p)
-    residual_magnitude = square_root(dot_product(m_adder, r, r));
+    residual_magnitude = sqrt(dot_product(m_adder, r, r));
     if (residual_magnitude <= absolute_tolerance) {
       return k;
     }

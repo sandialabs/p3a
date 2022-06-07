@@ -8,6 +8,8 @@
 #include "p3a_avx512.hpp"
 #endif
 
+#include <Kokkos_Macros.hpp>
+
 namespace p3a {
 
 namespace simd_abi {
@@ -18,7 +20,7 @@ using host_native = avx512_fixed_size<8>;
 using host_native = scalar;
 #endif
 
-#if defined(__CUDACC__)
+#if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP)
 using device_native = scalar;
 #else
 using device_native = host_native;

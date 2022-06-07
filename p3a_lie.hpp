@@ -11,56 +11,14 @@
 namespace p3a {
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-matrix3x3<T> pack_polar(
-    symmetric3x3<T> const& spd,
-    vector3<T> const& aa)
-{
-  return matrix3x3<T>(
-    spd.xx(),
-    spd.xy(),
-    spd.xz(),
-    aa.x(),
-    spd.yy(),
-    spd.yz(),
-    aa.y(),
-    aa.z(),
-    spd.zz());
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-symmetric3x3<T> unpack_polar_spd(
-    matrix3x3<T> const& packed)
-{
-  return symmetric3x3<T>(
-      packed.xx(),
-      packed.xy(),
-      packed.xz(),
-      packed.yy(),
-      packed.yz(),
-      packed.zz());
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline constexpr
-vector3<T> unpack_polar_axis_angle(
-    matrix3x3<T> const& packed)
-{
-  return vector3<T>(
-      packed.yx(),
-      packed.zx(),
-      packed.zy());
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
 {
+  using std::log;
   return diagonal3x3<T>(
-      natural_logarithm(m.xx()),
-      natural_logarithm(m.yy()),
-      natural_logarithm(m.zz()));
+      log(m.xx()),
+      log(m.yy()),
+      log(m.zz()));
 }
 
 /* Polar Decomposition:
@@ -80,57 +38,30 @@ diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
  */
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
-matrix3x3<T> polar_logarithm(matrix3x3<T> const& a)
-{
-  matrix3x3<T> w, vt;
-  diagonal3x3<T> s;
-  decompose_singular_values(a, w, s, vt);
-  auto const u = w * vt;
-  auto const log_u = axis_angle_from_tensor(u);
-  auto const log_s = logarithm(s);
-  auto const log_p = multiply_at_b_a(vt, log_s);
-  return pack_polar(log_p, log_u);
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 symmetric3x3<T> spd_exponential(symmetric3x3<T> const& log_m)
 {
   diagonal3x3<T> l;
   matrix3x3<T> q;
   eigendecompose(log_m, l, q);
-  diagonal3x3<T> const exp_l(
-      natural_exponential(l.xx()),
-      natural_exponential(l.yy()),
-      natural_exponential(l.zz()));
+  using std::exp;
+  diagonal3x3<T> const exp_l(exp(l.xx()), exp(l.yy()), exp(l.zz()));
   return multiply_a_b_at(q, exp_l);
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 symmetric3x3<T> spd_logarithm(symmetric3x3<T> const& exp_m)
 {
   diagonal3x3<T> l;
   matrix3x3<T> q;
   eigendecompose(exp_m, l, q);
+  using std::log;
   diagonal3x3<T> const log_l(
-      natural_logarithm(l.xx()),
-      natural_logarithm(l.yy()),
-      natural_logarithm(l.zz()));
+      log(l.xx()),
+      log(l.yy()),
+      log(l.zz()));
   return multiply_a_b_at(q, log_l);
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
-matrix3x3<T> polar_exponential(matrix3x3<T> const& packed)
-{
-  auto const log_u = unpack_polar_axis_angle(packed);
-  auto const u = tensor_from_axis_angle(log_u);
-  auto const log_p = unpack_polar_spd(packed);
-  auto const p = spd_exponential(log_p);
-  auto const a = u * p;
-  return a;
 }
 
 enum class polar_errc {
@@ -140,7 +71,7 @@ enum class polar_errc {
 };
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 polar_errc polar_rotation(
     matrix3x3<T> const& F,
     matrix3x3<T>& R,
@@ -180,6 +111,7 @@ polar_errc polar_rotation(
   // Implementation inspired by the routine polarDecompositionRMB in the Uintah
   // MPM framework.  There, it was found this that algorithm was faster and more
   // robust than other analytic or iterative methods.
+  using std::sqrt;
   matrix3x3<T> const identity{
     T(1.0), T(0.0), T(0.0),
     T(0.0), T(1.0), T(0.0),
@@ -204,7 +136,7 @@ polar_errc polar_rotation(
   E = (E * scale - identity) * T(0.5);
   // First guess for [R] equal to the scaled [F] matrix,
   // [A]=Sqrt[3]F/magnitude[F]
-  scale = square_root(scale);
+  scale = sqrt(scale);
   auto A = scale * F;
   // The matrix [A] equals the rotation if and only if [E] equals [0]
   T err1 = E.xx() * E.xx() + E.yy() * E.yy() + E.zz() * E.zz()
@@ -237,7 +169,7 @@ polar_errc polar_rotation(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 polar_errc decompose_polar_right(
     matrix3x3<T> const& input,
     matrix3x3<T>& rotation,
@@ -251,7 +183,7 @@ polar_errc decompose_polar_right(
 }
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline
+[[nodiscard]] P3A_HOST_DEVICE inline
 polar_errc decompose_polar_left(
     matrix3x3<T> const& input,
     symmetric3x3<T>& left_stretch,
@@ -272,7 +204,7 @@ polar_errc decompose_polar_left(
 // The rotation/reflection obtained through this projection is
 // the orthogonal component of the real polar decomposition
 template <typename T>
-[[nodiscard]] P3A_HOST P3A_DEVICE inline auto
+[[nodiscard]] P3A_HOST_DEVICE inline auto
 polar_rotation(matrix3x3<T> const& A)
 {
   auto const dim       = 3.0;

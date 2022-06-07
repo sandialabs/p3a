@@ -13,62 +13,62 @@ class box3 {
  public:
   P3A_ALWAYS_INLINE box3() = default;
   template <class U>
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr explicit
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr explicit
   box3(box3<U> const& other)
     :m_lower(other.lower())
     ,m_upper(other.upper())
   {}
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr explicit
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr explicit
   box3(vector3<T> const& upper_in)
     :m_lower(vector3<T>::zero())
     ,m_upper(upper_in)
   {}
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   box3(vector3<T> const& lower_in, vector3<T> const& upper_in)
     :m_lower(lower_in)
     ,m_upper(upper_in)
   {}
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   box3(T const& a, T const& b, T const& c)
     :box3(vector3<T>(a, b, c))
   {}
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   vector3<T> extents() const
   {
     return m_upper - m_lower;
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   auto volume() const
   {
     return extents().volume();
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   vector3<T> const& lower() const
   {
     return m_lower;
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   vector3<T> const& upper() const
   {
     return m_upper;
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   vector3<T>& lower()
   {
     return m_lower;
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   vector3<T>& upper()
   {
     return m_upper;
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   bool operator==(box3 const& other) const
   {
     return m_lower == other.m_lower &&
            m_upper == other.m_upper;
   }
-  [[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE static constexpr
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE static constexpr
   box3 empty()
   {
     return box3(
@@ -81,30 +81,30 @@ class box3 {
           minimum_value<T>(),
           minimum_value<T>()));
   }
-  P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE inline
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
   void include_point(vector3<T> const& point)
   {
-    m_lower.x() = minimum(m_lower.x(), point.x());
-    m_lower.y() = minimum(m_lower.y(), point.y());
-    m_lower.z() = minimum(m_lower.z(), point.z());
-    m_upper.x() = maximum(m_upper.x(), point.x());
-    m_upper.y() = maximum(m_upper.y(), point.y());
-    m_upper.z() = maximum(m_upper.z(), point.z());
+    m_lower.x() = min(m_lower.x(), point.x());
+    m_lower.y() = min(m_lower.y(), point.y());
+    m_lower.z() = min(m_lower.z(), point.z());
+    m_upper.x() = max(m_upper.x(), point.x());
+    m_upper.y() = max(m_upper.y(), point.y());
+    m_upper.z() = max(m_upper.z(), point.z());
   }
 };
 
 template <class T>
-[[nodiscard]] P3A_HOST P3A_DEVICE P3A_ALWAYS_INLINE constexpr
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 box3<T> intersect(box3<T> const& a, box3<T> const& b)
 {
   auto const lower = vector3<T>(
-      maximum(a.lower().x(), b.lower().x()),
-      maximum(a.lower().y(), b.lower().y()),
-      maximum(a.lower().z(), b.lower().z()));
+      max(a.lower().x(), b.lower().x()),
+      max(a.lower().y(), b.lower().y()),
+      max(a.lower().z(), b.lower().z()));
   auto const upper = vector3<T>(
-      maximum(lower.x(), minimum(a.upper().x(), b.upper().x())),
-      maximum(lower.y(), minimum(a.upper().y(), b.upper().y())),
-      maximum(lower.z(), minimum(a.upper().z(), b.upper().z())));
+      max(lower.x(), min(a.upper().x(), b.upper().x())),
+      max(lower.y(), min(a.upper().y(), b.upper().y())),
+      max(lower.z(), min(a.upper().z(), b.upper().z())));
   return box3<T>(lower, upper);
 }
 

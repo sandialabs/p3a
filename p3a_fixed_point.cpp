@@ -55,12 +55,13 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
   auto const values = m_values.cbegin();
   using simd_abi_type = typename ExecutionPolicy::simd_abi_type;
   int const local_max_exponent =
-    m_exponent_reducer.simd_transform_reduce(
+  simd_transform_reduce(
+        ExecutionPolicy(),
         counting_iterator<int>(0),
         counting_iterator<int>(value_count),
         minimum_exponent,
         maximizes<int>,
-  [=] P3A_HOST P3A_DEVICE (int i, simd_mask<std::int32_t, simd_abi_type> const& mask) P3A_ALWAYS_INLINE {
+  [=] P3A_HOST_DEVICE (int i, simd_mask<std::int32_t, simd_abi_type> const& mask) P3A_ALWAYS_INLINE {
     auto const value = load(values, i, simd_mask<double, simd_abi_type>(mask));
     simd<std::int64_t, simd_abi_type> significand;
     simd<std::int32_t, simd_abi_type> exponent;
@@ -71,12 +72,13 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
   m_comm.iallreduce(
       &global_max_exponent, 1, mpicpp::op::max());
   int128 const local_sum =
-    m_int128_reducer.simd_transform_reduce(
+  simd_transform_reduce(
+        ExecutionPolicy(),
         counting_iterator<int>(0),
         counting_iterator<int>(value_count),
         int128(0),
         adds<int128>,
-  [=] P3A_HOST P3A_DEVICE (int i, simd_mask<int128, simd_abi_type> const& mask) P3A_ALWAYS_INLINE {
+  [=] P3A_HOST_DEVICE (int i, simd_mask<int128, simd_abi_type> const& mask) P3A_ALWAYS_INLINE {
     auto const value = load(values, i, simd_mask<double, simd_abi_type>(mask));
     auto significand_64 = decompose_double(value, global_max_exponent);
     return significand_64;
@@ -96,13 +98,7 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
 // explicitly instantiate for host and device so the actual reduction
 // code can stay in this translation unit
 //
-template class fixed_point_double_sum<allocator<double>, serial_execution>;
-#ifdef __CUDACC__
-template class fixed_point_double_sum<cuda_device_allocator<double>, cuda_execution>;
-#endif
-#ifdef __HIPCC__
-template class fixed_point_double_sum<hip_device_allocator<double>, hip_execution>;
-#endif
+template class fixed_point_double_sum<device_allocator<double>, execution::parallel_policy>;
 
 }
 
