@@ -72,13 +72,12 @@ reduce(
   return Kokkos::Experimental::hmin(x);
 }
 
-template<class M, class V, class T>
+template<class M, class V>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
-typename V::value_type
-reduce(
+typename V::value_type reduce(
     const_where_expression<M, V> const& x,
     typename V::value_type identity_element,
-    adder<T> binary_op)
+    adder<typename V::value_type> binary_op)
 {
   return Kokkos::Experimental::reduce(x, identity_element, std::plus<>());
 }

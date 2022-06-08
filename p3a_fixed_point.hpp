@@ -168,7 +168,7 @@ simd<std::int64_t, Abi> fixed_point_right_shift(
   unsigned_significand = condition(
       simd_mask<std::uint64_t, Abi>(shift >= 64),
       simd<std::uint64_t, Abi>(0),
-      unsigned_significand >> simd<std::uint32_t, Abi>(shift));
+      unsigned_significand >> shift);
   significand = simd<std::int64_t, Abi>(sign) * simd<std::int64_t, Abi>(unsigned_significand);
   return significand;
 }
@@ -293,7 +293,7 @@ reduce(
     details::int128 identity_value,
     adder<details::int128>)
 {
-  return details::int128(reduce(we, std::int64_t(0), adder<std::int64_t>()));
+  return details::int128(p3a::reduce(we, std::int64_t(0), p3a::adder<std::int64_t>()));
 }
 
 }

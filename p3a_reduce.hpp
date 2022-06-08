@@ -208,7 +208,7 @@ class simd_reduce_wrapper {
   auto operator()(Indices const& indices, p3a::simd_mask<T, Abi> const& mask) const
   {
     auto const simd_result = m_unary_op(indices, mask);
-    return reduce(where(mask, simd_result), m_init, m_binary_op);
+    return p3a::reduce(where(mask, simd_result), m_init, m_binary_op);
   }
 };
 

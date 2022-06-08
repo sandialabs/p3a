@@ -36,9 +36,9 @@ TEST(fixed_point, sum){
         significand[0], exponent[0]);
     EXPECT_EQ(value[0], recomposed_again);
     nonassociative_sum += 
-        reduce(where(mask, value), 0.0, p3a::adder<double>());
+        p3a::reduce(where(mask, value), 0.0, p3a::adder<double>());
     maximum_exponent = std::max(maximum_exponent,
-        reduce(where(p3a::simd_mask<std::int32_t, abi_type>(mask), exponent),
+        p3a::reduce(where(p3a::simd_mask<std::int32_t, abi_type>(mask), exponent),
           -1075, p3a::maximizer<std::int32_t>()));
   }
   printf("non-associative sum %.17e\n", nonassociative_sum);
