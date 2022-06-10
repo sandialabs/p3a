@@ -9,7 +9,6 @@ namespace p3a {
 
 class allocation_failure : public std::bad_alloc {
   char message[100];
-  std::int64_t n;
  public:
   allocation_failure(char const* memory_space_arg, std::int64_t n_arg)
   {
