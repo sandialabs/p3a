@@ -7,6 +7,8 @@
 #include "p3a_macros.hpp"
 #include "p3a_constants.hpp"
 
+#include <Kokkos_Core.hpp>
+
 namespace p3a {
 
 template <class T>
@@ -37,26 +39,9 @@ condition(bool a, T const& b, T const& c)
   return a ? b : c;
 }
 
-template <class T>
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
-T const& min(T const& a, T const& b)
-{
-  return (b < a) ? b : a;
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
-T const& max(T const& a, T const& b)
-{
-  return (a < b) ? b : a;
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr auto
-clamp(T const& v, T const& lo, T const& hi)
-{
-  return min(max(v, lo), hi);
-}
+using Kokkos::Experimental::min;
+using Kokkos::Experimental::max;
+using Kokkos::Experimental::clamp;
 
 template <class Head, class... Tail>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr auto
