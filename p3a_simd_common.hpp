@@ -162,49 +162,6 @@ struct is_scalar<simd<T, Abi>> {
 
 template <class T, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
-simd<T, Abi> load(
-    T const* ptr, int offset, simd_mask<T, Abi> const& mask)
-{
-  simd<T, Abi> result;
-  where(mask, result).copy_from(ptr + offset, element_aligned_tag());
-  return result;
-}
-
-template <class T, class Integral, class Abi>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
-std::enable_if_t<std::is_integral_v<Integral>, simd<T, Abi>>
-load(T const* ptr, simd<Integral, Abi> const& offset, simd_mask<T, Abi> const& mask)
-{
-  simd<T, Abi> result;
-  where(mask, result).gather_from(ptr, offset);
-  return result;
-}
-
-template <class T, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
-void store(
-    simd<T, Abi> const& value,
-    T* ptr,
-    int offset,
-    no_deduce_t<simd_mask<T, Abi>> const& mask)
-{
-  where(mask, value).copy_to(ptr + offset, element_aligned_tag());
-}
-
-template <class T, class Integral, class Abi>
-P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
-std::enable_if_t<std::is_integral_v<Integral>, void>
-store(
-    simd<T, Abi> const& value,
-    T* ptr,
-    simd<Integral, Abi> const& offset,
-    no_deduce_t<simd_mask<T, Abi>> const& mask)
-{
-  where(mask, value).scatter_to(ptr, offset);
-}
-
-template <class T, class Abi>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 T get(simd<T, Abi> const& value, int i)
 {
   T storage[simd<T, Abi>::size()];

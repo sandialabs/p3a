@@ -35,6 +35,7 @@ set(P3A_HEADERS
   p3a_box3.hpp
   p3a_cg.hpp
   p3a_constants.hpp
+  p3a_pointer_iterator.hpp
   p3a_counting_iterator.hpp
   p3a_cstring.hpp
   p3a_diagonal3x3.hpp

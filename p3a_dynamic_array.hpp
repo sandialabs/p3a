@@ -3,6 +3,7 @@
 #include "p3a_memory.hpp"
 #include "p3a_allocator.hpp"
 #include "p3a_functions.hpp"
+#include "p3a_pointer_iterator.hpp"
 
 namespace p3a {
 
@@ -14,11 +15,12 @@ class dynamic_array {
  public:
   using size_type = std::int64_t;
   using difference_type = std::int64_t;
-  using iterator = T*;
-  using const_iterator = T const*;
   using allocator_type = Allocator;
   using execution_policy = ExecutionPolicy;
   using value_type = T;
+ public:
+  using iterator = pointer_iterator<T>;
+  using const_iterator = pointer_iterator<T const>;
  private:
   T* m_begin;
   size_type m_size;
@@ -305,12 +307,12 @@ class dynamic_array {
   }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T* data() { return m_begin; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr T const* data() const { return m_begin; }
-  [[nodiscard]] P3A_ALWAYS_INLINE constexpr iterator begin() { return m_begin; }
-  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator begin() const { return m_begin; }
-  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator cbegin() const { return m_begin; }
-  [[nodiscard]] P3A_ALWAYS_INLINE constexpr iterator end() { return m_begin + m_size; }
-  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator end() const { return m_begin + m_size; }
-  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator cend() const { return m_begin + m_size; }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr iterator begin() { return iterator(m_begin); }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator begin() const { return const_iterator(m_begin); }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator cbegin() const { return const_iterator(m_begin); }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr iterator end() { return iterator(m_begin + m_size); }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator end() const { return const_iterator(m_begin + m_size); }
+  [[nodiscard]] P3A_ALWAYS_INLINE constexpr const_iterator cend() const { return const_iterator(m_begin + m_size); }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr size_type size() const { return m_size; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr size_type capacity() const { return m_capacity; }
   [[nodiscard]] P3A_ALWAYS_INLINE constexpr bool empty() const { return m_size == 0; }
