@@ -162,4 +162,15 @@ To bit_cast(From const& src)
   return dst;
 }
 
+template <class Value, class Tolerance>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
+auto are_close(Value const& a, Value const& b, Tolerance const& tolerance)
+{
+  using std::abs;
+  using p3a::max;
+  auto const difference = abs(b - a);
+  auto const scale = abs(a) + abs(b);
+  return difference <= tolerance * max(scale, Value(1));
+}
+
 }
