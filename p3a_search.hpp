@@ -77,6 +77,13 @@ ForwardIt lower_bound(
   return p3a::lower_bound(first, last, value, p3a::less<T>());
 }
 
+enum class search_errc : int {
+  success,
+  desired_value_below_minimum,
+  desired_value_above_maximum,
+  exceeded_maximum_iterations
+};
+
 /* This code acts as the inverse of a real differentiable function
  * in a specified subset of the domain.
  * It is given the ability to compute the function and its first derivative.
@@ -110,8 +117,8 @@ template <
   class StateFromDomainValue,
   class RangeValueFromState,
   class DerivativeValueFromState>
-P3A_HOST_DEVICE inline
-void invert_differentiable_function(
+[[nodiscard]] P3A_HOST_DEVICE inline
+search_errc invert_differentiable_function(
     StateFromDomainValue const& state_from_domain_value,
     RangeValueFromState const& range_value_from_state,
     DerivativeValueFromState const& derivative_value_from_state,
@@ -119,14 +126,20 @@ void invert_differentiable_function(
     Tolerance const& tolerance,
     DomainValue minimum_domain_value,
     DomainValue maximum_domain_value,
-    RangeValue range_value_at_minimum_domain_value,
-    RangeValue range_value_at_maximum_domain_value,
     DomainValue& domain_value,
     RangeValue& range_value,
     DerivativeValue& derivative_value)
 {
-  while (true) {
-    if (are_close(range_value, desired_range_value, tolerance)) return;
+  int constexpr maximum_iterations = 100;
+  auto const state_at_maximum_domain_value = state_from_domain_value(maximum_domain_value);
+  auto range_value_at_maximum_domain_value = range_value_from_state(state_at_maximum_domain_value);
+  domain_value = minimum_domain_value;
+  auto state_at_domain_value = state_from_domain_value(domain_value);
+  auto range_value_at_minimum_domain_value = range_value_from_state(state_at_domain_value);
+  range_value = range_value_at_minimum_domain_value;
+  derivative_value = derivative_value_from_state(state_at_domain_value);
+  for (int iteration = 0; iteration < maximum_iterations; ++iteration) {
+    if (are_close(range_value, desired_range_value, tolerance)) return search_errc::success;
     auto const next_domain_value_newton =
       domain_value - (range_value - desired_range_value) / derivative_value;
     auto const linear_derivative =
@@ -146,21 +159,67 @@ void invert_differentiable_function(
           newton_will_not_converge,
           next_domain_value_linear,
           next_domain_value_newton);
-    auto const next_state = state_from_domain_value(domain_value);
-    range_value = range_value_from_state(next_state);
-    derivative_value = derivative_value_from_state(next_state);
-    auto const next_is_new_minimum = 
+    state_at_domain_value = state_from_domain_value(domain_value);
+    range_value = range_value_from_state(state_at_domain_value);
+    derivative_value = derivative_value_from_state(state_at_domain_value);
+    auto const is_new_minimum = 
       // this is a logical XOR operation, designed to flip the logic if the function
       // is decreasing rather than increasing
       (!(range_value < desired_range_value)) !=
       (!(range_value_at_maximum_domain_value < range_value_at_minimum_domain_value)); 
-    minimum_domain_value = condition(next_is_new_minimum, domain_value, minimum_domain_value);
-    maximum_domain_value = condition(next_is_new_minimum, maximum_domain_value, domain_value);
-    range_value_at_minimum_domain_value = condition(next_is_new_minimum,
+    minimum_domain_value = condition(is_new_minimum, domain_value, minimum_domain_value);
+    maximum_domain_value = condition(is_new_minimum, maximum_domain_value, domain_value);
+    range_value_at_minimum_domain_value = condition(is_new_minimum,
         range_value, range_value_at_minimum_domain_value);
-    range_value_at_maximum_domain_value = condition(next_is_new_minimum,
+    range_value_at_maximum_domain_value = condition(is_new_minimum,
         range_value_at_maximum_domain_value, range_value);
   }
+  return search_errc::exceeded_maximum_iterations;
+}
+
+/* given a set of tabulated values of a continuous real function,
+ * this code finds an interval such that the tabulated range values
+ * on either side of that interval bound the desired range value.
+ *
+ * It uses binary search (bisection in index space) to do this.
+ */
+
+template <
+  class Index,
+  class RangeValueFromPoint,
+  class RangeValue>
+[[nodiscard]] P3A_HOST_DEVICE inline
+search_errc find_tabulated_interval(
+    Index const& number_of_points,
+    RangeValueFromPoint const& range_value_from_point,
+    RangeValue const& desired_range_value,
+    Index& interval)
+{
+  auto minimum_point = Index(0);
+  auto maximum_point = number_of_points - 1;
+  auto range_value_at_minimum_point = range_value_from_point(minimum_point);
+  auto range_value_at_maximum_point = range_value_from_point(maximum_point);
+  auto const minimum_range_value = min(range_value_at_minimum_point, range_value_at_maximum_point);
+  auto const maximum_range_value = max(range_value_at_minimum_point, range_value_at_maximum_point);
+  if (desired_range_value < minimum_range_value) return search_errc::desired_value_below_minimum;
+  if (desired_range_value > maximum_range_value) return search_errc::desired_value_above_maximum;
+  int constexpr maximum_iterations = 100;
+  for (int iteration = 0; iteration < maximum_iterations; ++iteration) {
+    if ((maximum_point - minimum_point) <= Index(1)) return search_errc::success;
+    auto const point = minimum_point + (maximum_point - minimum_point) / 2;
+    interval = point;
+    auto const range_value = range_value_from_point(point);
+    auto const is_new_minimum =
+      (!(range_value < desired_range_value)) !=
+      (!(range_value_at_maximum_point < range_value_at_minimum_point));
+    minimum_point = condition(is_new_minimum, point, minimum_point);
+    maximum_point = condition(is_new_minimum, maximum_point, point);
+    range_value_at_minimum_point = condition(is_new_minimum,
+        range_value, range_value_at_minimum_point);
+    range_value_at_maximum_point = condition(is_new_minimum,
+        range_value_at_maximum_point, range_value);
+  }
+  return search_errc::exceeded_maximum_iterations;
 }
 
 }
