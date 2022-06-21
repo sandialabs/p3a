@@ -123,9 +123,18 @@ void invert_differentiable_function(
     DerivativeValue& derivative_value)
 {
   while (true) {
+    printf("xmin %.7e xmax %.7e fmin %.7e fmax %.7e x %.7e f %.7e dfdx %.7e\n",
+        minimum_domain_value,
+        maximum_domain_value,
+        range_value_at_minimum_domain_value,
+        range_value_at_maximum_domain_value,
+        domain_value,
+        range_value,
+        derivative_value);
     if (are_close(range_value, desired_range_value, tolerance)) return;
     auto const next_domain_value_newton =
       domain_value - (range_value - desired_range_value) / derivative_value;
+    printf("next domain value Newton %.7e\n", next_domain_value_newton);
     auto const linear_derivative =
       (range_value_at_maximum_domain_value - range_value_at_minimum_domain_value) /
       (maximum_domain_value - minimum_domain_value);
@@ -145,13 +154,17 @@ void invert_differentiable_function(
           next_domain_value_newton);
     auto const next_state = state_from_domain_value(domain_value);
     range_value = range_value_from_state(next_state);
-    derivative_value = range_value_from_state(next_state);
-    auto const next_is_less = (range_value < desired_range_value);
-    minimum_domain_value = condition(next_is_less, domain_value, minimum_domain_value);
-    maximum_domain_value = condition(next_is_less, maximum_domain_value, domain_value);
-    range_value_at_minimum_domain_value = condition(next_is_less,
+    derivative_value = derivative_value_from_state(next_state);
+    auto const next_is_new_minimum = 
+      // this is a logical XOR operation, designed to flip the logic if the function
+      // is decreasing rather than increasing
+      (!(range_value < desired_range_value)) !=
+      (!(range_value_at_maximum_domain_value < range_value_at_minimum_domain_value)); 
+    minimum_domain_value = condition(next_is_new_minimum, domain_value, minimum_domain_value);
+    maximum_domain_value = condition(next_is_new_minimum, maximum_domain_value, domain_value);
+    range_value_at_minimum_domain_value = condition(next_is_new_minimum,
         range_value, range_value_at_minimum_domain_value);
-    range_value_at_maximum_domain_value = condition(next_is_less,
+    range_value_at_maximum_domain_value = condition(next_is_new_minimum,
         range_value_at_maximum_domain_value, range_value);
   }
 }
