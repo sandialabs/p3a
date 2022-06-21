@@ -123,18 +123,9 @@ void invert_differentiable_function(
     DerivativeValue& derivative_value)
 {
   while (true) {
-    printf("xmin %.7e xmax %.7e fmin %.7e fmax %.7e x %.7e f %.7e dfdx %.7e\n",
-        minimum_domain_value,
-        maximum_domain_value,
-        range_value_at_minimum_domain_value,
-        range_value_at_maximum_domain_value,
-        domain_value,
-        range_value,
-        derivative_value);
     if (are_close(range_value, desired_range_value, tolerance)) return;
     auto const next_domain_value_newton =
       domain_value - (range_value - desired_range_value) / derivative_value;
-    printf("next domain value Newton %.7e\n", next_domain_value_newton);
     auto const linear_derivative =
       (range_value_at_maximum_domain_value - range_value_at_minimum_domain_value) /
       (maximum_domain_value - minimum_domain_value);
