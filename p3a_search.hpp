@@ -222,4 +222,51 @@ search_errc find_tabulated_interval(
   return search_errc::exceeded_maximum_iterations;
 }
 
+template <
+  class Index,
+  class RangeValueFromPoint,
+  class DomainValueFromPoint,
+  class RangeValue,
+  class DomainValue,
+  class DerivativeValue,
+  class Tolerance,
+  class StateFunctorFromInterval,
+  class RangeValueFromState,
+  class DerivativeValueFromState>
+[[nodiscard]] P3A_HOST_DEVICE inline
+search_errc invert_piecewise_differentiable_function(
+    Index const& number_of_points,
+    RangeValueFromPoint const& range_value_from_point,
+    DomainValueFromPoint const& domain_value_from_point,
+    StateFunctorFromInterval const& state_functor_from_interval,
+    RangeValueFromState const& range_value_from_state,
+    DerivativeValueFromState const& derivative_value_from_state,
+    RangeValue const& desired_range_value,
+    Tolerance const& tolerance,
+    Index& interval,
+    DomainValue& domain_value,
+    RangeValue& range_value,
+    DerivativeValue& derivative_value)
+{
+  auto result = find_tabulated_interval(
+      number_of_points,
+      range_value_from_point,
+      desired_range_value,
+      interval);
+  if (result != search_errc::success) return result;
+  auto const state_from_domain_value = state_functor_from_interval(interval);
+  result = invert_differentiable_function(
+      state_from_domain_value,
+      range_value_from_state,
+      derivative_value_from_state,
+      desired_range_value,
+      tolerance,
+      domain_value_from_point(interval),
+      domain_value_from_point(interval + Index(1)),
+      domain_value,
+      range_value,
+      derivative_value);
+  return result;
+}
+
 }
