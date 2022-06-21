@@ -205,9 +205,11 @@ search_errc find_tabulated_interval(
   if (desired_range_value > maximum_range_value) return search_errc::desired_value_above_maximum;
   int constexpr maximum_iterations = 100;
   for (int iteration = 0; iteration < maximum_iterations; ++iteration) {
-    if ((maximum_point - minimum_point) <= Index(1)) return search_errc::success;
+    if ((maximum_point - minimum_point) <= Index(1)) {
+      interval = minimum_point;
+      return search_errc::success;
+    }
     auto const point = minimum_point + (maximum_point - minimum_point) / 2;
-    interval = point;
     auto const range_value = range_value_from_point(point);
     auto const is_new_minimum =
       (!(range_value < desired_range_value)) !=

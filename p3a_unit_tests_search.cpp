@@ -118,3 +118,19 @@ TEST(search, invert_non_monotonic)
   EXPECT_EQ(result, p3a::search_errc::success);
   EXPECT_FLOAT_EQ(range_value, desired_range_value);
 }
+
+TEST(search, tabulated_interval)
+{
+  int constexpr n = 4;
+  double const table[n] = {1.0, 2.0, 3.0, 4.0};
+  int i;
+  auto result = p3a::find_tabulated_interval(n, [&] (int ii) { return table[ii]; }, 2.5, i);
+  EXPECT_EQ(result, p3a::search_errc::success);
+  EXPECT_EQ(i, 1);
+  result = p3a::find_tabulated_interval(n, [&] (int ii) { return table[ii]; }, 1.0, i);
+  EXPECT_EQ(result, p3a::search_errc::success);
+  EXPECT_EQ(i, 0);
+  result = p3a::find_tabulated_interval(n, [&] (int ii) { return table[ii]; }, 4.0, i);
+  EXPECT_EQ(result, p3a::search_errc::success);
+  EXPECT_EQ(i, 2);
+}
