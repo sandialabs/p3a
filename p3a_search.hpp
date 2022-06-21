@@ -87,6 +87,9 @@ ForwardIt lower_bound(
  * we fall back to using Newton's method on a linear approximation to
  * the real function (we assume the function is linear between the endpoints
  * of the subset of the domain).
+ *
+ * The function only needs to be continuous and differentiable, it does not need
+ * to be monotonic in the given subset of the domain.
  * 
  * Execution speed via minimizing actual function evaluations is a
  * primary design goal of this code.
