@@ -112,7 +112,6 @@ enum class search_errc : int {
 template <
   class DomainValue,
   class RangeValue,
-  class DerivativeValue,
   class Tolerance,
   class StateFromDomainValue,
   class RangeValueFromState,
@@ -126,9 +125,7 @@ search_errc invert_differentiable_function(
     Tolerance const& tolerance,
     DomainValue minimum_domain_value,
     DomainValue maximum_domain_value,
-    DomainValue& domain_value,
-    RangeValue& range_value,
-    DerivativeValue& derivative_value)
+    DomainValue& domain_value)
 {
   int constexpr maximum_iterations = 100;
   auto const state_at_maximum_domain_value = state_from_domain_value(maximum_domain_value);
@@ -136,8 +133,8 @@ search_errc invert_differentiable_function(
   domain_value = minimum_domain_value;
   auto state_at_domain_value = state_from_domain_value(domain_value);
   auto range_value_at_minimum_domain_value = range_value_from_state(state_at_domain_value);
-  range_value = range_value_at_minimum_domain_value;
-  derivative_value = derivative_value_from_state(state_at_domain_value);
+  auto range_value = range_value_at_minimum_domain_value;
+  auto derivative_value = derivative_value_from_state(state_at_domain_value);
   for (int iteration = 0; iteration < maximum_iterations; ++iteration) {
     if (are_close(range_value, desired_range_value, tolerance)) return search_errc::success;
     auto const next_domain_value_newton =
@@ -151,7 +148,7 @@ search_errc invert_differentiable_function(
           minimum_domain_value,
           maximum_domain_value);
     auto const newton_will_not_converge =
-      (derivative_value == DerivativeValue(0)) ||
+      (derivative_value == decltype(derivative_value)(0)) ||
       (next_domain_value_newton > maximum_domain_value) ||
       (next_domain_value_newton < minimum_domain_value);
     domain_value =
@@ -230,7 +227,6 @@ template <
   class DomainValueFromPoint,
   class RangeValue,
   class DomainValue,
-  class DerivativeValue,
   class Tolerance,
   class StateFunctorFromInterval,
   class RangeValueFromState,
@@ -246,9 +242,7 @@ search_errc invert_piecewise_differentiable_function(
     RangeValue const& desired_range_value,
     Tolerance const& tolerance,
     Index& interval,
-    DomainValue& domain_value,
-    RangeValue& range_value,
-    DerivativeValue& derivative_value)
+    DomainValue& domain_value)
 {
   auto result = find_tabulated_interval(
       number_of_points,
@@ -265,9 +259,7 @@ search_errc invert_piecewise_differentiable_function(
       tolerance,
       domain_value_from_point(interval),
       domain_value_from_point(interval + Index(1)),
-      domain_value,
-      range_value,
-      derivative_value);
+      domain_value);
   return result;
 }
 
