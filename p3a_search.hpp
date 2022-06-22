@@ -146,7 +146,7 @@ search_errc invert_differentiable_function(
       (range_value_at_maximum_domain_value - range_value_at_minimum_domain_value) /
       (maximum_domain_value - minimum_domain_value);
     auto const next_domain_value_linear =
-      clamp(
+      p3a::clamp(
           minimum_domain_value + (desired_range_value - range_value_at_minimum_domain_value) / linear_derivative,
           minimum_domain_value,
           maximum_domain_value);
