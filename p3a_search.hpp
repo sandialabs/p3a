@@ -91,9 +91,7 @@ enum class search_errc : int {
  * a domain value for which the range value is close enough to the desired range value.
  * The primary method is Newton's method.
  * In cases where Newton's method on the real function would not converge,
- * we fall back to using Newton's method on a linear approximation to
- * the real function (we assume the function is linear between the endpoints
- * of the subset of the domain).
+ * we fall back to using bisection.
  *
  * The function only needs to be continuous and differentiable, it does not need
  * to be monotonic in the given subset of the domain.
@@ -139,14 +137,8 @@ search_errc invert_differentiable_function(
     if (are_close(range_value, desired_range_value, tolerance)) return search_errc::success;
     auto const next_domain_value_newton =
       domain_value - (range_value - desired_range_value) / derivative_value;
-    auto const linear_derivative =
-      (range_value_at_maximum_domain_value - range_value_at_minimum_domain_value) /
-      (maximum_domain_value - minimum_domain_value);
-    auto const next_domain_value_linear =
-      p3a::clamp(
-          minimum_domain_value + (desired_range_value - range_value_at_minimum_domain_value) / linear_derivative,
-          minimum_domain_value,
-          maximum_domain_value);
+    auto const next_domain_value_bisection =
+      minimum_domain_value + (maximum_domain_value - minimum_domain_value) / 2;
     auto const newton_will_not_converge =
       (derivative_value == decltype(derivative_value)(0)) ||
       (next_domain_value_newton > maximum_domain_value) ||
@@ -154,7 +146,7 @@ search_errc invert_differentiable_function(
     domain_value =
       condition(
           newton_will_not_converge,
-          next_domain_value_linear,
+          next_domain_value_bisection,
           next_domain_value_newton);
     state_at_domain_value = state_from_domain_value(domain_value);
     range_value = range_value_from_state(state_at_domain_value);
