@@ -17,6 +17,7 @@ namespace simd_abi = Kokkos::Experimental::simd_abi;
 using Kokkos::Experimental::device_simd;
 using Kokkos::Experimental::device_simd_mask;
 using Kokkos::Experimental::condition;
+using Kokkos::Experimental::where;
 
 template <class T, class U, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
