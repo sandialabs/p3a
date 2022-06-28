@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Kokkos_Simd.hpp>
+#include <Kokkos_SIMD.hpp>
 
 #include "p3a_functions.hpp"
 #include "p3a_type_traits.hpp"
