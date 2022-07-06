@@ -42,6 +42,12 @@ condition(bool a, T const& b, T const& c)
 using Kokkos::Experimental::min;
 using Kokkos::Experimental::max;
 using Kokkos::Experimental::clamp;
+using Kokkos::abs;
+using Kokkos::sqrt;
+using Kokkos::sin;
+using Kokkos::cos;
+using Kokkos::exp;
+using Kokkos::pow;
 
 template <class Head, class... Tail>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr auto
@@ -136,9 +142,6 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
 T sin_x_over_x(T const& x)
 {
-  using std::abs;
-  using std::sqrt;
-  using std::sin;
   auto const y = abs(x);
   auto constexpr epsilon = epsilon_value<T>();
   auto const e2 = sqrt(epsilon);

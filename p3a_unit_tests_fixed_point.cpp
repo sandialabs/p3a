@@ -17,7 +17,7 @@ TEST(fixed_point, sum){
   };
   double nonassociative_sum = 0.0;
   int maximum_exponent = -1075;
-  using abi_type = p3a::simd_abi::host_native;
+  using abi_type = p3a::simd_abi::ForSpace<Kokkos::DefaultHostExecutionSpace>;
   auto mask = p3a::simd_mask<double, abi_type>(false);
   mask[0] = true;
   for (int i = 0; i < count; ++i) {

@@ -14,8 +14,8 @@ using Kokkos::Experimental::const_where_expression;
 using Kokkos::Experimental::where_expression;
 using Kokkos::Experimental::element_aligned_tag;
 namespace simd_abi = Kokkos::Experimental::simd_abi;
-using Kokkos::Experimental::device_simd;
-using Kokkos::Experimental::device_simd_mask;
+using Kokkos::Experimental::native_simd;
+using Kokkos::Experimental::native_simd_mask;
 using Kokkos::Experimental::condition;
 using Kokkos::Experimental::where;
 
