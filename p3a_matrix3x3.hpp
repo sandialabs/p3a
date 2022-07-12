@@ -672,4 +672,27 @@ matrix3x3<T> inverse_full_pivot(matrix3x3<T> const& A)
   return transpose(S) * B;
 }
 
+template <class A, class B>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+auto frobenius_inner_product(matrix3x3<A> const& a, matrix3x3<B> const& b)
+{
+  return a.xx() * b.xx() +
+         a.xy() * b.xy() +
+         a.xz() * b.xz() +
+         a.yx() * b.yx() +
+         a.yy() * b.yy() +
+         a.yz() * b.yz() +
+         a.zx() * b.zx() +
+         a.zy() * b.zy() +
+         a.zz() * b.zz();
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+auto frobenius_norm(matrix3x3<T> const& a)
+{
+  using std::sqrt;
+  return sqrt(frobenius_inner_product(a, a));
+}
+
 }
