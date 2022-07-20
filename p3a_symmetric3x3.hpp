@@ -332,10 +332,10 @@ auto frobenius_inner_product(
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-auto l2_norm(symmetric3x3<T> const& a)
+auto frobenius_norm(symmetric3x3<T> const& a)
 {
   using std::sqrt;
-  return 0.5 * sqrt(frobenius_inner_product(a, a));
+  return sqrt(frobenius_inner_product(a, a));
 }
 
 template <class T>

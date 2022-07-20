@@ -255,4 +255,21 @@ search_errc invert_piecewise_differentiable_function(
   return result;
 }
 
+template <class Iterator>
+class iterator_as_functor {
+  Iterator m_iterator;
+ public:
+  using difference_type = typename std::iterator_traits<Iterator>::difference_type;
+  using reference = typename std::iterator_traits<Iterator>::reference;
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  iterator_as_functor(Iterator iterator_arg)
+    :m_iterator(iterator_arg)
+  {}
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  reference operator()(difference_type i) const
+  {
+    return m_iterator[i];
+  }
+};
+
 }

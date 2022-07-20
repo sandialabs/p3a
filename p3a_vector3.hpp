@@ -369,4 +369,25 @@ vector3<T> condition(
       condition(a, b.z(), c.z()));
 }
 
+template <class T, class U>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+T scalar_projection(vector3<T> const& a, vector3<U> const& b)
+{
+  return dot_product(a, b);
+}
+
+template <class T, class U>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+vector3<T> project(vector3<T> const& a, vector3<U> const& b)
+{
+  return scalar_projection(a, b) * b;
+}
+
+template <class T, class U>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+vector3<T> reject(vector3<T> const& a, vector3<U> const& b)
+{
+  return a - project(a, b);
+}
+
 }

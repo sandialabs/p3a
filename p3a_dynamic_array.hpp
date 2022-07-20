@@ -82,9 +82,7 @@ class dynamic_array {
   }
   template <
     class Allocator2,
-    class ExecutionSpace2,
-    typename std::enable_if<!std::is_same_v<Allocator2, Allocator>,
-      bool>::type = false>
+    class ExecutionSpace2>
   dynamic_array(dynamic_array<T, Allocator2, ExecutionSpace2> const& other)
     :m_begin(nullptr)
     ,m_size(0)
@@ -92,25 +90,31 @@ class dynamic_array {
   {
     reserve(other.capacity());
     m_size = other.size();
-    details::copy_between_spaces(
-        other.data(),
-        this->data(),
-        std::size_t(this->size()));
+    if constexpr (std::is_same_v<Allocator, Allocator2>) {
+      uninitialized_copy(m_execution_policy, other.begin(), other.end(), m_begin);
+    } else {
+      details::copy_between_spaces(
+          other.data(),
+          this->data(),
+          std::size_t(this->size()));
+    }
   }
   template <
     class Allocator2,
-    class ExecutionSpace2,
-    typename std::enable_if<!std::is_same_v<Allocator2, Allocator>,
-      bool>::type = false>
+    class ExecutionSpace2>
   dynamic_array& operator=(dynamic_array<T, Allocator2, ExecutionSpace2> const& other)
   {
     resize(0);
     reserve(other.capacity());
     m_size = other.size();
-    details::copy_between_spaces(
-        other.data(),
-        this->data(),
-        std::size_t(this->size()));
+    if constexpr (std::is_same_v<Allocator, Allocator2>) {
+      uninitialized_copy(m_execution_policy, other.begin(), other.end(), m_begin);
+    } else {
+      details::copy_between_spaces(
+          other.data(),
+          this->data(),
+          std::size_t(this->size()));
+    }
     return *this;
   }
   explicit dynamic_array(size_type size_in)
