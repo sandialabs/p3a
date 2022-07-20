@@ -25,6 +25,16 @@ class grid3 {
     return (point.z() * m_extents.y() + point.y()) * m_extents.x() + point.x();
   }
   [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+  vector3<int> coordinate(int index_arg) const
+  {
+    auto const i = index_arg % m_extents.x();
+    index_arg /= m_extents.x();
+    auto const j = index_arg % m_extents.y();
+    index_arg /= m_extents.y();
+    auto const k = index_arg;
+    return vector3<int>(i, j, k);
+  }
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   int size() const
   {
     return m_extents.volume();
