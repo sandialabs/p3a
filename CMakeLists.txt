@@ -108,7 +108,7 @@ if (p3a_ENABLE_AVX512)
 endif()
 
 target_link_libraries(p3a PUBLIC mpicpp::mpicpp)
-target_link_libraries(p3a PUBLIC Kokkos::kokkoscore)
+target_link_libraries(p3a PUBLIC Kokkos::kokkoscore Kokkos::kokkosalgorithms)
 
 install(
   TARGETS p3a
