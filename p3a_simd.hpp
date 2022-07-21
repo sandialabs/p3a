@@ -19,6 +19,11 @@ using Kokkos::Experimental::native_simd_mask;
 using Kokkos::Experimental::condition;
 using Kokkos::Experimental::where;
 
+template <class T>
+using device_simd = Kokkos::Experimental::native_simd<T>;
+template <class T>
+using device_simd_mask = Kokkos::Experimental::native_simd_mask<T>;
+
 template <class T, class U, class Abi>
 [[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST P3A_DEVICE inline
 simd<T, Abi> load(T const* ptr, int i, simd_mask<U, Abi> const& mask)
