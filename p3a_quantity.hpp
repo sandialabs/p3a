@@ -5,7 +5,7 @@
 #include "p3a_scalar.hpp"
 #include "p3a_constants.hpp"
 #include "p3a_functions.hpp"
-#include "p3a_simd_common.hpp"
+#include "p3a_simd.hpp"
 
 namespace p3a {
 
@@ -149,22 +149,6 @@ class quantity {
   P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   auto operator>(quantity const& other) const {
     return value() > other.value();
-  }
-  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline static constexpr
-  quantity zero() {
-    return quantity(zero_value<ValueType>());
-  }
-  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline static constexpr
-  quantity epsilon() {
-    return quantity(epsilon_value<ValueType>());
-  }
-  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline static constexpr
-  quantity maximum() {
-    return quantity(maximum_value<ValueType>());
-  }
-  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline static constexpr
-  quantity minimum() {
-    return quantity(minimum_value<ValueType>());
   }
 };
 
@@ -1007,6 +991,34 @@ quantity<Unit, simd<T, Abi>, Origin> condition(
     quantity<Unit, simd<T, Abi>, Origin> const& c)
 {
   return quantity<Unit, simd<T, Abi>, Origin>(condition(a, b.value(), c.value()));
+}
+
+namespace constants {
+
+template <class Unit, class T, class Origin>
+struct maximum<quantity<Unit, T, Origin>> {
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  quantity<Unit, T, Origin> value() { return quantity<Unit, T, Origin>(maximum_value<T>()); }
+};
+
+template <class Unit, class T, class Origin>
+struct minimum<quantity<Unit, T, Origin>> {
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  quantity<Unit, T, Origin> value() { return quantity<Unit, T, Origin>(minimum_value<T>()); }
+};
+
+template <class Unit, class T, class Origin>
+struct epsilon<quantity<Unit, T, Origin>> {
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  quantity<Unit, T, Origin> value() { return quantity<Unit, T, Origin>(epsilon_value<T>()); }
+};
+
+template <class Unit, class T, class Origin>
+struct zero<quantity<Unit, T, Origin>> {
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  quantity<Unit, T, Origin> value() { return quantity<Unit, T, Origin>(zero_value<T>()); }
+};
+
 }
 
 template <class T, class Unit, class Origin>

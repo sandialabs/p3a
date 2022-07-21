@@ -17,10 +17,11 @@ TEST(fixed_point, sum){
   };
   double nonassociative_sum = 0.0;
   int maximum_exponent = -1075;
-  using abi_type = p3a::simd_abi::host_native;
+  using abi_type = p3a::simd_abi::ForSpace<Kokkos::DefaultHostExecutionSpace>;
+  auto mask = p3a::simd_mask<double, abi_type>(false);
+  mask[0] = true;
   for (int i = 0; i < count; ++i) {
     p3a::simd<double, abi_type> value;
-    auto const mask = p3a::simd_mask<double, abi_type>::first_n(1);
     where(mask, value).copy_from(values + i, p3a::element_aligned_tag());
     p3a::simd<std::int32_t, abi_type> sign_bit;
     p3a::simd<std::int32_t, abi_type> exponent;
@@ -32,12 +33,12 @@ TEST(fixed_point, sum){
     p3a::simd<std::int64_t, abi_type> significand;
     p3a::details::decompose_double(value, significand, exponent);
     double const recomposed_again = p3a::details::compose_double(
-        p3a::get(significand, 0), p3a::get(exponent, 0));
-    EXPECT_EQ(p3a::get(value, 0), recomposed_again);
+        significand[0], exponent[0]);
+    EXPECT_EQ(value[0], recomposed_again);
     nonassociative_sum += 
-        reduce(where(mask, value), 0.0, p3a::adder<double>());
+        p3a::reduce(where(mask, value), 0.0, p3a::adder<double>());
     maximum_exponent = std::max(maximum_exponent,
-        reduce(where(p3a::simd_mask<std::int32_t, abi_type>(mask), exponent),
+        p3a::reduce(where(p3a::simd_mask<std::int32_t, abi_type>(mask), exponent),
           -1075, p3a::maximizer<std::int32_t>()));
   }
   printf("non-associative sum %.17e\n", nonassociative_sum);
@@ -45,7 +46,6 @@ TEST(fixed_point, sum){
   auto fixed_point_sum_128 = p3a::details::int128(0);
   for (int i = 0; i < count; ++i) {
     p3a::simd<double, abi_type> value;
-    auto const mask = p3a::simd_mask<double, abi_type>::first_n(1);
     where(mask, value).copy_from(values + i, p3a::element_aligned_tag());
     p3a::simd<std::int64_t, abi_type> significand;
     significand = p3a::details::decompose_double(value, maximum_exponent);

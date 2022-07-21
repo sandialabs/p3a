@@ -7,7 +7,6 @@ enable_testing()
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-option(p3a_ENABLE_AVX512 "Enable AVX-512" OFF)
 set(p3a_ARCHITECTURES "" CACHE STRING "GPU architectures (either CUDA_ARCHITECTURES or HIP_ARCHITECTURES)")
 
 find_package(mpicpp REQUIRED)
@@ -30,7 +29,6 @@ endif()
 
 set(P3A_HEADERS
   p3a_allocator.hpp
-  p3a_avx512.hpp
   p3a_axis_angle.hpp
   p3a_box3.hpp
   p3a_cg.hpp
@@ -62,16 +60,19 @@ set(P3A_HEADERS
   p3a_matrix3x3.hpp
   p3a_memory.hpp
   p3a_opts.hpp
+  p3a_allocator.hpp
+  p3a_dimension.hpp
+  p3a_unit.hpp
+  p3a_cstring.hpp
+  p3a_simd.hpp
+  p3a_fixed_point.hpp
+  p3a_counting_iterator.hpp
+  p3a_dynamic_matrix.hpp
   p3a_quantity.hpp
   p3a_reduce.hpp
   p3a_scalar.hpp
   p3a_scaled_identity3x3.hpp
-  p3a_scan.hpp
   p3a_search.hpp
-  p3a_simd.hpp
-  p3a_simd_common.hpp
-  p3a_simd_scalar.hpp
-  p3a_simd_view.hpp
   p3a_skew3x3.hpp
   p3a_static_array.hpp
   p3a_static_matrix.hpp
@@ -102,10 +103,6 @@ target_include_directories(p3a
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 set_target_properties(p3a PROPERTIES ${p3a_LANGUAGE}_ARCHITECTURES "${p3a_ARCHITECTURES}")
-
-if (p3a_ENABLE_AVX512)
-  target_compile_options(p3a PUBLIC -mavx512f -mavx512vl -mavx512dq)
-endif()
 
 target_link_libraries(p3a PUBLIC mpicpp::mpicpp)
 target_link_libraries(p3a PUBLIC Kokkos::kokkoscore Kokkos::kokkosalgorithms)

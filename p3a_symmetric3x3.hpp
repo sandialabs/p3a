@@ -4,7 +4,7 @@
 #include "p3a_scaled_identity3x3.hpp"
 #include "p3a_diagonal3x3.hpp"
 #include "p3a_vector3.hpp"
-#include "p3a_simd_common.hpp"
+#include "p3a_simd.hpp"
 
 namespace p3a {
 

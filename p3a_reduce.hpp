@@ -13,6 +13,47 @@ namespace p3a {
 
 namespace details {
 
+class int128 {
+  std::int64_t m_high;
+  std::uint64_t m_low;
+ public:
+  P3A_ALWAYS_INLINE inline int128() = default;
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  int128(std::int64_t high_arg, std::uint64_t low_arg)
+    :m_high(high_arg)
+    ,m_low(low_arg)
+  {}
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  int128(std::int64_t value)
+    :int128(
+        std::int64_t(-1) * (value < 0),
+        std::uint64_t(value))
+  {}
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  std::int64_t high() const { return m_high; }
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+  std::uint64_t low() const { return m_low; }
+};
+
+}
+
+// hack! in the fixed point reduction we assume that individual significands
+// have at most 52 significant bits, so the sum of a small number of these
+// (about 10) should not exceed 63 significant bits.
+// this overload is a way to trick the system into first adding the 64-bit
+// numbers and then converting to a 128-bit class
+template <class Abi>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
+details::int128
+reduce(
+    const_where_expression<simd_mask<std::int64_t, Abi>, simd<std::int64_t, Abi>> const& we,
+    details::int128 identity_value,
+    adder<details::int128>)
+{
+  return details::int128(p3a::reduce(we, std::int64_t(0), p3a::adder<std::int64_t>()));
+}
+namespace details {
+
 template <class T, class BinaryReductionOp>
 class kokkos_reducer {
  public:
@@ -208,7 +249,7 @@ class simd_reduce_wrapper {
   auto operator()(Indices const& indices, p3a::simd_mask<T, Abi> const& mask) const
   {
     auto const simd_result = m_unary_op(indices, mask);
-    return reduce(where(mask, simd_result), m_init, m_binary_op);
+    return p3a::reduce(where(mask, simd_result), m_init, m_binary_op);
   }
 };
 
@@ -381,31 +422,6 @@ template <
       unary_op);
 }
 
-namespace details {
-
-class int128 {
-  std::int64_t m_high;
-  std::uint64_t m_low;
- public:
-  P3A_ALWAYS_INLINE inline int128() = default;
-  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-  int128(std::int64_t high_arg, std::uint64_t low_arg)
-    :m_high(high_arg)
-    ,m_low(low_arg)
-  {}
-  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-  int128(std::int64_t value)
-    :int128(
-        std::int64_t(-1) * (value < 0),
-        std::uint64_t(value))
-  {}
-  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-  std::int64_t high() const { return m_high; }
-  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
-  std::uint64_t low() const { return m_low; }
-};
-
-}
 
 namespace details {
 

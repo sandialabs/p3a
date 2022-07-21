@@ -41,7 +41,7 @@ inline constexpr hot_policy hot = {};
 class kokkos_serial_policy {
  public:
   void synchronize() const {}
-  using simd_abi_type = simd_abi::host_native;
+  using simd_abi_type = simd_abi::ForSpace<Kokkos::DefaultHostExecutionSpace>;
   using kokkos_execution_space = Kokkos::Serial;
 };
 
@@ -118,7 +118,7 @@ namespace execution {
 class openmp_policy {
  public:
   void synchronize() const {}
-  using simd_abi_type = simd_abi::host_native;
+  using simd_abi_type = simd_abi::ForSpace<Kokkos::DefaultHostExecutionSpace>;
   using kokkos_execution_space = Kokkos::OpenMP;
 };
 
