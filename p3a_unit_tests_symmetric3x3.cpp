@@ -1,8 +1,6 @@
 #include "gtest/gtest.h"
 #include "p3a_symmetric3x3.hpp"
 
-using namespace p3a; 
-
 TEST(symmetric3x3, isotropic_part){
   using T = double;
   T const zero = T(0.);
@@ -10,8 +8,8 @@ TEST(symmetric3x3, isotropic_part){
   T const two = T(2.);
   T const three = T(3.);
   T const six = T(6.);
-  symmetric3x3<T> a{one, zero, zero, one, zero, one};
-  symmetric3x3<T> b;
+  p3a::symmetric3x3<T> a{one, zero, zero, one, zero, one};
+  p3a::symmetric3x3<T> b;
   b = isotropic_part(a);
   EXPECT_FLOAT_EQ(trace(b), trace(a));
   EXPECT_FLOAT_EQ(b.xx(), one);
@@ -33,8 +31,8 @@ TEST(symmetric3x3, deviatoric_part){
   T const two = T(2.);
   T const three = T(3.);
   T const six = T(6.);
-  symmetric3x3<T> a{one, one, one, one, one, one};
-  symmetric3x3<T> b;
+  p3a::symmetric3x3<T> a{one, one, one, one, one, one};
+  p3a::symmetric3x3<T> b;
   b = deviatoric_part(a);
   EXPECT_FLOAT_EQ(trace(b), zero);
   EXPECT_FLOAT_EQ(b.xx(), zero);
@@ -57,7 +55,7 @@ TEST(symmetric3x3, inverse_diag){
   T const zero = T(0.);
   T const one = T(1.);
   T const two = T(2.);
-  symmetric3x3<T> a{two, zero, zero, two, zero, two};
+  p3a::symmetric3x3<T> a{two, zero, zero, two, zero, two};
   auto ai = inverse(a);
   EXPECT_FLOAT_EQ(ai.xx(), one / two);
   EXPECT_FLOAT_EQ(ai.yy(), one / two);
@@ -69,7 +67,7 @@ TEST(symmetric3x3, inverse_diag){
 
 TEST(symmetric3x3, inverse){
   using T = double;
-  symmetric3x3<T> a{1., .5, .1, 2., .2, 3.};
+  p3a::symmetric3x3<T> a{1., .5, .1, 2., .2, 3.};
   auto ai = inverse(a);
   EXPECT_FLOAT_EQ(ai.xx(), 1.143953934740883);
   EXPECT_FLOAT_EQ(ai.yy(), 0.5738963531669865);

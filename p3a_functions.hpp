@@ -44,10 +44,16 @@ using Kokkos::Experimental::max;
 using Kokkos::Experimental::clamp;
 using Kokkos::abs;
 using Kokkos::sqrt;
+using Kokkos::cbrt;
 using Kokkos::sin;
 using Kokkos::cos;
+using Kokkos::tan;
+using Kokkos::asin;
+using Kokkos::acos;
 using Kokkos::exp;
 using Kokkos::pow;
+using Kokkos::log;
+using Kokkos::hypot;
 
 template <class Head, class... Tail>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr auto
@@ -113,8 +119,7 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 T cotangent(T const& a)
 {
-  using std::tan;
-  return 1.0 / tan(a);
+  return 1.0 / p3a::tan(a);
 }
 
 template <typename T>
@@ -169,11 +174,9 @@ template <class Value, class Tolerance>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 auto are_close(Value const& a, Value const& b, Tolerance const& tolerance)
 {
-  using std::abs;
-  using p3a::max;
-  auto const difference = abs(b - a);
-  auto const scale = abs(a) + abs(b);
-  return difference <= tolerance * max(scale, Value(1));
+  auto const difference = p3a::abs(b - a);
+  auto const scale = p3a::abs(a) + p3a::abs(b);
+  return difference <= tolerance * p3a::max(scale, Value(1));
 }
 
 }

@@ -11,21 +11,19 @@ template <class T, int N>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 T norm(static_matrix<T, N, N> const& a)
 {
-  using std::sqrt;
   T result(0);
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
       result += square(a(i, j));
     }
   }
-  return sqrt(result);
+  return p3a::sqrt(result);
 }
 
 template <class T, int N>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 T off_diagonal_norm(static_matrix<T, N, N> const& a)
 {
-  using std::sqrt;
   T result(0);
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
@@ -34,7 +32,7 @@ T off_diagonal_norm(static_matrix<T, N, N> const& a)
       }
     }
   }
-  return sqrt(result);
+  return p3a::sqrt(result);
 }
 
 template <class T, int N>
@@ -44,14 +42,13 @@ void maximum_off_diagonal_indices(
     int& p,
     int& q)
 {
-  using std::abs;
   p = 0;
   q = 0;
   T s = -1.0;
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
       if (i != j) {
-        T const s2 = abs(a(i, j));
+        T const s2 = p3a::abs(a(i, j));
         if (s2 > s) {
           p = i;
           q = j;
@@ -75,17 +72,16 @@ void symmetric_schur(
     T& c,
     T& s)
 {
-  using std::sqrt;
   c = 1.0;
   s = 0.0;
   if (g != 0.0) {
     T t = (h - f) / (2.0 * g);
     if (t >= 0.0) {
-      t = 1.0 / (sqrt(1.0 + square(t)) + t);
+      t = 1.0 / (p3a::sqrt(1.0 + square(t)) + t);
     } else {
-      t = -1.0 / (sqrt(1.0 + square(t)) - t);
+      t = -1.0 / (p3a::sqrt(1.0 + square(t)) - t);
     }
-    c = 1.0 / sqrt(1.0 + square(t));
+    c = 1.0 / p3a::sqrt(1.0 + square(t));
     s = t * c;
   }
 }

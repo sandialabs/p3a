@@ -3,40 +3,38 @@
 #include "p3a_mandel6x3.hpp"
 #include "p3a_mandel6x6.hpp"
 
-using namespace p3a; 
-
 using Y = double;
 
-Y abs_err = Y(5.)*epsilon_value<Y>();
+Y abs_err = Y(5.) * p3a::epsilon_value<Y>();
 
 struct TestData {
 
   Y const r1 =  0.2946950525769927;
-  vector3<Y> v;
-  vector3<Y> vp;
-  mandel6x1<Y> V;
-  mandel6x1<Y> VinvX;
-  mandel6x1<Y> ident;
-  symmetric3x3<Y> Vsymm;
-  diagonal3x3<Y> Vdiag;
-  mandel6x1<Y> Vp;
-  mandel6x1<Y> VpinvX;
-  matrix3x3<Y> TV;
-  static_matrix<Y,3,3> TVstatic;
-  mandel6x6<Y> C;
-  static_matrix<Y,6,6> Cstatic;
-  mandel6x6<Y> CinvX;
-  mandel6x6<Y> Ident;
-  mandel6x6<Y> Cp;
-  mandel6x6<Y> CpinvX;
-  mandel3x6<Y> e36;
-  mandel3x6<Y> e36invX;
-  mandel3x6<Y> e36p;  
-  mandel3x6<Y> e36pinvX;
-  mandel6x3<Y> e63;
-  mandel6x3<Y> e63invX;
-  mandel6x3<Y> e63p;
-  mandel6x3<Y> e63pinvX;
+  p3a::vector3<Y> v;
+  p3a::vector3<Y> vp;
+  p3a::mandel6x1<Y> V;
+  p3a::mandel6x1<Y> VinvX;
+  p3a::mandel6x1<Y> ident;
+  p3a::symmetric3x3<Y> Vsymm;
+  p3a::diagonal3x3<Y> Vdiag;
+  p3a::mandel6x1<Y> Vp;
+  p3a::mandel6x1<Y> VpinvX;
+  p3a::matrix3x3<Y> TV;
+  p3a::static_matrix<Y,3,3> TVstatic;
+  p3a::mandel6x6<Y> C;
+  p3a::static_matrix<Y,6,6> Cstatic;
+  p3a::mandel6x6<Y> CinvX;
+  p3a::mandel6x6<Y> Ident;
+  p3a::mandel6x6<Y> Cp;
+  p3a::mandel6x6<Y> CpinvX;
+  p3a::mandel3x6<Y> e36;
+  p3a::mandel3x6<Y> e36invX;
+  p3a::mandel3x6<Y> e36p;  
+  p3a::mandel3x6<Y> e36pinvX;
+  p3a::mandel6x3<Y> e63;
+  p3a::mandel6x3<Y> e63invX;
+  p3a::mandel6x3<Y> e63p;
+  p3a::mandel6x3<Y> e63pinvX;
   
   TestData() : v(0.5403153418505242, 0.1916615978226233, 0.7913471057605709), 
                vp(0.2588658912519261, 0.9328687907855321, 0.2121274165250259), 
@@ -176,8 +174,8 @@ TEST(mandel_tensors,LinAlg2ndOrderMandelVectorInverseV){
     TestData td;
     const auto & V = td.V;
     const auto & ident = td.ident;
-    mandel6x1 T = inverse(V);
-    mandel6x1 I = T*V;
+    p3a::mandel6x1 T = inverse(V);
+    p3a::mandel6x1 I = T*V;
     
     EXPECT_NEAR(ident.x1(),I.x1(),abs_err) << "I.x1";
     EXPECT_NEAR(ident.x2(),I.x2(),abs_err) << "I.x2";
@@ -194,12 +192,12 @@ TEST(mandel_tensors,LinAlg4thOrderMandelTensorInverseC){
     const auto & C = td.C;
     const auto & Ident = td.Ident;
 
-    mandel6x6 Ct = C;
+    p3a::mandel6x6 Ct = C;
     Ct.MandelXform();
 
-    mandel6x6 St = inverse(Ct);
+    p3a::mandel6x6 St = inverse(Ct);
     St.invMandelXform();
-    mandel6x6 S = C*St;
+    p3a::mandel6x6 S = C*St;
 
     EXPECT_NEAR(Ident.x11(),S.x11(),abs_err) << "S.x11()";
     EXPECT_NEAR(Ident.x12(),S.x12(),abs_err) << "S.x12()";
@@ -240,14 +238,14 @@ TEST(mandel_tensors,LinAlg4thOrderMandelTensorInverseC){
 }
 
 /**************************************************************************
- * Constructor tests for mandel6x1 (2nd-order tensors)
+ * Constructor tests for p3a::mandel6x1 (2nd-order tensors)
  *************************************************************************/
 TEST(mandel_tensors,Construct2ndOrderVfromListxform){
 
     TestData td;
     const auto & V = td.V;
 
-    mandel6x1 Vt = V; //V made from list initially
+    p3a::mandel6x1 Vt = V; //V made from list initially
 
     EXPECT_FLOAT_EQ(V.x1(),Vt.x1()) << "V.x1";
     EXPECT_FLOAT_EQ(V.x2(),Vt.x2()) << "V.x2";
@@ -262,7 +260,7 @@ TEST(mandel_tensors,Construct2ndOrderVfromMatrix3x3Vxform){
     TestData td;
     const auto & V = td.V;
     const auto & TV = td.TV;
-    mandel6x1 Vt = TV;
+    p3a::mandel6x1 Vt = TV;
 
     EXPECT_FLOAT_EQ(V.x1(),Vt.x1()) << "V.x1";
     EXPECT_FLOAT_EQ(V.x2(),Vt.x2()) << "V.x2";
@@ -276,7 +274,7 @@ TEST(mandel_tensors,Construct2ndOrderVfromMatrix3x3V){
 
     TestData td;
     const auto & VinvX = td.VinvX;
-    mandel6x1 Vt(td.TV);
+    p3a::mandel6x1 Vt(td.TV);
     Vt.invMandelXform();
 
     EXPECT_FLOAT_EQ(VinvX.x1(),Vt.x1()) << "V.x1";
@@ -292,7 +290,7 @@ TEST(mandel_tensors,Construct2ndOrderVconvertfromStaticMatrixVxform){
     TestData td;
     const auto & V = td.V;
     const auto & TV = td.TVstatic;
-    mandel6x1<Y> Vt = TV;
+    p3a::mandel6x1<Y> Vt = TV;
 
     EXPECT_FLOAT_EQ(V.x1(),Vt.x1()) << "V.x1";
     EXPECT_FLOAT_EQ(V.x2(),Vt.x2()) << "V.x2";
@@ -307,7 +305,7 @@ TEST(mandel_tensors,Construct2ndOrderVfromStaticMatrixVxform){
     TestData td;
     const auto & V = td.V;
     const auto & TV = td.TVstatic;
-    mandel6x1 Vt(TV);
+    p3a::mandel6x1 Vt(TV);
 
     EXPECT_FLOAT_EQ(V.x1(),Vt.x1()) << "V.x1";
     EXPECT_FLOAT_EQ(V.x2(),Vt.x2()) << "V.x2";
@@ -321,7 +319,7 @@ TEST(mandel_tensors,Construct2ndOrderVfromsymmetric3x3Vxform){
 
     TestData td;
     const auto & V = td.V;
-    mandel6x1 Vt(td.Vsymm);    
+    p3a::mandel6x1 Vt(td.Vsymm);    
 
     EXPECT_FLOAT_EQ(V.x1(),Vt.x1()) << "V.x1";
     EXPECT_FLOAT_EQ(V.x2(),Vt.x2()) << "V.x2";
@@ -335,7 +333,7 @@ TEST(mandel_tensors,Construct2ndOrderVfromsymmetric3x3V){
 
     TestData td;
     const auto & VinvX = td.VinvX;
-    mandel6x1 Vt(td.Vsymm,false);    
+    p3a::mandel6x1 Vt(td.Vsymm,false);    
 
     EXPECT_FLOAT_EQ(VinvX.x1(),Vt.x1()) << "V.x1";
     EXPECT_FLOAT_EQ(VinvX.x2(),Vt.x2()) << "V.x2";
@@ -346,13 +344,13 @@ TEST(mandel_tensors,Construct2ndOrderVfromsymmetric3x3V){
 }
 
 /**************************************************************************
- * Basic operation tests for mandel6x1 (2nd-order tensors)
+ * Basic operation tests for p3a::mandel6x1 (2nd-order tensors)
  *************************************************************************/
 TEST(mandel_tensors,Basics2ndOrderVplusVp){
 
     TestData td;
-    mandel6x1 Us = td.V + td.Vp;
-    mandel6x1 U = Us-td.V-td.Vp;
+    p3a::mandel6x1 Us = td.V + td.Vp;
+    p3a::mandel6x1 U = Us-td.V-td.Vp;
 
     EXPECT_NEAR(0.,U.x1(),abs_err) << "U.x1";
     EXPECT_NEAR(0.,U.x2(),abs_err) << "U.x2";
@@ -365,9 +363,9 @@ TEST(mandel_tensors,Basics2ndOrderVplusVp){
 TEST(mandel_tensors,Basics2ndOrderVplusequalVp){
 
     TestData td;
-    mandel6x1 Us = td.V;
+    p3a::mandel6x1 Us = td.V;
     Us += td.Vp;
-    mandel6x1 U = Us-td.V-td.Vp;
+    p3a::mandel6x1 U = Us-td.V-td.Vp;
 
     EXPECT_NEAR(0.,U.x1(),abs_err) << "U.x1";
     EXPECT_NEAR(0.,U.x2(),abs_err) << "U.x2";
@@ -382,7 +380,7 @@ TEST(mandel_tensors,Basics2ndOrderVxReal){
     TestData td;
     const auto & V = td.V;
     const auto & r1 = td.r1;
-    mandel6x1 U = td.V; 
+    p3a::mandel6x1 U = td.V; 
     U*=r1;
 
     EXPECT_FLOAT_EQ(V.x1()*r1,U.x1()) << "U.x1";
@@ -398,7 +396,7 @@ TEST(mandel_tensors,Basics2ndOrderVdivReal){
     TestData td;
     const auto & V = td.V;
     const auto & r1 = td.r1;
-    mandel6x1 U = V;
+    p3a::mandel6x1 U = V;
     U /= r1;
 
     EXPECT_FLOAT_EQ(V.x1()/r1,U.x1()) << "U.x1";
@@ -414,7 +412,7 @@ TEST(mandel_tensors,Basics2ndOrderVminusVp){
     TestData td;
     const auto & V = td.V;
     const auto & Vp = td.Vp;
-    mandel6x1 U = td.V - td.Vp;
+    p3a::mandel6x1 U = td.V - td.Vp;
 
     EXPECT_FLOAT_EQ(0.,V.x1()-Vp.x1()-U.x1()) << "U.x1";
     EXPECT_FLOAT_EQ(0.,V.x2()-Vp.x2()-U.x2()) << "U.x2";
@@ -429,7 +427,7 @@ TEST(mandel_tensors,Basics2ndOrderBinaryVmultReal){
     TestData td;
     const auto & V = td.V;
     const auto & r1 = td.r1;
-    mandel6x1 U = V * r1;
+    p3a::mandel6x1 U = V * r1;
 
     EXPECT_FLOAT_EQ(V.x1()*r1,U.x1()) << "U.x1";
     EXPECT_FLOAT_EQ(V.x2()*r1,U.x2()) << "U.x2";
@@ -444,7 +442,7 @@ TEST(mandel_tensors,Basics2ndOrderBinaryRealmultV){
     TestData td;
     const auto & V = td.V;
     const auto & r1 = td.r1;
-    mandel6x1 U = r1 * V;
+    p3a::mandel6x1 U = r1 * V;
 
     EXPECT_FLOAT_EQ(V.x1()*r1,U.x1()) << "U.x1";
     EXPECT_FLOAT_EQ(V.x2()*r1,U.x2()) << "U.x2";
@@ -459,7 +457,7 @@ TEST(mandel_tensors,Basics2ndOrderBinaryVdivReal){
     TestData td;
     const auto & V = td.V;
     const auto & r1 = td.r1;
-    mandel6x1 U = V / r1;
+    p3a::mandel6x1 U = V / r1;
 
     EXPECT_FLOAT_EQ(V.x1()/r1,U.x1()) << "U.x1";
     EXPECT_FLOAT_EQ(V.x2()/r1,U.x2()) << "U.x2";
@@ -470,14 +468,14 @@ TEST(mandel_tensors,Basics2ndOrderBinaryVdivReal){
 }
 
 /**************************************************************************
- * Linear Alegbra operation tests for mandel6x1 (2nd-order tensors)
+ * Linear Alegbra operation tests for p3a::mandel6x1 (2nd-order tensors)
  *************************************************************************/
 TEST(mandel_tensors,LinAlg2ndOrderInverseMandelXformV){
 
     TestData td;
     const auto & V = td.V;
     const auto & VinvX = td.VinvX;
-    mandel6x1 T = V;
+    p3a::mandel6x1 T = V;
     T.invMandelXform();
 
     EXPECT_FLOAT_EQ(VinvX.x1(),T.x1()) << "T.x1";
@@ -491,15 +489,15 @@ TEST(mandel_tensors,LinAlg2ndOrderInverseMandelXformV){
 TEST(mandel_tensors,LinAlg2ndOrderDeterminantV){
 
     TestData td;
-    Y d = determinant(td.V);
+    Y d = p3a::determinant(td.V);
 
-    EXPECT_FLOAT_EQ(-0.6860431470481314,d) << "Determinant of mandel6x1 V";
+    EXPECT_FLOAT_EQ(-0.6860431470481314,d) << "Determinant of p3a::mandel6x1 V";
 }
 
 TEST(mandel_tensors,LinAlg2ndOrderCxV){
 
     TestData td;
-    mandel6x1 T = td.C * td.V;
+    p3a::mandel6x1 T = td.C * td.V;
 
     EXPECT_FLOAT_EQ(3.4635476194506110,T.x1()) << "T.x1";
     EXPECT_FLOAT_EQ(2.8336057738272911,T.x2()) << "T.x2";
@@ -512,7 +510,7 @@ TEST(mandel_tensors,LinAlg2ndOrderCxV){
 TEST(mandel_tensors,LinAlg2ndOrderCxTensorV){
 
     TestData td;
-    mandel6x1 T = td.C*td.TV;
+    p3a::mandel6x1 T = td.C*td.TV;
 
     EXPECT_FLOAT_EQ(3.4635476194506110,T.x1()) << "T.x1";
     EXPECT_FLOAT_EQ(2.8336057738272911,T.x2()) << "T.x2";
@@ -525,7 +523,7 @@ TEST(mandel_tensors,LinAlg2ndOrderCxTensorV){
 TEST(mandel_tensors,LinAlg2ndOrdere63xVectorv){
 
     TestData td;
-    mandel6x1 T = td.e63*td.v;
+    p3a::mandel6x1 T = td.e63*td.v;
 
     EXPECT_FLOAT_EQ(0.7543830564053962,T.x1()) << "T.x1";
     EXPECT_FLOAT_EQ(0.8455346292231598,T.x2()) << "T.x2";
@@ -541,7 +539,7 @@ TEST(mandel_tensors,LinAlg2ndOrdere63xVectorv){
 TEST(mandel_tensors,VectorConvTestse36xV){
 
     TestData td;
-    vector3 T = td.e36*td.V;
+    p3a::vector3 T = td.e36*td.V;
 
     EXPECT_FLOAT_EQ(1.1959255529807966,T.x()) << "T.x";
     EXPECT_FLOAT_EQ(0.9246490053867547,T.y()) << "T.y";
@@ -551,7 +549,7 @@ TEST(mandel_tensors,VectorConvTestse36xV){
 TEST(mandel_tensors,VectorConvTestsTensorxVector3){
 
     TestData td;
-    vector3 T = td.TV*td.v;
+    p3a::vector3 T = td.TV*td.v;
 
     EXPECT_FLOAT_EQ(0.3466382442875668,T.x()) << "T.x";
     EXPECT_FLOAT_EQ(1.2363564442415020,T.y()) << "T.y";
@@ -565,7 +563,7 @@ TEST(mandel_tensors,TensorConvTestsMandelToTensor){
 
     TestData td;
     const auto & VinvX = td.VinvX;
-    matrix3x3 T = mandel6x1_to_matrix3x3(td.V);
+    p3a::matrix3x3 T = p3a::mandel6x1_to_matrix3x3(td.V);
 
     EXPECT_FLOAT_EQ(VinvX.x1(),T.xx()) << "T.xx()";
     EXPECT_FLOAT_EQ(VinvX.x6(),T.xy()) << "T.xy()";
@@ -581,7 +579,7 @@ TEST(mandel_tensors,TensorConvTestsMandelToTensor){
 TEST(mandel_tensors,TensorConvTestse36xe63){
 
     TestData td;
-    matrix3x3 T = td.e36*td.e63;
+    p3a::matrix3x3 T = td.e36*td.e63;
 
     EXPECT_FLOAT_EQ(0.8131190728640454,T.xx()) << "T.xx()";
     EXPECT_FLOAT_EQ(0.9959957879323522,T.xy()) << "T.xy()";
@@ -597,7 +595,7 @@ TEST(mandel_tensors,TensorConvTestse36xe63){
 TEST(mandel_tensors,TensorConvTestsVxTensor){
 
     TestData td;
-    matrix3x3 T = td.V*td.TV;
+    p3a::matrix3x3 T = td.V*td.TV;
 
     EXPECT_FLOAT_EQ(0.7869648629834085,T.xx()) << "T.xx()";
     EXPECT_FLOAT_EQ(0.4139354501342279,T.xy()) << "T.xy()";
@@ -613,7 +611,7 @@ TEST(mandel_tensors,TensorConvTestsVxTensor){
 TEST(mandel_tensors,TensorConvTestsTensorxV){
 
     TestData td;
-    matrix3x3 T = td.TV*td.V;
+    p3a::matrix3x3 T = td.TV*td.V;
 
     EXPECT_FLOAT_EQ(0.7869648629834085,T.xx()) << "T.xx()";
     EXPECT_FLOAT_EQ(0.4139354501342279,T.xy()) << "T.xy()";
@@ -629,7 +627,7 @@ TEST(mandel_tensors,TensorConvTestsTensorxV){
 TEST(mandel_tensors,TensorConvTestsTensorxTensor){
 
     TestData td;
-    matrix3x3 T = td.TV*td.TV;
+    p3a::matrix3x3 T = td.TV*td.TV;
 
     EXPECT_FLOAT_EQ(0.7869648629834085,T.xx()) << "T.xx()";
     EXPECT_FLOAT_EQ(0.4139354501342279,T.xy()) << "T.xy()";
@@ -650,7 +648,7 @@ TEST(mandel_tensors,symmetric3x3ConvTestsMandelVectorConstructor){
     TestData td;
     const auto & V = td.V;
     const auto & VinvX = td.VinvX;
-    symmetric3x3 U = mandel6x1_to_symmetric3x3(V);
+    p3a::symmetric3x3 U = p3a::mandel6x1_to_symmetric3x3(V);
 
     EXPECT_FLOAT_EQ(VinvX.x1(),U.xx()) << "U.x1";
     EXPECT_FLOAT_EQ(VinvX.x2(),U.yy()) << "U.x2";
@@ -754,7 +752,7 @@ TEST(mandel_tensors,Construct4thOrderCfromC){
 TEST(mandel_tensors,Construct4thOrderCfromstaticmatrixxform){
 
     TestData td;
-    const mandel6x6<Y> C(td.Cstatic);
+    const p3a::mandel6x6<Y> C(td.Cstatic);
 
     EXPECT_FLOAT_EQ(0.4335153608215544,C.x11()) << "C.x11()";
     EXPECT_FLOAT_EQ(0.0856007508096491,C.x12()) << "C.x12()";
@@ -802,7 +800,7 @@ TEST(mandel_tensors,Basics4thOrderCpluseqCp){
     TestData td;
     const auto & C = td.C;
     const auto & Cp = td.Cp;
-    mandel6x6 W = C;
+    p3a::mandel6x6 W = C;
     W += Cp;
 
     EXPECT_FLOAT_EQ(C.x11()+Cp.x11(),W.x11()) << "T.x11()";
@@ -848,7 +846,7 @@ TEST(mandel_tensors,Basics4thOrderCminuseqCp){
     TestData td;
     const auto & C = td.C;
     const auto & Cp = td.Cp;
-    mandel6x6 W = C;
+    p3a::mandel6x6 W = C;
     W -= Cp;
     EXPECT_FLOAT_EQ(C.x11()-Cp.x11(),W.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(C.x12()-Cp.x12(),W.x12()) << "T.x12()";
@@ -893,7 +891,7 @@ TEST(mandel_tensors,Basics4thOrderCaddCp){
     TestData td;
     const auto & C = td.C;
     const auto & Cp = td.Cp;
-    mandel6x6 W = Cp + C;
+    p3a::mandel6x6 W = Cp + C;
 
     EXPECT_FLOAT_EQ(C.x11()+Cp.x11(),W.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(C.x12()+Cp.x12(),W.x12()) << "T.x12()";
@@ -938,7 +936,7 @@ TEST(mandel_tensors,Basics4thOrderCminusCp){
     TestData td;
     const auto & C = td.C;
     const auto & Cp = td.Cp;
-    mandel6x6 W = C - Cp;
+    p3a::mandel6x6 W = C - Cp;
 
     EXPECT_FLOAT_EQ(C.x11()-Cp.x11(),W.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(C.x12()-Cp.x12(),W.x12()) << "T.x12()";
@@ -983,7 +981,7 @@ TEST(mandel_tensors,Basics4thOrderCxReal){
     TestData td;
     const auto & C = td.C;
     const auto & r1 = td.r1;
-    mandel6x6 W = C;
+    p3a::mandel6x6 W = C;
     W*=r1;
 
     EXPECT_FLOAT_EQ(C.x11()*r1,W.x11()) << "T.x11()";
@@ -1029,7 +1027,7 @@ TEST(mandel_tensors,Basics4thOrderBinaryCxReal){
     TestData td;
     const auto & C = td.C;
     const auto & r1 = td.r1;
-    mandel6x6 W = C*r1;
+    p3a::mandel6x6 W = C*r1;
 
     EXPECT_FLOAT_EQ(C.x11()*r1,W.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(C.x12()*r1,W.x12()) << "T.x12()";
@@ -1074,7 +1072,7 @@ TEST(mandel_tensors,Basics4thOrderBinaryRealxC){
     TestData td;
     const auto & C = td.C;
     const auto & r1 = td.r1;
-    mandel6x6 W = r1 * C;
+    p3a::mandel6x6 W = r1 * C;
 
     EXPECT_FLOAT_EQ(C.x11()*r1,W.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(C.x12()*r1,W.x12()) << "T.x12()";
@@ -1119,7 +1117,7 @@ TEST(mandel_tensors,Basics4thOrderCdivReal){
     TestData td;
     const auto & C = td.C;
     const auto & r1 = td.r1;
-    mandel6x6 W = C;
+    p3a::mandel6x6 W = C;
     W/=r1;
 
     EXPECT_FLOAT_EQ(C.x11()/r1,W.x11()) << "T.x11()";
@@ -1165,7 +1163,7 @@ TEST(mandel_tensors,Basics4thOrderBinaryCdivReal){
     TestData td;
     const auto & C = td.C;
     const auto & r1 = td.r1;
-    mandel6x6 W = C/r1;
+    p3a::mandel6x6 W = C/r1;
 
     EXPECT_FLOAT_EQ(C.x11()/r1,W.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(C.x12()/r1,W.x12()) << "T.x12()";
@@ -1212,7 +1210,7 @@ TEST(mandel_tensors,LinAlg4thOrderMembersTransposeC){
 
     TestData td;
     const auto & C = td.C;
-    mandel6x6 W = transpose(C);
+    p3a::mandel6x6 W = transpose(C);
 
     EXPECT_FLOAT_EQ(C.x11(),W.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(C.x21(),W.x12()) << "T.x12()";
@@ -1255,7 +1253,7 @@ TEST(mandel_tensors,LinAlg4thOrderMembersTransposeC){
 TEST(mandel_tensors,LinAlg4thOrderCxCp){
 
     TestData td;
-    mandel6x6 W = td.C*td.Cp;
+    p3a::mandel6x6 W = td.C*td.Cp;
 
     EXPECT_FLOAT_EQ(3.4324641635231457,W.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(3.1652841587579554,W.x12()) << "T.x12()";
@@ -1298,7 +1296,7 @@ TEST(mandel_tensors,LinAlg4thOrderCxCp){
 TEST(mandel_tensors,LinAlg4thOrderdote63xe36){
 
     TestData td;
-    mandel6x6 W = td.e63*td.e36;
+    p3a::mandel6x6 W = td.e63*td.e36;
 
     EXPECT_FLOAT_EQ(0.6481000136992765,W.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(0.4371968248688184,W.x12()) << "T.x12()";
@@ -1397,7 +1395,7 @@ TEST(mandel_tensors,Construct36e36frome36Xform){
 
     TestData td;
     const auto & e36invX = td.e36invX;
-    mandel3x6 e(td.e36);
+    p3a::mandel3x6 e(td.e36);
     e.invMandelXform();
 
     EXPECT_FLOAT_EQ(e36invX.x11(),e.x11()) << "e36.x11()";
@@ -1424,7 +1422,7 @@ TEST(mandel_tensors,Construct36e36fromList){
 
     TestData td;
     const auto & e36invX = td.e36invX;
-    mandel3x6 e = td.e36;
+    p3a::mandel3x6 e = td.e36;
     e.invMandelXform();
 
     EXPECT_FLOAT_EQ(e36invX.x11(),e.x11()) << "e36.x11()";
@@ -1455,7 +1453,7 @@ TEST(mandel_tensors,Basic3rdOrder36e36pluseqe36p){
     TestData td;
     const auto & e36p = td.e36p;
     const auto & e36 = td.e36;
-    mandel3x6 e = e36;
+    p3a::mandel3x6 e = e36;
     e+=e36p;
 
     EXPECT_FLOAT_EQ(e36.x11()+e36p.x11(),e.x11()) << "T.x11()";
@@ -1483,7 +1481,7 @@ TEST(mandel_tensors,Basic3rdOrder36e36add36p){
     TestData td;
     const auto & e36p = td.e36p;
     const auto & e36 = td.e36;
-    mandel3x6 e = e36 + e36p;
+    p3a::mandel3x6 e = e36 + e36p;
 
     EXPECT_FLOAT_EQ(e36.x11()+e36p.x11(),e.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(e36.x12()+e36p.x12(),e.x12()) << "T.x12()";
@@ -1510,7 +1508,7 @@ TEST(mandel_tensors,Basic3rdOrder36e36minus36p){
     TestData td;
     const auto & e36p = td.e36p;
     const auto & e36 = td.e36;
-    mandel3x6 e = e36 - e36p;
+    p3a::mandel3x6 e = e36 - e36p;
 
     EXPECT_FLOAT_EQ(e36.x11()-e36p.x11(),e.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(e36.x12()-e36p.x12(),e.x12()) << "T.x12()";
@@ -1537,7 +1535,7 @@ TEST(mandel_tensors,Basic3rdOrder36e36xreal){
     TestData td;
     const auto & e36 = td.e36;
     const auto & r1 = td.r1;
-    mandel3x6 e = e36;
+    p3a::mandel3x6 e = e36;
     e*=r1;
 
     EXPECT_FLOAT_EQ(e36.x11()*r1,e.x11()) << "T.x11()";
@@ -1565,7 +1563,7 @@ TEST(mandel_tensors,Basic3rdOrder36Binarye36xreal){
     TestData td;
     const auto & e36 = td.e36;
     const auto & r1 = td.r1;
-    mandel3x6 e = e36*r1;
+    p3a::mandel3x6 e = e36*r1;
 
     EXPECT_FLOAT_EQ(e36.x11()*r1,e.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(e36.x12()*r1,e.x12()) << "T.x12()";
@@ -1592,7 +1590,7 @@ TEST(mandel_tensors,Basic3rdOrder36Binaryrealxe36){
     TestData td;
     const auto & e36 = td.e36;
     const auto & r1 = td.r1;
-    mandel3x6 e= r1 * e36;
+    p3a::mandel3x6 e= r1 * e36;
 
     EXPECT_FLOAT_EQ(e36.x11()*r1,e.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(e36.x12()*r1,e.x12()) << "T.x12()";
@@ -1618,7 +1616,7 @@ TEST(mandel_tensors,Basic3rdOrder36e36divreal){
     TestData td;
     const auto & e36 = td.e36;
     const auto & r1 = td.r1;
-    mandel3x6 e = e36;
+    p3a::mandel3x6 e = e36;
     e/=r1;
 
     EXPECT_FLOAT_EQ(e36.x11()/r1,e.x11()) << "T.x11()";
@@ -1645,7 +1643,7 @@ TEST(mandel_tensors,Basic3rdOrder36Binarye36divreal){
     TestData td;
     const auto & e36 = td.e36;
     const auto & r1 = td.r1;
-    mandel3x6 e = e36 / r1;
+    p3a::mandel3x6 e = e36 / r1;
 
     EXPECT_FLOAT_EQ(e36.x11()/r1,e.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(e36.x12()/r1,e.x12()) << "T.x12()";
@@ -1672,7 +1670,7 @@ TEST(mandel_tensors,Basic3rdOrder36e36minuseqe36p){
     TestData td;
     const auto & e36p = td.e36p;
     const auto & e36 = td.e36;
-    mandel3x6 e = e36;
+    p3a::mandel3x6 e = e36;
     e-=e36p;
 
     EXPECT_FLOAT_EQ(e36.x11()-e36p.x11(),e.x11()) << "T.x11()";
@@ -1702,7 +1700,7 @@ TEST(mandel_tensors,LinAlg3rdOrder36Transposee36){
 
     TestData td;
     const auto & e36 = td.e36;
-    mandel6x3 e = transpose(e36);
+    p3a::mandel6x3 e = transpose(e36);
 
     EXPECT_FLOAT_EQ(e36.x11(),e.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(e36.x21(),e.x12()) << "T.x12()";
@@ -1727,7 +1725,7 @@ TEST(mandel_tensors,LinAlg3rdOrder36Transposee36){
 TEST(mandel_tensors,LinAlg3rdOrder36e36xC){
 
     TestData td;
-    mandel3x6 e = td.e36*td.C;
+    p3a::mandel3x6 e = td.e36*td.C;
 
     EXPECT_FLOAT_EQ(0.4360318402861528,e.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(0.9345405556169891,e.x12()) << "T.x12()";
@@ -1752,7 +1750,7 @@ TEST(mandel_tensors,LinAlg3rdOrder36e36xC){
 TEST(mandel_tensors,LinAlg3rdOrder36Vxe36){
 
     TestData td;
-    mandel3x6 e = td.V*td.e36;
+    p3a::mandel3x6 e = td.V*td.e36;
 
     EXPECT_FLOAT_EQ(0.3185304284465936,e.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(0.2361092230446556,e.x12()) << "T.x12()";
@@ -1777,7 +1775,7 @@ TEST(mandel_tensors,LinAlg3rdOrder36Vxe36){
 TEST(mandel_tensors,LinAlg3rdOrder36TensorVxe36){
 
     TestData td;
-    mandel3x6 e = td.TV*td.e36;
+    p3a::mandel3x6 e = td.TV*td.e36;
 
     EXPECT_FLOAT_EQ(0.3185304284465936,e.x11()) << "T.x11()";
     EXPECT_FLOAT_EQ(0.2361092230446556,e.x12()) << "T.x12()";
@@ -1858,7 +1856,7 @@ TEST(mandel_tensors,Construct63e63frome63){
 
     TestData td;
     const auto e63invX = td.e63invX;
-    mandel6x3 f(td.e63);
+    p3a::mandel6x3 f(td.e63);
     f.invMandelXform();
 
     EXPECT_FLOAT_EQ(e63invX.x11(),f.x11()) << "x11()";
@@ -1885,7 +1883,7 @@ TEST(mandel_tensors,Construct63e63fromList){
 
     TestData td;
     const auto e63invX = td.e63invX;
-    mandel6x3 f = td.e63;
+    p3a::mandel6x3 f = td.e63;
     f.invMandelXform();
 
     EXPECT_FLOAT_EQ(e63invX.x11(),f.x11()) << "x11()";
@@ -1916,7 +1914,7 @@ TEST(mandel_tensors,Basic3rdOrder63e63pluseqe63p){
     TestData td;
     const auto & e63 = td.e63;
     const auto & e63p = td.e63p;
-    mandel6x3 f = e63;
+    p3a::mandel6x3 f = e63;
     f+=e63p;
 
     EXPECT_FLOAT_EQ(e63.x11()+e63p.x11(),f.x11()) << "e.x11()";
@@ -1944,7 +1942,7 @@ TEST(mandel_tensors,Basic3rdOrder63e63adde63p){
     TestData td;
     const auto & e63 = td.e63;
     const auto & e63p = td.e63p;
-    mandel6x3 f = e63p + e63;
+    p3a::mandel6x3 f = e63p + e63;
 
     EXPECT_FLOAT_EQ(e63.x11()+e63p.x11(),f.x11()) << "e.x11()";
     EXPECT_FLOAT_EQ(e63.x12()+e63p.x12(),f.x12()) << "e.x12()";
@@ -1971,7 +1969,7 @@ TEST(mandel_tensors,Basic3rdOrder63e63minuse63p){
     TestData td;
     const auto & e63 = td.e63;
     const auto & e63p = td.e63p;
-    mandel6x3 f = e63 - e63p;
+    p3a::mandel6x3 f = e63 - e63p;
 
     EXPECT_FLOAT_EQ(e63.x11()-e63p.x11(),f.x11()) << "e.x11()";
     EXPECT_FLOAT_EQ(e63.x12()-e63p.x12(),f.x12()) << "e.x12()";
@@ -1998,7 +1996,7 @@ TEST(mandel_tensors,Basic3rdOrder63e63xReal){
     TestData td;
     const auto & e63 = td.e63;
     const auto & r1 = td.r1;
-    mandel6x3 f = e63;
+    p3a::mandel6x3 f = e63;
     f*=r1;
 
     EXPECT_FLOAT_EQ(e63.x11()*r1,f.x11()) << "e.x11()";
@@ -2026,7 +2024,7 @@ TEST(mandel_tensors,Basic3rdOrderBinary63e63xReal){
     TestData td;
     const auto & e63 = td.e63;
     const auto & r1 = td.r1;
-    mandel6x3 f = e63*r1;
+    p3a::mandel6x3 f = e63*r1;
 
     EXPECT_FLOAT_EQ(e63.x11()*r1,f.x11()) << "e.x11()";
     EXPECT_FLOAT_EQ(e63.x12()*r1,f.x12()) << "e.x12()";
@@ -2053,7 +2051,7 @@ TEST(mandel_tensors,Basic3rdOrder63BinaryRealxe63){
     TestData td;
     const auto & e63 = td.e63;
     const auto & r1 = td.r1;
-    mandel6x3 f = r1*e63;
+    p3a::mandel6x3 f = r1*e63;
 
     EXPECT_FLOAT_EQ(e63.x11()*r1,f.x11()) << "e.x11()";
     EXPECT_FLOAT_EQ(e63.x12()*r1,f.x12()) << "e.x12()";
@@ -2080,7 +2078,7 @@ TEST(mandel_tensors,Basic3rdOrder63e63divReal){
     TestData td;
     const auto & e63 = td.e63;
     const auto & r1 = td.r1;
-    mandel6x3 f = e63;
+    p3a::mandel6x3 f = e63;
     f/=r1;
 
     EXPECT_FLOAT_EQ(e63.x11()/r1,f.x11()) << "e.x11()";
@@ -2108,7 +2106,7 @@ TEST(mandel_tensors,Basic3rdOrder63Binarye63divReal){
     TestData td;
     const auto & e63 = td.e63;
     const auto & r1 = td.r1;
-    mandel6x3 f = e63/r1;
+    p3a::mandel6x3 f = e63/r1;
 
     EXPECT_FLOAT_EQ(e63.x11()/r1,f.x11()) << "e.x11()";
     EXPECT_FLOAT_EQ(e63.x12()/r1,f.x12()) << "e.x12()";
@@ -2135,7 +2133,7 @@ TEST(mandel_tensors,Basic3rdOrder63e63minuseqe63p){
     TestData td;
     const auto & e63 = td.e63;
     const auto & e63p = td.e63p;
-    mandel6x3 f=e63;
+    p3a::mandel6x3 f=e63;
     f-=e63p;
 
     EXPECT_FLOAT_EQ(e63.x11()-e63p.x11(),f.x11()) << "e.x11()";
@@ -2165,7 +2163,7 @@ TEST(mandel_tensors,LinAlg3rdOrder63Transposee63){
 
     TestData td;
     const auto & e63 = td.e63;
-    mandel3x6 f = transpose(e63);
+    p3a::mandel3x6 f = transpose(e63);
 
     EXPECT_FLOAT_EQ(e63.x11(),f.x11()) << "e.x11()";
     EXPECT_FLOAT_EQ(e63.x21(),f.x12()) << "e.x12()";
@@ -2190,7 +2188,7 @@ TEST(mandel_tensors,LinAlg3rdOrder63Transposee63){
 TEST(mandel_tensors,LinAlg3rdOrder63Cxe63){
 
     TestData td;
-    mandel6x3 f = td.C*td.e63;
+    p3a::mandel6x3 f = td.C*td.e63;
 
     EXPECT_FLOAT_EQ(1.7583802475541608,f.x11()) << "e.x11()";
     EXPECT_FLOAT_EQ(1.6477108574850361,f.x12()) << "e.x12()";
@@ -2215,7 +2213,7 @@ TEST(mandel_tensors,LinAlg3rdOrder63Cxe63){
 TEST(mandel_tensors,LinAlg3rdOrder63e63xTensorV){
 
     TestData td;
-    mandel6x3 f = td.e63*td.TV;
+    p3a::mandel6x3 f = td.e63*td.TV;
 
     EXPECT_FLOAT_EQ(0.8906847120906268,f.x11()) << "e.x11()";
     EXPECT_FLOAT_EQ(0.9270169652403459,f.x12()) << "e.x12()";
@@ -2240,7 +2238,7 @@ TEST(mandel_tensors,LinAlg3rdOrder63e63xTensorV){
 TEST(mandel_tensors,LinAlg3rdOrder63e63xV6){
 
     TestData td;
-    mandel6x3 f = td.e63*td.V;
+    p3a::mandel6x3 f = td.e63*td.V;
 
     EXPECT_FLOAT_EQ(0.8906847120906268,f.x11()) << "e.x11()";
     EXPECT_FLOAT_EQ(0.9270169652403459,f.x12()) << "e.x12()";

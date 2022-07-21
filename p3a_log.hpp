@@ -12,11 +12,8 @@ template <typename T>
 [[nodiscard]] P3A_HOST_DEVICE inline auto
 sqrt_dbp(matrix3x3<T> const& A, int& k)
 {
-  using std::abs;
-  using std::sqrt;
-  using std::cbrt;
   auto const eps      = epsilon_value<T>();
-  auto const tol      = 0.5 * sqrt(3.0) * eps;  // 3 is dim
+  auto const tol      = 0.5 * p3a::sqrt(3.0) * eps;  // 3 is dim
   auto const I        = matrix3x3<T>::identity();
   auto const max_iter = 32;
   auto       X        = A;
@@ -25,9 +22,9 @@ sqrt_dbp(matrix3x3<T> const& A, int& k)
   k                   = 0;
   while (k++ < max_iter) {
     if (scale == true) {
-      auto const d  = abs(determinant(M));
-      auto const d2 = sqrt(d);
-      auto const d6 = cbrt(d2);
+      auto const d  = p3a::abs(determinant(M));
+      auto const d2 = p3a::sqrt(d);
+      auto const d6 = p3a::cbrt(d2);
       auto const g  = 1.0 / d6;
       X *= g;
       M *= g * g;

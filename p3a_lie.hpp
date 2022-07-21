@@ -14,11 +14,10 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
 diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
 {
-  using std::log;
   return diagonal3x3<T>(
-      log(m.xx()),
-      log(m.yy()),
-      log(m.zz()));
+      p3a::log(m.xx()),
+      p3a::log(m.yy()),
+      p3a::log(m.zz()));
 }
 
 /* Polar Decomposition:
@@ -44,8 +43,7 @@ symmetric3x3<T> spd_exponential(symmetric3x3<T> const& log_m)
   diagonal3x3<T> l;
   matrix3x3<T> q;
   eigendecompose(log_m, l, q);
-  using std::exp;
-  diagonal3x3<T> const exp_l(exp(l.xx()), exp(l.yy()), exp(l.zz()));
+  diagonal3x3<T> const exp_l(p3a::exp(l.xx()), p3a::exp(l.yy()), p3a::exp(l.zz()));
   return multiply_a_b_at(q, exp_l);
 }
 
@@ -56,11 +54,10 @@ symmetric3x3<T> spd_logarithm(symmetric3x3<T> const& exp_m)
   diagonal3x3<T> l;
   matrix3x3<T> q;
   eigendecompose(exp_m, l, q);
-  using std::log;
   diagonal3x3<T> const log_l(
-      log(l.xx()),
-      log(l.yy()),
-      log(l.zz()));
+      p3a::log(l.xx()),
+      p3a::log(l.yy()),
+      p3a::log(l.zz()));
   return multiply_a_b_at(q, log_l);
 }
 
@@ -111,7 +108,6 @@ polar_errc polar_rotation(
   // Implementation inspired by the routine polarDecompositionRMB in the Uintah
   // MPM framework.  There, it was found this that algorithm was faster and more
   // robust than other analytic or iterative methods.
-  using std::sqrt;
   matrix3x3<T> const identity{
     T(1.0), T(0.0), T(0.0),
     T(0.0), T(1.0), T(0.0),
@@ -136,7 +132,7 @@ polar_errc polar_rotation(
   E = (E * scale - identity) * T(0.5);
   // First guess for [R] equal to the scaled [F] matrix,
   // [A]=Sqrt[3]F/magnitude[F]
-  scale = sqrt(scale);
+  scale = p3a::sqrt(scale);
   auto A = scale * F;
   // The matrix [A] equals the rotation if and only if [E] equals [0]
   T err1 = E.xx() * E.xx() + E.yy() * E.yy() + E.zz() * E.zz()
@@ -210,7 +206,7 @@ polar_rotation(matrix3x3<T> const& A)
   auto const dim       = 3.0;
   auto       scale     = true;
   auto const tol_scale = 0.01;
-  auto const tol_conv  = std::sqrt(dim) * epsilon_value<T>();
+  auto const tol_conv  = p3a::sqrt(dim) * epsilon_value<T>();
   auto       X         = A;
   auto       gamma     = 2.0;
   auto const max_iter  = 128;
@@ -220,7 +216,7 @@ polar_rotation(matrix3x3<T> const& A)
     auto       mu = 1.0;
     if (scale == true) {
       mu = (norm_1(Y) * norm_infinity(Y)) / (norm_1(X) * norm_infinity(X));
-      mu = std::sqrt(std::sqrt(mu));
+      mu = p3a::sqrt(p3a::sqrt(mu));
     }
     auto const Z     = 0.5 * (mu * X + transpose(Y) / mu);
     auto const D     = Z - X;
@@ -228,7 +224,7 @@ polar_rotation(matrix3x3<T> const& A)
     if (scale == true && delta < tol_scale) {
       scale = false;
     }
-    auto const end_iter = norm(D) <= std::sqrt(tol_conv) || (delta > 0.5 * gamma && scale == false);
+    auto const end_iter = norm(D) <= p3a::sqrt(tol_conv) || (delta > 0.5 * gamma && scale == false);
     X                   = Z;
     gamma               = delta;
     if (end_iter == true) {

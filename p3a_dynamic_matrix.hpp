@@ -125,13 +125,12 @@ void gaussian_elimination(
   int const n = a.column_count();
   int h = 0; // pivot row
   int k = 0; // pivot column
-  using std::abs;
   while ((h < m) && (k < n)) {
     // find the k-th pivot
     int i_max = h;
-    T max_magnitude = abs(a(i_max, k));
+    T max_magnitude = p3a::abs(a(i_max, k));
     for (int i = h + 1; i < m; ++i) {
-      T const magnitude = abs(a(i, k));
+      T const magnitude = p3a::abs(a(i, k));
       if (magnitude > max_magnitude) {
         i_max = i;
         max_magnitude = magnitude;

@@ -334,8 +334,7 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
 auto frobenius_norm(symmetric3x3<T> const& a)
 {
-  using std::sqrt;
-  return sqrt(frobenius_inner_product(a, a));
+  return p3a::sqrt(frobenius_inner_product(a, a));
 }
 
 template <class T>
@@ -461,14 +460,13 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 T maximum_norm(symmetric3x3<T> const& a)
 {
-  using std::abs;
   return maximum(
-      abs(a.xx()),
-      abs(a.xy()),
-      abs(a.xz()),
-      abs(a.yy()),
-      abs(a.yz()),
-      abs(a.zz()));
+      p3a::abs(a.xx()),
+      p3a::abs(a.xy()),
+      p3a::abs(a.xz()),
+      p3a::abs(a.yy()),
+      p3a::abs(a.yz()),
+      p3a::abs(a.zz()));
 }
 
 }

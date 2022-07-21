@@ -17,18 +17,16 @@ void givens(
     T& c,
     T& s)
 {
-  using std::abs;
-  using std::sqrt;
   c = 1.0;
   s = 0.0;
   if (b != 0.0) {
-    if (abs(b) > abs(a)) {
+    if (p3a::abs(b) > p3a::abs(a)) {
       auto const t = -a / b;
-      s = 1.0 / sqrt(1.0 + t * t);
+      s = 1.0 / p3a::sqrt(1.0 + t * t);
       c = t * s;
     } else {
       auto const t = -b / a;
-      c = 1.0 / sqrt(1.0 + t * t);
+      c = 1.0 / p3a::sqrt(1.0 + t * t);
       s = t * c;
     }
   }
@@ -52,10 +50,9 @@ void svd_bidiagonal(
     matrix2x2<T>& S,
     matrix2x2<T>& V)
 {
-  using std::abs;
-  T fa = abs(f);
-  T ga = abs(g);
-  T ha = abs(h);
+  T fa = p3a::abs(f);
+  T ga = p3a::abs(g);
+  T ha = p3a::abs(h);
   T s0 = 0.0;
   T s1 = 0.0;
   T cu = 1.0;
@@ -88,8 +85,8 @@ void svd_bidiagonal(
     T const t = 2.0 - l;  // t \in [1,2]
     T const mm = m * m;
     T const tt = t * t;
-    T const s = sqrt(tt + mm);  // s \in [1,1 + 1/macheps]
-    T const r = ((l != 0.0) ? (sqrt(l * l + mm)) : (abs(m)));  // r \in [0,1 + 1/macheps]
+    T const s = p3a::sqrt(tt + mm);  // s \in [1,1 + 1/macheps]
+    T const r = ((l != 0.0) ? (p3a::sqrt(l * l + mm)) : (abs(m)));  // r \in [0,1 + 1/macheps]
     T const a = 0.5 * (s + r);  // a \in [1,1 + |m|]
     s1 = ha / a;
     s0 = fa * a;
@@ -102,7 +99,7 @@ void svd_bidiagonal(
       tau = (l == 0.0) ? (std::copysign(2.0, f) * std::copysign(1.0, g))
                        : (g / std::copysign(d, f) + m / t);
     }
-    T const lv = sqrt(tau * tau + 4.0);  // second assignment to L in DLASV2
+    T const lv = p3a::sqrt(tau * tau + 4.0);  // second assignment to L in DLASV2
     cv = 2.0 / lv;
     sv = tau / lv;
     cu = (cv + sv * m) / a;

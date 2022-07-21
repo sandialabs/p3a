@@ -3,14 +3,12 @@
 #include "p3a_lie.hpp"
 #include "p3a_log.hpp"
 
-using namespace p3a; 
-
 TEST(lie, expm_spd1){
   using T = double;
   constexpr T one = 1.0;
   constexpr T zero = 0.0;
   constexpr T e = 2.718281828459045;
-  symmetric3x3<T> a{one, zero, zero, one, zero, one};
+  p3a::symmetric3x3<T> a{one, zero, zero, one, zero, one};
   auto exp_a = spd_exponential(a);
   EXPECT_FLOAT_EQ(e, exp_a.xx()) << "exp_a.xx()";
   EXPECT_FLOAT_EQ(e, exp_a.yy()) << "exp_a.yy()";
@@ -24,7 +22,7 @@ TEST(lie, expm_spd2){
   using T = double;
   constexpr T one = 1.0;
   constexpr T zero = 0.0;
-  symmetric3x3<T> a{zero, zero, zero, zero, zero, zero};
+  p3a::symmetric3x3<T> a{zero, zero, zero, zero, zero, zero};
   auto exp_a = spd_exponential(a);
   EXPECT_FLOAT_EQ(one, exp_a.xx()) << "exp_a.xx()";
   EXPECT_FLOAT_EQ(one, exp_a.yy()) << "exp_a.yy()";
@@ -36,7 +34,7 @@ TEST(lie, expm_spd2){
 
 TEST(lie, expm_spd3){
   using T = double;
-  symmetric3x3<T> a{T(3.0), T(1.0), T(0.0), T(2.0), T(1.0), T(1.0)};
+  p3a::symmetric3x3<T> a{T(3.0), T(1.0), T(0.0), T(2.0), T(1.0), T(1.0)};
   auto exp_a = spd_exponential(a);
   EXPECT_FLOAT_EQ(28.49937896, exp_a.xx()) << "exp_a.xx()";
   EXPECT_FLOAT_EQ(16.82033617, exp_a.yy()) << "exp_a.yy()";
@@ -59,7 +57,7 @@ TEST(lie, logm){
   constexpr T one = 1.0;
   constexpr T zero = 0.0;
   constexpr T e = 2.718281828459045;
-  symmetric3x3<T> a{e, zero, zero, e, zero, e};
+  p3a::symmetric3x3<T> a{e, zero, zero, e, zero, e};
   auto log_a = spd_logarithm(a);
   EXPECT_FLOAT_EQ(one, log_a.xx()) << "log_a.xx()";
   EXPECT_FLOAT_EQ(one, log_a.yy()) << "log_a.yy()";
@@ -72,12 +70,12 @@ TEST(lie, logm){
 TEST(tensor, exp)
 {
   using Real   = double;
-  using Tensor = matrix3x3<Real>;
+  using Tensor = p3a::matrix3x3<Real>;
   // Identity
-  auto const eps = epsilon_value<Real>();
+  auto const eps = p3a::epsilon_value<Real>();
   auto const I   = Tensor::identity();
   auto const z   = Tensor(0, 0, 0, 0, 0, 0, 0, 0, 0);
-  auto const Z   = exp(z);
+  auto const Z   = p3a::exp(z);
   auto const error_Z = norm(Z - I) / norm(I);
   ASSERT_LE(error_Z, eps);
   auto const A          = Tensor(2.5, 0.5, 1, 0.5, 2.5, 1, 1, 1, 2);
@@ -102,21 +100,21 @@ TEST(tensor, exp)
 TEST(tensor, log)
 {
   using Real   = double;
-  using Tensor = matrix3x3<Real>;
+  using Tensor = p3a::matrix3x3<Real>;
   // Identity
-  auto const eps     = epsilon_value<Real>();
+  auto const eps     = p3a::epsilon_value<Real>();
   auto const I       = Tensor::identity();
-  auto const i       = log(I);
+  auto const i       = p3a::log(I);
   auto const error_I = norm(i) / norm(I);
   ASSERT_LE(error_I, eps);
   // 1/8 of a rotation
-  auto const tau     = 2.0 * std::acos(-1.0);
-  auto const c       = std::sqrt(2.0) / 2.0;
+  auto const tau     = 2.0 * p3a::acos(-1.0);
+  auto const c       = p3a::sqrt(2.0) / 2.0;
   auto const R       = Tensor(c, -c, 0.0, c, c, 0.0, 0.0, 0.0, 1.0);
   auto const r       = log(R);
-  auto const error_R = std::abs(r(0, 1) + tau / 8.0);
+  auto const error_R = p3a::abs(r(0, 1) + tau / 8.0);
   ASSERT_LE(error_R, eps);
-  auto const error_r = std::abs(r(0, 1) + r(1, 0));
+  auto const error_r = p3a::abs(r(0, 1) + r(1, 0));
   ASSERT_LE(error_r, eps);
   auto const A       = Tensor(7, 1, 2, 3, 8, 4, 5, 6, 9);
   auto const a       = log(A);

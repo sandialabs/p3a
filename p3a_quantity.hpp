@@ -744,8 +744,7 @@ auto sqrt(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
       "not allowed to take square roots of absolute quantities");
-  using std::sqrt;
-  return quantity<unit_root<Unit, 2>, ValueType, Origin>(sqrt(q.value()));
+  return quantity<unit_root<Unit, 2>, ValueType, Origin>(p3a::sqrt(q.value()));
 }
 
 template <class Unit, class ValueType, class Origin>
@@ -754,8 +753,7 @@ auto cbrt(quantity<Unit, ValueType, Origin> const& q)
 {
   static_assert(std::is_same_v<Origin, void>,
       "not allowed to take cube roots of absolute quantities");
-  using std::cbrt;
-  return quantity<unit_root<Unit, 3>, ValueType, Origin>(cbrt(q.value()));
+  return quantity<unit_root<Unit, 3>, ValueType, Origin>(p3a::cbrt(q.value()));
 }
 
 // transcendental functions act on unitless quantities
@@ -764,64 +762,56 @@ template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> exp(unitless<ValueType> const& q)
 {
-  using std::exp;
-  return unitless<ValueType>(exp(q.value()));
+  return unitless<ValueType>(p3a::exp(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> log(unitless<ValueType> const& q)
 {
-  using std::log;
-  return unitless<ValueType>(log(q.value()));
+  return unitless<ValueType>(p3a::log(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> sin(unitless<ValueType> const& q)
 {
-  using std::sin;
-  return unitless<ValueType>(sin(q.value()));
+  return unitless<ValueType>(p3a::sin(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> cos(unitless<ValueType> const& q)
 {
-  using std::cos;
-  return unitless<ValueType>(cos(q.value()));
+  return unitless<ValueType>(p3a::cos(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> tan(unitless<ValueType> const& q)
 {
-  using std::tan;
-  return unitless<ValueType>(tan(q.value()));
+  return unitless<ValueType>(p3a::tan(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> asin(unitless<ValueType> const& q)
 {
-  using std::asin;
-  return unitless<ValueType>(asin(q.value()));
+  return unitless<ValueType>(p3a::asin(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> acos(unitless<ValueType> const& q)
 {
-  using std::acos;
-  return unitless<ValueType>(acos(q.value()));
+  return unitless<ValueType>(p3a::acos(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 unitless<ValueType> pow(unitless<ValueType> const& a, unitless<ValueType> const& b)
 {
-  using std::pow;
-  return unitless<ValueType>(pow(a.value(), b.value()));
+  return unitless<ValueType>(p3a::pow(a.value(), b.value()));
 }
 
 // allow the exponent to be a raw arithmetic type
@@ -831,8 +821,7 @@ P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 std::enable_if_t<std::is_arithmetic_v<Arithmetic>, unitless<ValueType>>
 pow(unitless<ValueType> const& a, Arithmetic const& b)
 {
-  using std::pow;
-  return unitless<ValueType>(pow(a.value(), ValueType(b)));
+  return unitless<ValueType>(p3a::pow(a.value(), ValueType(b)));
 }
 
 template <class Unit, class ValueType, class Origin>
@@ -841,8 +830,7 @@ quantity<Unit, ValueType, Origin> abs(quantity<Unit, ValueType, Origin> const& q
 {
   static_assert(std::is_same_v<Origin, void>,
       "not allowed to take absolute values of absolute quantities");
-  using std::abs;
-  return quantity<Unit, ValueType, Origin>(abs(q.value()));
+  return quantity<Unit, ValueType, Origin>(p3a::abs(q.value()));
 }
 
 namespace quantity_literals {

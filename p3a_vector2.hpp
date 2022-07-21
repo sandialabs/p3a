@@ -218,8 +218,7 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 T magnitude(vector2<T> const& a)
 {
-  using std::sqrt;
-  return sqrt(dot_product(a, a));
+  return p3a::hypot(a.x(), a.y());
 }
 
 template <class T>

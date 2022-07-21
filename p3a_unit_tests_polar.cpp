@@ -4,17 +4,15 @@
 #include "p3a_counting_iterator.hpp"
 #include "p3a_for_each.hpp"
 
-using namespace p3a;
-
 TEST(polar_decomp, stretch){
   using T = double;
   T const l = std::sqrt(T(2.));
-  matrix3x3<T> F{l, 0.0, 0.0, 0.0, 2 * l, 0.0, 0.0, 0.0, 1.0};
-  matrix3x3<T> R;
-  symmetric3x3<T> U;
+  p3a::matrix3x3<T> F{l, 0.0, 0.0, 0.0, 2 * l, 0.0, 0.0, 0.0, 1.0};
+  p3a::matrix3x3<T> R;
+  p3a::symmetric3x3<T> U;
 
-  auto const e = decompose_polar_right(F, R, U);
-  EXPECT_EQ(e, polar_errc::success);
+  auto const e = p3a::decompose_polar_right(F, R, U);
+  EXPECT_EQ(e, p3a::polar_errc::success);
 
   EXPECT_FLOAT_EQ(l, U.xx()) << "U.xx()";
   EXPECT_FLOAT_EQ(2 * l, U.yy()) << "U.yy()";
@@ -38,12 +36,12 @@ TEST(polar_decomp, stretch){
 TEST(polar_decomp, pure_shear){
   using T = double;
   T const l = std::sqrt(T(2.));
-  matrix3x3<T> F{l, 0.0, 0.0, 0.0, 1. / l, 0.0, 0.0, 0.0, T(1.0)};
-  matrix3x3<T> R;
-  symmetric3x3<T> U;
+  p3a::matrix3x3<T> F{l, 0.0, 0.0, 0.0, 1. / l, 0.0, 0.0, 0.0, T(1.0)};
+  p3a::matrix3x3<T> R;
+  p3a::symmetric3x3<T> U;
 
-  auto const e = decompose_polar_right(F, R, U);
-  EXPECT_EQ(e, polar_errc::success);
+  auto const e = p3a::decompose_polar_right(F, R, U);
+  EXPECT_EQ(e, p3a::polar_errc::success);
 
   EXPECT_FLOAT_EQ(l, U.xx()) << "U.xx()";
   EXPECT_FLOAT_EQ(1./l, U.yy()) << "U.yy()";
@@ -76,12 +74,12 @@ TEST(polar_decomp, simple_shear){
   T const toor3 = one / root3;
   T const root23 = root2 / root3;
 
-  matrix3x3<T> F{one, root2, zero, zero, one, zero, zero, zero, one};
-  matrix3x3<T> R;
-  symmetric3x3<T> U;
+  p3a::matrix3x3<T> F{one, root2, zero, zero, one, zero, zero, zero, one};
+  p3a::matrix3x3<T> R;
+  p3a::symmetric3x3<T> U;
 
   auto const e = decompose_polar_right(F, R, U);
-  EXPECT_EQ(e, polar_errc::success);
+  EXPECT_EQ(e, p3a::polar_errc::success);
 
   EXPECT_FLOAT_EQ(root23, U.xx()) << "U.xx()";
   EXPECT_FLOAT_EQ(two * root23, U.yy()) << "U.yy()";
