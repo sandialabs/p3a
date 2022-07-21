@@ -147,10 +147,10 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
 T sin_x_over_x(T const& x)
 {
-  auto const y = abs(x);
+  auto const y = p3a::abs(x);
   auto constexpr epsilon = epsilon_value<T>();
-  auto const e2 = sqrt(epsilon);
-  auto const e4 = sqrt(e2);
+  auto const e2 = p3a::sqrt(epsilon);
+  auto const e4 = p3a::sqrt(e2);
   if (y > e4) {
     return sin(y) / y;
   } else if (y > e2) {
@@ -174,8 +174,9 @@ template <class Value, class Tolerance>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 auto are_close(Value const& a, Value const& b, Tolerance const& tolerance)
 {
-  auto const difference = p3a::abs(b - a);
-  auto const scale = p3a::abs(a) + p3a::abs(b);
+  using p3a::abs;
+  auto const difference = abs(b - a);
+  auto const scale = abs(a) + abs(b);
   return difference <= tolerance * p3a::max(scale, Value(1));
 }
 
