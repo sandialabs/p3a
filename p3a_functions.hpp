@@ -55,6 +55,12 @@ using Kokkos::pow;
 using Kokkos::log;
 using Kokkos::hypot;
 
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
+double hypot(double x, double y, double z)
+{
+  return Kokkos::sqrt(x * x + y * y + z * z);
+}
+
 template <class Head, class... Tail>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr auto
 recursive_maximum(Head const& head, Tail... tail)
@@ -147,10 +153,10 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
 T sin_x_over_x(T const& x)
 {
-  auto const y = p3a::abs(x);
+  auto const y = abs(x);
   auto constexpr epsilon = epsilon_value<T>();
-  auto const e2 = p3a::sqrt(epsilon);
-  auto const e4 = p3a::sqrt(e2);
+  auto const e2 = sqrt(epsilon);
+  auto const e4 = sqrt(e2);
   if (y > e4) {
     return sin(y) / y;
   } else if (y > e2) {

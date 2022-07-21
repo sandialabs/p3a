@@ -756,6 +756,25 @@ auto cbrt(quantity<Unit, ValueType, Origin> const& q)
   return quantity<unit_root<Unit, 3>, ValueType, Origin>(p3a::cbrt(q.value()));
 }
 
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+auto hypot(
+    quantity<Unit, ValueType, Origin> const& x,
+    quantity<Unit, ValueType, Origin> const& y)
+{
+  return quantity<Unit, ValueType, Origin>(p3a::hypot(x.value(), y.value()));
+}
+
+template <class Unit, class ValueType, class Origin>
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+auto hypot(
+    quantity<Unit, ValueType, Origin> const& x,
+    quantity<Unit, ValueType, Origin> const& y,
+    quantity<Unit, ValueType, Origin> const& z)
+{
+  return quantity<Unit, ValueType, Origin>(p3a::hypot(x.value(), y.value(), z.value()));
+}
+
 // transcendental functions act on unitless quantities
 
 template <class ValueType>

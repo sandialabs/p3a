@@ -329,7 +329,7 @@ void simd_for_each(
   using new_functor = details::simd_3d_functor<T, simd_abi_type, Integral, Functor>;
   Integral constexpr width = Integral(p3a::simd<T, simd_abi_type>::size());
   Integral const quotient = extents.x() / width;
-  for_each(policy,
+  p3a::for_each(policy,
       counting_iterator3<Integral>(Integral(0), first.vector.y(), first.vector.z()),
       counting_iterator3<Integral>(Integral(quotient + 1), last.vector.y(), last.vector.z()),
       new_functor(functor, first.vector.x(), last.vector.x()));
