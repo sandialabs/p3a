@@ -76,10 +76,14 @@ class subgrid3 {
   box3<int> m_box;
  public:
   P3A_ALWAYS_INLINE subgrid3() = default;
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr explicit subgrid3(
+      box3<int> const& box_in)
+    :m_box(box_in)
+  {}
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr subgrid3(
       vector3<int> const& lower_in,
       vector3<int> const& upper_in)
-    :m_box(lower_in, upper_in)
+    :subgrid3(box3<int>(lower_in, upper_in))
   {}
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr subgrid3(
       grid3 const& grid_in)
@@ -142,6 +146,14 @@ class subgrid3 {
            p.y() < T(upper().y()) &&
            p.z() < T(upper().z());
   }
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+  box3<int> const& box() const { return m_box; }
 };
+
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+inline subgrid3 intersect(subgrid3 const& a, subgrid3 const& b)
+{
+  return subgrid3(intersect(a.box(), b.box()));
+}
 
 }
