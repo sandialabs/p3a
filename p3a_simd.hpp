@@ -5,6 +5,7 @@
 #include "p3a_functions.hpp"
 #include "p3a_type_traits.hpp"
 #include "p3a_functional.hpp"
+#include "p3a_scalar.hpp"
 
 namespace p3a {
 
@@ -86,6 +87,15 @@ typename V::value_type reduce(
     adder<typename V::value_type> binary_op)
 {
   return Kokkos::Experimental::reduce(x, identity_element, std::plus<>());
+}
+
+namespace details {
+
+template <class T, class Abi>
+struct is_scalar<simd<T, Abi>> {
+  inline static constexpr bool value = true;
+};
+
 }
 
 }
