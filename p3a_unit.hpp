@@ -496,8 +496,8 @@ class multiply_canonical_unit_products;
 
 template <class LastUnit, class Product>
 class multiply_canonical_unit_products<
-  unit_product<LastUnit>,
-  Product>
+  Product,
+  unit_product<LastUnit>>
 {
  public:
   using type = typename multiply_canonical_unit_product_exp<Product, LastUnit>::type;
@@ -505,8 +505,8 @@ class multiply_canonical_unit_products<
 
 template <class FirstUnit, class... OtherUnits, class Product>
 class multiply_canonical_unit_products<
-  unit_product<FirstUnit, OtherUnits...>,
-  Product>
+  Product,
+  unit_product<FirstUnit, OtherUnits...>>
 {
  public:
   using type = typename multiply_canonical_unit_product_exp<
