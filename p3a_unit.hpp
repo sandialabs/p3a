@@ -53,7 +53,7 @@ class radian {
 class arc_degree {
  public:
   using dimension = no_dimension;
-  using magnitude = std::ratio_divide<details::pi_ratio, std::ratio<180>>>;
+  using magnitude = std::ratio_divide<details::pi_ratio, std::ratio<180>>;
   static std::string name() { return "arcdegree"; }
 };
 
@@ -295,7 +295,7 @@ class ratio_exp {
  public:
   using type = std::conditional_t<Exponent == 0,
         std::ratio<1>,
-        std::conditional_t<Exponent > 0,
+        std::conditional_t<(Exponent > 0),
           std::ratio_multiply<typename ratio_exp<Ratio, Exponent - 1>::type, Ratio>,
           std::ratio_divide<typename ratio_exp<Ratio, Exponent - 1>::type, Ratio>>>;
 };
@@ -338,7 +338,7 @@ class unit_product<LastUnit> {
 };
 
 template <class FirstUnit, class... OtherUnits>
-class unit_product {
+class unit_product<FirstUnit, OtherUnits...> {
  public:
   using dimension = dimension_multiply<
     typename FirstUnit::dimension, typename unit_product<OtherUnits...>::dimension>;
@@ -477,7 +477,7 @@ class multiply_canonical_unit_product_exp<
  public:
   using type = typename prepend_unit_product<
     unit_exp<Named, Exponent1 + Exponent2>,
-    unit_product<OtherUnits...>>;
+    unit_product<OtherUnits...>>::type;
 };
 
 template <class FirstUnit, class... OtherUnits, class UnitExp>
@@ -488,7 +488,7 @@ class multiply_canonical_unit_product_exp<
  public:
   using type = typename prepend_unit_product<
     FirstUnit,
-    typename multiply_canonical_unit_product_exp<unit_product<OtherUnits...>, UnitExp>::type>;
+    typename multiply_canonical_unit_product_exp<unit_product<OtherUnits...>, UnitExp>::type>::type;
 };
 
 template <class A, class B>
@@ -503,7 +503,7 @@ class multiply_canonical_unit_products<
   using type = typename multiply_canonical_unit_product_exp<Product, LastUnit>::type;
 };
 
-template <class FirstUnit, class... OtherUnit, class Product>
+template <class FirstUnit, class... OtherUnits, class Product>
 class multiply_canonical_unit_products<
   unit_product<FirstUnit, OtherUnits...>,
   Product>
@@ -536,7 +536,7 @@ class invert_canonical_unit_product<unit_product<unit_exp<FirstUnit, Exponent>, 
 template <class A, int Root>
 class canonical_unit_product_root;
 
-template <class Unit, int Exponent>
+template <class Unit, int Exponent, int Root>
 class canonical_unit_product_root<unit_product<unit_exp<Unit, Exponent>>, Root>
 {
  public:
@@ -551,7 +551,7 @@ class canonical_unit_product_root<unit_product<unit_exp<FirstUnit, Exponent>, Ot
   static_assert(Exponent % Root == 0, "named unit term not divisible when taking root");
   using type = typename prepend_unit_product<
     unit_exp<FirstUnit, Exponent / Root>,
-    typename canonical_unit_product_root<unit_product<OtherUnits...>>::type>::type;
+    typename canonical_unit_product_root<unit_product<OtherUnits...>, Root>::type>::type;
 };
 
 }
