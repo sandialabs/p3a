@@ -4,7 +4,7 @@
 
 #include "p3a_unit.hpp"
 #include "p3a_quantity.hpp"
-//#include "p3a_iostream.hpp"
+#include "p3a_iostream.hpp"
 
 TEST(quantity, multiply) {
   static_assert(std::is_same_v<
@@ -31,13 +31,23 @@ TEST(quantity, multiply) {
   EXPECT_EQ(meter_per_meter::name(), "1");
   using density_times_volume = p3a::unit_multiply<p3a::kilogram_per_cubic_meter, p3a::cubic_meter>;
   EXPECT_EQ(density_times_volume::name(), "kg");
-//auto a = p3a::watts<double>(1.0) * p3a::seconds<double>(2.0);
-//static_assert(std::is_same_v<decltype(a), p3a::joules<double>>,
-//    "Watts times seconds should be Joules");
-//EXPECT_FLOAT_EQ(a.value(), 2.0);
+  using canonical_no_unit = typename p3a::details::canonicalize_unit_product<p3a::no_unit>::type;
+  static_assert(std::is_same_v<canonical_no_unit, p3a::unit_product<>>,
+      "canonical_no_unit");
+  using canonical_joule = typename p3a::details::canonicalize_unit_product<p3a::joule>::type;
+  static_assert(std::is_same_v<canonical_joule, p3a::unit_product<p3a::unit_exp<p3a::joule, 1>>>,
+      "canonical_joule");
+  using unitless_times_joule = typename p3a::details::simplify_unit_product<
+  typename p3a::details::multiply_canonical_unit_products<
+    canonical_no_unit,
+    canonical_joule>::type>::type;
+  static_assert(std::is_same_v<unitless_times_joule, p3a::joule>,
+      "multiplying by no_unit should be identity");
+  auto a = p3a::watts<double>(1.0) * p3a::seconds<double>(2.0);
+  static_assert(p3a::is_same_unit<decltype(a)::unit, p3a::joule>,
+      "Watts times seconds should be Joules");
+  EXPECT_FLOAT_EQ(a.value(), 2.0);
 }
-
-#if 0
 
 TEST(quantity, divide) {
   auto a = p3a::meters<double>(1.0) / p3a::seconds<double>(2.0);
@@ -94,7 +104,7 @@ TEST(quantity, cgs) {
   using megagram = p3a::mega<p3a::gram>;
   using megagram_per_cubic_meter =
     p3a::unit_divide<megagram, p3a::cubic_meter>;
-  static_assert(std::is_same_v<
+  static_assert(p3a::is_same_unit<
       megagram_per_cubic_meter,
       p3a::gram_per_cubic_centimeter>,
       "Mg/m^3 should be the same as g/cm^3");
@@ -151,5 +161,3 @@ TEST(quantity, iostream) {
   auto s = ss.str();
   EXPECT_EQ(s, "3.5 m / s");
 }
-
-#endif
