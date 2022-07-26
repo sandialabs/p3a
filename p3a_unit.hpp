@@ -346,6 +346,7 @@ class unit_exp {
 template <class... Units>
 class unit_product;
 
+
 template <>
 class unit_product<> {
  public:
@@ -359,7 +360,7 @@ class unit_product<LastUnit> {
  public:
   using dimension = typename LastUnit::dimension;
   using magnitude = typename LastUnit::magnitude;
-  static std::string name() { return LastUnit::name(); }
+  static std::string name();
 };
 
 template <class FirstUnit, class... OtherUnits>
@@ -369,8 +370,109 @@ class unit_product<FirstUnit, OtherUnits...> {
     typename FirstUnit::dimension, typename unit_product<OtherUnits...>::dimension>;
   using magnitude = std::ratio_multiply<
     typename FirstUnit::magnitude, typename unit_product<OtherUnits...>::magnitude>;
-  static std::string name() { return FirstUnit::name() + "*" + unit_product<OtherUnits...>::name(); }
+  static std::string name();
 };
+
+namespace details {
+
+inline std::string trailing_positive_unit_product_name(unit_product<>)
+{
+  return std::string();
+}
+
+template <class FirstUnit, class... OtherUnits> 
+std::string trailing_positive_unit_product_name(unit_product<FirstUnit, OtherUnits...>)
+{
+  return std::string("*") + FirstUnit::name() + trailing_positive_unit_product_name(unit_product<OtherUnits...>());
+}
+
+template <class FirstUnit, int Exponent, class... OtherUnits,
+  std::enable_if_t<(Exponent < 0), bool> = false> 
+std::string trailing_positive_unit_product_name(unit_product<unit_exp<FirstUnit, Exponent>, OtherUnits...>)
+{
+  return trailing_positive_unit_product_name(unit_product<OtherUnits...>());
+}
+
+template <class Unit> 
+std::string positive_unit_product_name(Unit)
+{
+  return Unit::name();
+}
+
+template <class FirstUnit, int Exponent,
+  std::enable_if_t<(Exponent < 0), bool> = false> 
+std::string positive_unit_product_name(unit_exp<FirstUnit, Exponent>)
+{
+  return std::string();
+}
+
+template <class FirstUnit, class... OtherUnits> 
+std::string positive_unit_product_name(unit_product<FirstUnit, OtherUnits...>)
+{
+  return FirstUnit::name() + trailing_positive_unit_product_name(unit_product<OtherUnits...>());
+}
+
+template <class FirstUnit, int Exponent, class... OtherUnits,
+  std::enable_if_t<(Exponent < 0), bool> = false> 
+std::string positive_unit_product_name(unit_product<unit_exp<FirstUnit, Exponent>, OtherUnits...>)
+{
+  return positive_unit_product_name(unit_product<OtherUnits...>());
+}
+
+inline std::string trailing_negative_unit_product_name(unit_product<>)
+{
+  return std::string();
+}
+
+template <class FirstUnit, class... OtherUnits> 
+std::string trailing_negative_unit_product_name(unit_product<FirstUnit, OtherUnits...>)
+{
+  return trailing_negative_unit_product_name(unit_product<OtherUnits...>());
+}
+
+template <class FirstUnit, int Exponent, class... OtherUnits,
+  std::enable_if_t<(Exponent < 0), bool> = false> 
+std::string trailing_negative_unit_product_name(unit_product<unit_exp<FirstUnit, Exponent>, OtherUnits...>)
+{
+  return std::string("/") + unit_exp<FirstUnit, -Exponent>::name() +
+    trailing_negative_unit_product_name(unit_product<OtherUnits...>());
+}
+
+template <class FirstUnit> 
+std::string trailing_negative_unit_product_name(FirstUnit)
+{
+  return std::string();
+}
+
+template <class FirstUnit, int Exponent,
+  std::enable_if_t<(Exponent < 0), bool> = false> 
+std::string trailing_negative_unit_product_name(unit_exp<FirstUnit, Exponent>)
+{
+  return std::string("/") + unit_exp<FirstUnit, -Exponent>::name();
+}
+
+template <class... Units>
+std::string unit_product_name(unit_product<Units...> product)
+{
+  auto result = positive_unit_product_name(product);
+  if (result.empty()) result = no_unit::name();
+  result += trailing_negative_unit_product_name(product);
+  return result;
+}
+
+}
+
+template <class LastUnit>
+std::string unit_product<LastUnit>::name()
+{
+  return details::unit_product_name(unit_product<LastUnit>());
+}
+
+template <class FirstUnit, class... OtherUnits>
+std::string unit_product<FirstUnit, OtherUnits...>::name()
+{
+  return details::unit_product_name(unit_product<FirstUnit, OtherUnits...>());
+}
 
 // Section 5: details helpers for manipulating products of units, supports basic math operations
 

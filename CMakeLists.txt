@@ -120,13 +120,13 @@ if (BUILD_TESTING)
   set(unit_test_sources
     p3a_unit_tests_main.cpp
     p3a_unit_tests_quantity.cpp
-#   p3a_unit_tests_fixed_point.cpp
-#   p3a_unit_tests_mandel.cpp
-#   p3a_unit_tests_polar.cpp
-#   p3a_unit_tests_lie.cpp
-#   p3a_unit_tests_symmetric3x3.cpp
-#   p3a_unit_tests_dynamic_array.cpp
-#   p3a_unit_tests_search.cpp
+    p3a_unit_tests_fixed_point.cpp
+    p3a_unit_tests_polar.cpp
+    p3a_unit_tests_lie.cpp
+    p3a_unit_tests_symmetric3x3.cpp
+    p3a_unit_tests_dynamic_array.cpp
+    p3a_unit_tests_search.cpp
+    p3a_unit_tests_mandel.cpp
     )
   set_source_files_properties(
     ${unit_test_sources} PROPERTIES LANGUAGE ${p3a_LANGUAGE})

@@ -43,6 +43,8 @@ TEST(quantity, multiply) {
     canonical_joule>::type>::type;
   static_assert(std::is_same_v<unitless_times_joule, p3a::joule>,
       "multiplying by no_unit should be identity");
+  EXPECT_EQ(p3a::details::trailing_negative_unit_product_name(p3a::meter_per_second()), "/s");
+  EXPECT_EQ(p3a::meter_per_second::name(), "m/s");
   auto a = p3a::watts<double>(1.0) * p3a::seconds<double>(2.0);
   static_assert(p3a::is_same_unit<decltype(a)::unit, p3a::joule>,
       "Watts times seconds should be Joules");
