@@ -25,6 +25,8 @@ TEST(quantity, multiply) {
       p3a::joule>,
       "Watt times second = joule");
   EXPECT_EQ(watt_second::name(), "W*s");
+  using second_squared = p3a::unit_multiply<p3a::second, p3a::second>;
+  EXPECT_EQ(second_squared::name(), "s^2");
 //auto a = p3a::watts<double>(1.0) * p3a::seconds<double>(2.0);
 //static_assert(std::is_same_v<decltype(a), p3a::joules<double>>,
 //    "Watts times seconds should be Joules");

@@ -290,14 +290,31 @@ class giga {
 
 namespace details {
 
-template <class Ratio, int Exponent>
-class ratio_exp {
+template <class Ratio, int Exponent, bool IsPositive = (Exponent > 0)>
+class ratio_exp;
+
+template <class Ratio>
+class ratio_exp<Ratio, 0, false> {
  public:
-  using type = std::conditional_t<Exponent == 0,
-        std::ratio<1>,
-        std::conditional_t<(Exponent > 0),
-          std::ratio_multiply<typename ratio_exp<Ratio, Exponent - 1>::type, Ratio>,
-          std::ratio_divide<typename ratio_exp<Ratio, Exponent - 1>::type, Ratio>>>;
+  using type = std::ratio<1>;
+};
+
+template <class Ratio>
+class ratio_exp<Ratio, 1, true> {
+ public:
+  using type = Ratio;
+};
+
+template <class Ratio, int Exponent>
+class ratio_exp<Ratio, Exponent, true> {
+ public:
+  using type = std::ratio_multiply<typename ratio_exp<Ratio, Exponent - 1>::type, Ratio>;
+};
+
+template <class Ratio, int Exponent>
+class ratio_exp<Ratio, Exponent, false> {
+ public:
+  using type = std::ratio_divide<typename ratio_exp<Ratio, Exponent + 1>::type, Ratio>;
 };
 
 template <class Ratio, int Root>
