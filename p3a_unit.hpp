@@ -346,6 +346,14 @@ class unit_exp {
 template <class... Units>
 class unit_product;
 
+template <>
+class unit_product<> {
+ public:
+  using dimension = typename no_unit::dimension;
+  using magnitude = typename no_unit::magnitude;
+  static std::string name() { return no_unit::name(); }
+};
+
 template <class LastUnit>
 class unit_product<LastUnit> {
  public:
@@ -410,10 +418,16 @@ class canonicalize_unit_product {
   using type = unit_product<typename canonicalize_unit_exp<T>::type>;
 };
 
-template <class LastUnit>
-class canonicalize_unit_product<unit_product<LastUnit>> {
+template <>
+class canonicalize_unit_product<no_unit> {
  public:
-  using type = unit_product<typename canonicalize_unit_exp<LastUnit>::type>;
+  using type = unit_product<>;
+};
+
+template <>
+class canonicalize_unit_product<unit_product<>> {
+ public:
+  using type = unit_product<>;
 };
 
 template <class FirstUnit, class... OtherUnits>
@@ -445,16 +459,34 @@ class simplify_unit_exp<unit_exp<T, 0>> {
   using type = no_unit;
 };
 
+template <int Exponent>
+class simplify_unit_exp<unit_exp<no_unit, Exponent>> {
+ public:
+  using type = no_unit;
+};
+
+template <>
+class simplify_unit_exp<unit_exp<no_unit, 1>> {
+ public:
+  using type = no_unit;
+};
+
+template <>
+class simplify_unit_exp<unit_exp<no_unit, 0>> {
+ public:
+  using type = no_unit;
+};
+
 template <class T>
 class simplify_unit_product {
  public:
   using type = T;
 };
 
-template <class LastUnit>
-class simplify_unit_product<unit_product<LastUnit>> {
+template <>
+class simplify_unit_product<unit_product<>> {
  public:
-  using type = typename simplify_unit_exp<LastUnit>::type;
+  using type = no_unit;
 };
 
 template <class FirstUnit, class... OtherUnits>
@@ -477,13 +509,13 @@ class multiply_canonical_unit_product_exp<
   using type = unit_product<unit_exp<Named, Exponent1 + Exponent2>>;
 };
 
-template <class LastUnit, class UnitExp>
+template <class UnitExp>
 class multiply_canonical_unit_product_exp<
-  unit_product<LastUnit>,
+  unit_product<>,
   UnitExp>
 {
  public:
-  using type = unit_product<LastUnit, UnitExp>;
+  using type = unit_product<UnitExp>;
 };
 
 template <class Named, int Exponent1, class... OtherUnits, int Exponent2>
@@ -511,13 +543,13 @@ class multiply_canonical_unit_product_exp<
 template <class A, class B>
 class multiply_canonical_unit_products;
 
-template <class LastUnit, class Product>
+template <class Product>
 class multiply_canonical_unit_products<
   Product,
-  unit_product<LastUnit>>
+  unit_product<>>
 {
  public:
-  using type = typename multiply_canonical_unit_product_exp<Product, LastUnit>::type;
+  using type = Product;
 };
 
 template <class FirstUnit, class... OtherUnits, class Product>
@@ -526,19 +558,19 @@ class multiply_canonical_unit_products<
   unit_product<FirstUnit, OtherUnits...>>
 {
  public:
-  using type = typename multiply_canonical_unit_product_exp<
-    typename multiply_canonical_unit_products<unit_product<OtherUnits...>, Product>::type,
-    FirstUnit>::type;
+  using type = typename multiply_canonical_unit_products<
+    typename multiply_canonical_unit_product_exp<Product, FirstUnit>::type,
+    unit_product<OtherUnits...>>::type;
 };
 
 template <class A>
 class invert_canonical_unit_product;
 
-template <class Unit, int Exponent>
-class invert_canonical_unit_product<unit_product<unit_exp<Unit, Exponent>>>
+template <>
+class invert_canonical_unit_product<unit_product<>>
 {
  public:
-  using type = unit_product<unit_exp<Unit, -Exponent>>;
+  using type = unit_product<>;
 };
 
 template <class FirstUnit, int Exponent, class... OtherUnits>
@@ -553,12 +585,11 @@ class invert_canonical_unit_product<unit_product<unit_exp<FirstUnit, Exponent>, 
 template <class A, int Root>
 class canonical_unit_product_root;
 
-template <class Unit, int Exponent, int Root>
-class canonical_unit_product_root<unit_product<unit_exp<Unit, Exponent>>, Root>
+template <int Root>
+class canonical_unit_product_root<unit_product<>, Root>
 {
  public:
-  static_assert(Exponent % Root == 0, "named unit term not divisible when taking root");
-  using type = unit_product<unit_exp<Unit, Exponent / Root>>;
+  using type = unit_product<>;
 };
 
 template <class FirstUnit, int Exponent, class... OtherUnits, int Root>
