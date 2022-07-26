@@ -559,6 +559,11 @@ class canonical_unit_product_root<unit_product<unit_exp<FirstUnit, Exponent>, Ot
 // Section 6: basic math operations for units: multiply/divide/root
 
 template <class A, class B>
+inline constexpr bool is_same_unit =
+  std::is_same_v<typename A::dimension, typename B::dimension> &&
+  std::is_same_v<typename A::magnitude, typename B::magnitude>;
+
+template <class A, class B>
 using unit_multiply = typename details::simplify_unit_product<
   typename details::multiply_canonical_unit_products<
     typename details::canonicalize_unit_product<A>::type,

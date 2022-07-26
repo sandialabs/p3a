@@ -2,31 +2,34 @@
 
 #include <sstream>
 
-#include "p3a_quantity.hpp"
-#include "p3a_iostream.hpp"
+#include "p3a_unit.hpp"
+//#include "p3a_quantity.hpp"
+//#include "p3a_iostream.hpp"
 
 TEST(quantity, multiply) {
   static_assert(std::is_same_v<
-      p3a::watt,
-      p3a::unit<p3a::dimension<-3, 2, 1>>>,
+      p3a::watt::dimension,
+      p3a::dimension<-3, 2, 1>>,
       "Watt is the SI unit equal to kg * m^2 * s^-3");
   static_assert(std::is_same_v<
-      p3a::second,
-      p3a::unit<p3a::dimension<1, 0, 0>>>,
+      p3a::second::dimension,
+      p3a::dimension<1, 0, 0>>,
       "Second is the SI unit with time dimension");
   static_assert(std::is_same_v<
-      p3a::joule,
-      p3a::unit<p3a::dimension<-2, 2, 1>>>,
+      p3a::joule::dimension,
+      p3a::dimension<-2, 2, 1>>,
       "Joule is the SI unit equal to kg * m^2 * s^-2");
-  static_assert(std::is_same_v<
+  static_assert(p3a::is_same_unit<
       p3a::unit_multiply<p3a::watt, p3a::second>,
       p3a::joule>,
       "Watt times second = joule");
-  auto a = p3a::watts<double>(1.0) * p3a::seconds<double>(2.0);
-  static_assert(std::is_same_v<decltype(a), p3a::joules<double>>,
-      "Watts times seconds should be Joules");
-  EXPECT_FLOAT_EQ(a.value(), 2.0);
+//auto a = p3a::watts<double>(1.0) * p3a::seconds<double>(2.0);
+//static_assert(std::is_same_v<decltype(a), p3a::joules<double>>,
+//    "Watts times seconds should be Joules");
+//EXPECT_FLOAT_EQ(a.value(), 2.0);
 }
+
+#if 0
 
 TEST(quantity, divide) {
   auto a = p3a::meters<double>(1.0) / p3a::seconds<double>(2.0);
@@ -140,3 +143,5 @@ TEST(quantity, iostream) {
   auto s = ss.str();
   EXPECT_EQ(s, "3.5 m / s");
 }
+
+#endif
