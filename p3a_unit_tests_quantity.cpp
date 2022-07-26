@@ -29,12 +29,8 @@ TEST(quantity, multiply) {
   EXPECT_EQ(second_squared::name(), "s^2");
   using meter_per_meter = p3a::unit_divide<p3a::meter, p3a::meter>;
   EXPECT_EQ(meter_per_meter::name(), "1");
-  using canonical_meter_per_meter = typename p3a::details::multiply_canonical_unit_products<
-    typename p3a::details::canonicalize_unit_product<p3a::meter>::type,
-    typename p3a::details::invert_canonical_unit_product<
-      typename p3a::details::canonicalize_unit_product<p3a::meter>::type>::type>::type;
-  static_assert(std::is_same_v<canonical_meter_per_meter, p3a::unit_product<p3a::unit_exp<p3a::meter, 0>>>,
-      "expecting product{m^0}");
+  using density_times_volume = p3a::unit_multiply<p3a::kilogram_per_cubic_meter, p3a::cubic_meter>;
+  EXPECT_EQ(density_times_volume::name(), "kg");
 //auto a = p3a::watts<double>(1.0) * p3a::seconds<double>(2.0);
 //static_assert(std::is_same_v<decltype(a), p3a::joules<double>>,
 //    "Watts times seconds should be Joules");
