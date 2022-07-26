@@ -571,14 +571,31 @@ class canonical_unit_product_root<unit_product<unit_exp<FirstUnit, Exponent>, Ot
     typename canonical_unit_product_root<unit_product<OtherUnits...>, Root>::type>::type;
 };
 
+template< class, class = void >
+struct has_dimension : std::false_type { };
+template< class T >
+struct has_dimension<T, std::void_t<typename T::dimension>> : std::true_type { };
+
+template< class, class = void >
+struct has_magnitude : std::false_type { };
+template< class T >
+struct has_magnitude<T, std::void_t<typename T::magnitude>> : std::true_type { };
+
 }
 
-// Section 6: basic math operations for units: multiply/divide/root
+// Section 6: some type traits helpers for identifying and comparing units
+
+template <class A>
+inline constexpr bool is_unit =
+  details::has_dimension<A>::value &&
+  details::has_magnitude<A>::value;
 
 template <class A, class B>
 inline constexpr bool is_same_unit =
   std::is_same_v<typename A::dimension, typename B::dimension> &&
   std::is_same_v<typename A::magnitude, typename B::magnitude>;
+
+// Section 7: basic math operations for units: multiply/divide/root
 
 template <class A, class B>
 using unit_multiply = typename details::simplify_unit_product<
@@ -604,7 +621,7 @@ using unit_inverse = typename details::simplify_unit_product<
     typename details::invert_canonical_unit_product<
       typename details::canonicalize_unit_product<A>::type>::type>::type;
 
-// Section 7: derived units based on the named units, prefixes, and math operations
+// Section 8: derived units based on the named units, prefixes, and math operations
 
 using millisecond = milli<second>;
 using microsecond = micro<second>;

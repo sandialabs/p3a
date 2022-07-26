@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "p3a_unit.hpp"
-//#include "p3a_quantity.hpp"
+#include "p3a_quantity.hpp"
 //#include "p3a_iostream.hpp"
 
 TEST(quantity, multiply) {

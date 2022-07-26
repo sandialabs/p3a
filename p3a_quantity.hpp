@@ -546,30 +546,26 @@ operator/=(
 
 // build a quantity by multiplying a number by a unit
 
-template <
-  class T,
-  class Dimension,
-  class Magnitude>
+template <class Unit, class T,
+         std::enable_if_t<is_unit<Unit>, bool> = false>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-quantity<unit<Dimension, Magnitude>, T, void>
+quantity<Unit, T, void>
 operator*(
     T const& left,
-    unit<Dimension, Magnitude>)
+    Unit)
 {
-  return quantity<unit<Dimension, Magnitude>, T, void>(left);
+  return quantity<Unit, T, void>(left);
 }
 
-template <
-  class T,
-  class Dimension,
-  class Magnitude>
+template <class Unit, class T,
+         std::enable_if_t<is_unit<Unit>, bool> = false>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-quantity<unit<Dimension, Magnitude>, T, void>
+quantity<Unit, T, void>
 operator*(
-    unit<Dimension, Magnitude>,
+    Unit,
     T const& right)
 {
-  return quantity<unit<Dimension, Magnitude>, T, void>(right);
+  return quantity<Unit, T, void>(right);
 }
 
 // binary math operators that promote an operand of a built-in arithmetic
