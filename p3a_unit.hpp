@@ -474,7 +474,7 @@ class multiply_canonical_unit_product_exp<
   unit_exp<Named, Exponent2>>
 {
  public:
-  using type = unit_exp<Named, Exponent1 + Exponent2>;
+  using type = unit_product<unit_exp<Named, Exponent1 + Exponent2>>;
 };
 
 template <class LastUnit, class UnitExp>
