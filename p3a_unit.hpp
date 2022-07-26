@@ -373,110 +373,22 @@ class unit_product<FirstUnit, OtherUnits...> {
   static std::string name();
 };
 
-namespace details {
-
-inline std::string trailing_positive_unit_product_name(unit_product<>)
-{
-  return std::string();
-}
-
-template <class FirstUnit, class... OtherUnits> 
-std::string trailing_positive_unit_product_name(unit_product<FirstUnit, OtherUnits...>)
-{
-  return std::string("*") + FirstUnit::name() + trailing_positive_unit_product_name(unit_product<OtherUnits...>());
-}
-
-template <class FirstUnit, int Exponent, class... OtherUnits,
-  std::enable_if_t<(Exponent < 0), bool> = false> 
-std::string trailing_positive_unit_product_name(unit_product<unit_exp<FirstUnit, Exponent>, OtherUnits...>)
-{
-  return trailing_positive_unit_product_name(unit_product<OtherUnits...>());
-}
-
-template <class Unit> 
-std::string positive_unit_product_name(Unit)
-{
-  return Unit::name();
-}
-
-template <class FirstUnit, int Exponent,
-  std::enable_if_t<(Exponent < 0), bool> = false> 
-std::string positive_unit_product_name(unit_exp<FirstUnit, Exponent>)
-{
-  return std::string();
-}
-
-template <class FirstUnit, class... OtherUnits> 
-std::string positive_unit_product_name(unit_product<FirstUnit, OtherUnits...>)
-{
-  return FirstUnit::name() + trailing_positive_unit_product_name(unit_product<OtherUnits...>());
-}
-
-template <class FirstUnit, int Exponent, class... OtherUnits,
-  std::enable_if_t<(Exponent < 0), bool> = false> 
-std::string positive_unit_product_name(unit_product<unit_exp<FirstUnit, Exponent>, OtherUnits...>)
-{
-  return positive_unit_product_name(unit_product<OtherUnits...>());
-}
-
-inline std::string trailing_negative_unit_product_name(unit_product<>)
-{
-  return std::string();
-}
-
-template <class FirstUnit, class... OtherUnits> 
-std::string trailing_negative_unit_product_name(unit_product<FirstUnit, OtherUnits...>)
-{
-  return trailing_negative_unit_product_name(unit_product<OtherUnits...>());
-}
-
-template <class FirstUnit, int Exponent, class... OtherUnits,
-  std::enable_if_t<(Exponent < 0), bool> = false> 
-std::string trailing_negative_unit_product_name(unit_product<unit_exp<FirstUnit, Exponent>, OtherUnits...>)
-{
-  return std::string("/") + unit_exp<FirstUnit, -Exponent>::name() +
-    trailing_negative_unit_product_name(unit_product<OtherUnits...>());
-}
-
-template <class FirstUnit> 
-std::string trailing_negative_unit_product_name(FirstUnit)
-{
-  return std::string();
-}
-
-template <class FirstUnit, int Exponent,
-  std::enable_if_t<(Exponent < 0), bool> = false> 
-std::string trailing_negative_unit_product_name(unit_exp<FirstUnit, Exponent>)
-{
-  return std::string("/") + unit_exp<FirstUnit, -Exponent>::name();
-}
-
-template <class... Units>
-std::string unit_product_name(unit_product<Units...> product)
-{
-  auto result = positive_unit_product_name(product);
-  if (result.empty()) result = no_unit::name();
-  result += trailing_negative_unit_product_name(product);
-  return result;
-}
-
-}
-
-template <class LastUnit>
-std::string unit_product<LastUnit>::name()
-{
-  return details::unit_product_name(unit_product<LastUnit>());
-}
-
-template <class FirstUnit, class... OtherUnits>
-std::string unit_product<FirstUnit, OtherUnits...>::name()
-{
-  return details::unit_product_name(unit_product<FirstUnit, OtherUnits...>());
-}
 
 // Section 5: details helpers for manipulating products of units, supports basic math operations
 
 namespace details {
+
+template <class A>
+class is_unit_product {
+ public:
+  static inline constexpr bool value = false;
+};
+
+template <class... Units>
+class is_unit_product<unit_product<Units...>> {
+ public:
+  static inline constexpr bool value = true;
+};
 
 template <class A, class B>
 class prepend_unit_product {
@@ -602,15 +514,6 @@ class simplify_unit_product<unit_product<FirstUnit, OtherUnits...>> {
 template <class A, class B>
 class multiply_canonical_unit_product_exp;
 
-template <class Named, int Exponent1, int Exponent2>
-class multiply_canonical_unit_product_exp<
-  unit_product<unit_exp<Named, Exponent1>>,
-  unit_exp<Named, Exponent2>>
-{
- public:
-  using type = unit_product<unit_exp<Named, Exponent1 + Exponent2>>;
-};
-
 template <class UnitExp>
 class multiply_canonical_unit_product_exp<
   unit_product<>,
@@ -620,14 +523,14 @@ class multiply_canonical_unit_product_exp<
   using type = unit_product<UnitExp>;
 };
 
-template <class Named, int Exponent1, class... OtherUnits, int Exponent2>
+template <class Unit, int Exponent1, int Exponent2, class... OtherUnits>
 class multiply_canonical_unit_product_exp<
-  unit_product<unit_exp<Named, Exponent1>, OtherUnits...>,
-  unit_exp<Named, Exponent2>>
+  unit_product<unit_exp<Unit, Exponent1>, OtherUnits...>,
+  unit_exp<Unit, Exponent2>>
 {
  public:
   using type = typename prepend_unit_product<
-    unit_exp<Named, Exponent1 + Exponent2>,
+    typename simplify_unit_exp<unit_exp<Unit, Exponent1 + Exponent2>>::type,
     unit_product<OtherUnits...>>::type;
 };
 
@@ -714,6 +617,109 @@ struct has_magnitude : std::false_type { };
 template< class T >
 struct has_magnitude<T, std::void_t<typename T::magnitude>> : std::true_type { };
 
+}
+
+namespace details {
+
+inline std::string trailing_positive_unit_product_name(unit_product<>)
+{
+  return std::string();
+}
+
+template <class FirstUnit, int Exponent, class... OtherUnits,
+  std::enable_if_t<(Exponent < 0), bool> = false> 
+std::string trailing_positive_unit_product_name(unit_product<unit_exp<FirstUnit, Exponent>, OtherUnits...>)
+{
+  return trailing_positive_unit_product_name(unit_product<OtherUnits...>());
+}
+
+template <class FirstUnit, class... OtherUnits> 
+std::string trailing_positive_unit_product_name(unit_product<FirstUnit, OtherUnits...>)
+{
+  return std::string("*") + FirstUnit::name() + trailing_positive_unit_product_name(unit_product<OtherUnits...>());
+}
+
+template <class FirstUnit, int Exponent,
+  std::enable_if_t<(Exponent < 0), bool> = false> 
+std::string positive_unit_product_name(unit_exp<FirstUnit, Exponent>)
+{
+  return std::string();
+}
+
+template <class Unit> 
+std::string positive_unit_product_name(Unit)
+{
+  return Unit::name();
+}
+
+template <class FirstUnit, int Exponent, class... OtherUnits,
+  std::enable_if_t<(Exponent < 0), bool> = false> 
+std::string positive_unit_product_name(unit_product<unit_exp<FirstUnit, Exponent>, OtherUnits...>)
+{
+  return positive_unit_product_name(unit_product<OtherUnits...>());
+}
+
+template <class FirstUnit, class... OtherUnits> 
+std::string positive_unit_product_name(unit_product<FirstUnit, OtherUnits...>)
+{
+  return FirstUnit::name() + trailing_positive_unit_product_name(unit_product<OtherUnits...>());
+}
+
+inline std::string trailing_negative_unit_product_name(unit_product<>)
+{
+  return std::string();
+}
+
+template <class FirstUnit, int Exponent, class... OtherUnits,
+  std::enable_if_t<(Exponent < 0), bool> = false> 
+std::string trailing_negative_unit_product_name(unit_product<unit_exp<FirstUnit, Exponent>, OtherUnits...>)
+{
+  using simplified_unit = typename simplify_unit_exp<unit_exp<FirstUnit, -Exponent>>::type;
+  return std::string("/") + simplified_unit::name() +
+    trailing_negative_unit_product_name(unit_product<OtherUnits...>());
+}
+
+template <class FirstUnit, class... OtherUnits> 
+std::string trailing_negative_unit_product_name(unit_product<FirstUnit, OtherUnits...>)
+{
+  return trailing_negative_unit_product_name(unit_product<OtherUnits...>());
+}
+
+template <class FirstUnit, int Exponent,
+  std::enable_if_t<(Exponent < 0), bool> = false> 
+std::string trailing_negative_unit_product_name(unit_exp<FirstUnit, Exponent>)
+{
+  using simplified_unit = typename simplify_unit_exp<unit_exp<FirstUnit, -Exponent>>::type;
+  return std::string("/") + simplified_unit::name();
+}
+
+template <class FirstUnit> 
+std::string trailing_negative_unit_product_name(FirstUnit)
+{
+  return std::string();
+}
+
+template <class... Units>
+std::string unit_product_name(unit_product<Units...> product)
+{
+  auto result = positive_unit_product_name(product);
+  if (result.empty()) result = no_unit::name();
+  result += trailing_negative_unit_product_name(product);
+  return result;
+}
+
+}
+
+template <class LastUnit>
+std::string unit_product<LastUnit>::name()
+{
+  return details::unit_product_name(unit_product<LastUnit>());
+}
+
+template <class FirstUnit, class... OtherUnits>
+std::string unit_product<FirstUnit, OtherUnits...>::name()
+{
+  return details::unit_product_name(unit_product<FirstUnit, OtherUnits...>());
 }
 
 // Section 6: some type traits helpers for identifying and comparing units

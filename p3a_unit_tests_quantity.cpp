@@ -43,6 +43,30 @@ TEST(quantity, multiply) {
     canonical_joule>::type>::type;
   static_assert(std::is_same_v<unitless_times_joule, p3a::joule>,
       "multiplying by no_unit should be identity");
+  static_assert(std::is_same_v<p3a::meter_per_second,
+      p3a::unit_product<p3a::meter, p3a::unit_exp<p3a::second, -1>>>,
+      "expected form of m/s");
+  using pascal_second_per_second = p3a::unit_multiply<p3a::pascal_second, p3a::reciprocal_second>;
+  static_assert(std::is_same_v<pascal_second_per_second, p3a::pascal>,
+      "(Pa*s)*(1/s) -> Pa");
+  using canonical_reciprocal_second = typename p3a::details::canonicalize_unit_product<p3a::reciprocal_second>::type;
+  static_assert(std::is_same_v<canonical_reciprocal_second,
+      p3a::unit_product<p3a::unit_exp<p3a::second, -1>>>,
+      "canonical reciprocal second");
+  using canonical_pascal_second = typename p3a::details::canonicalize_unit_product<p3a::pascal_second>::type;
+  static_assert(std::is_same_v<canonical_pascal_second,
+      p3a::unit_product<p3a::unit_exp<p3a::pascal, 1>, p3a::unit_exp<p3a::second, 1>>>,
+      "canonical pascal-second");
+  using canonical_product = typename p3a::details::multiply_canonical_unit_products<
+    canonical_reciprocal_second,
+    canonical_pascal_second>::type;
+  static_assert(std::is_same_v<canonical_product,
+      p3a::unit_product<p3a::unit_exp<p3a::pascal, 1>>>,
+      "canonical (1/s)*(Pa*s)");
+  using pascal_second_per_second2 = typename p3a::details::simplify_unit_product<
+      canonical_product>::type;
+  static_assert(std::is_same_v<pascal_second_per_second2, p3a::pascal>,
+      "(1/s)*(Pa*s) -> Pa");
   EXPECT_EQ(p3a::details::trailing_negative_unit_product_name(p3a::meter_per_second()), "/s");
   EXPECT_EQ(p3a::meter_per_second::name(), "m/s");
   auto a = p3a::watts<double>(1.0) * p3a::seconds<double>(2.0);
@@ -161,5 +185,5 @@ TEST(quantity, iostream) {
   std::stringstream ss;
   ss << p3a::meters_per_second<double>(3.5);
   auto s = ss.str();
-  EXPECT_EQ(s, "3.5 m / s");
+  EXPECT_EQ(s, "3.5 m/s");
 }
