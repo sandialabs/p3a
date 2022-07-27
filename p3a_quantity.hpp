@@ -83,10 +83,11 @@ class quantity {
   value_type const& value() const { return m_value; }
   P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
   value_type& value() { return m_value; }
-  // converting constructor for converting only ValueType
-  template <class OtherValueType>
+  // converting constructor for converting only ValueType or equivalent units
+  template <class OtherUnit, class OtherValueType,
+           std::enable_if_t<is_same_unit<unit, OtherUnit>, bool> = false>
   P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-  quantity(quantity<unit, OtherValueType, origin> const& other)
+  quantity(quantity<OtherUnit, OtherValueType, origin> const& other)
     :m_value(other.value())
   {
   }
@@ -96,6 +97,7 @@ class quantity {
   explicit quantity(quantity<OtherUnit, OtherValueType, OtherOrigin> const& other)
     :m_value(0)
   {
+    printf("converting!\n");
     using other_dimension = typename OtherUnit::dimension;
     using other_unit_magnitude = typename OtherUnit::magnitude;
     static_assert(std::is_same_v<dimension, other_dimension>,
@@ -787,39 +789,39 @@ unitless<ValueType> log(unitless<ValueType> const& q)
   return unitless<ValueType>(p3a::log(q.value()));
 }
 
-template <class ValueType>
+template <class Unit, class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> sin(unitless<ValueType> const& q)
+unitless<ValueType> sin(quantity<Unit, ValueType> const& q)
 {
-  return unitless<ValueType>(p3a::sin(q.value()));
+  return unitless<ValueType>(p3a::sin(radians<ValueType>(q).value()));
+}
+
+template <class Unit, class ValueType>
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+unitless<ValueType> cos(quantity<Unit, ValueType> const& q)
+{
+  return unitless<ValueType>(p3a::cos(radians<ValueType>(q).value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> cos(unitless<ValueType> const& q)
-{
-  return unitless<ValueType>(p3a::cos(q.value()));
-}
-
-template <class ValueType>
-P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> tan(unitless<ValueType> const& q)
+unitless<ValueType> tan(radians<ValueType> const& q)
 {
   return unitless<ValueType>(p3a::tan(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> asin(unitless<ValueType> const& q)
+radians<ValueType> asin(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(p3a::asin(q.value()));
+  return radians<ValueType>(p3a::asin(q.value()));
 }
 
 template <class ValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
-unitless<ValueType> acos(unitless<ValueType> const& q)
+radians<ValueType> acos(unitless<ValueType> const& q)
 {
-  return unitless<ValueType>(p3a::acos(q.value()));
+  return radians<ValueType>(p3a::acos(q.value()));
 }
 
 template <class ValueType>
@@ -975,15 +977,15 @@ quantity<Unit, simd<ValueType, Abi>, Origin> load(
   return quantity<Unit, simd<ValueType, Abi>, Origin>(load(&(ptr->value()), offset, mask));
 }
 
-template <class ValueType, class Abi, class Unit, class Origin>
+template <class ValueType, class Abi, class Unit, class Origin, class MaskValueType>
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 void store(
-    quantity<Unit, simd<ValueType, Abi>, Origin> const& value,
+    no_deduce_t<quantity<Unit, simd<ValueType, Abi>, Origin>> const& value,
     quantity<Unit, ValueType, Origin>* ptr,
     int offset,
-    no_deduce_t<simd_mask<ValueType, Abi>> const& mask)
+    simd_mask<MaskValueType, Abi> const& mask)
 {
-  store(value.value(), &(ptr->value()), offset, mask);
+  store(value.value(), &(ptr->value()), offset, simd_mask<ValueType, Abi>(mask));
 }
 
 template <class T, class Abi, class Unit, class Origin>

@@ -187,3 +187,17 @@ TEST(quantity, iostream) {
   auto s = ss.str();
   EXPECT_EQ(s, "3.5 m/s");
 }
+
+template <class Unit1, class Unit2>
+p3a::quantity<Unit2> quantity_fast_convert(p3a::quantity<Unit1> const& a)
+{
+  return a;
+}
+
+TEST(quantity, convert) {
+  using unit1 = p3a::unit_multiply<p3a::cubic_meter, p3a::kilogram>;
+  using unit2 = p3a::unit_multiply<p3a::kilogram, p3a::cubic_meter>;
+  static_assert(!std::is_same_v<unit1, unit2>,
+      "m^3*kg not same type as kg*m^3");
+  quantity_fast_convert<unit1, unit2>(p3a::quantity<unit1>());
+}

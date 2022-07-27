@@ -24,7 +24,15 @@ class vector3 {
     ,m_y(b)
     ,m_z(c)
   {}
-  template <class U>
+  template <class U,
+           std::enable_if_t<std::is_convertible_v<U, T>, bool> = false>
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+  vector3(vector3<U> const& other)
+    :vector3(T(other.x()), T(other.y()), T(other.z()))
+  {
+  }
+  template <class U,
+           std::enable_if_t<!std::is_convertible_v<U, T>, bool> = false>
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE explicit constexpr
   vector3(vector3<U> const& other)
     :vector3(T(other.x()), T(other.y()), T(other.z()))

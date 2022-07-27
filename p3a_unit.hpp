@@ -528,9 +528,13 @@ class multiply_canonical_unit_product_exp<
   unit_product<unit_exp<Unit, Exponent1>, OtherUnits...>,
   unit_exp<Unit, Exponent2>>
 {
+  using exp_product_type = std::conditional_t<
+    (Exponent1 + Exponent2 == 0),
+    no_unit,
+    unit_exp<Unit, Exponent1 + Exponent2>>;
  public:
   using type = typename prepend_unit_product<
-    typename simplify_unit_exp<unit_exp<Unit, Exponent1 + Exponent2>>::type,
+    exp_product_type,
     unit_product<OtherUnits...>>::type;
 };
 
