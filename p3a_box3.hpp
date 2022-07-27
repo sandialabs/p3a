@@ -108,4 +108,19 @@ box3<T> intersect(box3<T> const& a, box3<T> const& b)
   return box3<T>(lower, upper);
 }
 
+template <class T>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+box3<T> unite(box3<T> const& a, box3<T> const& b)
+{
+  auto const lower = vector3<T>(
+      min(a.lower().x(), b.lower().x()),
+      min(a.lower().y(), b.lower().y()),
+      min(a.lower().z(), b.lower().z()));
+  auto const upper = vector3<T>(
+      max(a.upper().x(), b.upper().x()),
+      max(a.upper().y(), b.upper().y()),
+      max(a.upper().z(), b.upper().z()));
+  return box3<T>(lower, upper);
+}
+
 }
