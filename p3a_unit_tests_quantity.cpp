@@ -2,28 +2,75 @@
 
 #include <sstream>
 
+#include "p3a_unit.hpp"
 #include "p3a_quantity.hpp"
 #include "p3a_iostream.hpp"
 
 TEST(quantity, multiply) {
   static_assert(std::is_same_v<
-      p3a::watt,
-      p3a::unit<p3a::dimension<-3, 2, 1>>>,
+      p3a::watt::dimension,
+      p3a::dimension<-3, 2, 1>>,
       "Watt is the SI unit equal to kg * m^2 * s^-3");
   static_assert(std::is_same_v<
-      p3a::second,
-      p3a::unit<p3a::dimension<1, 0, 0>>>,
+      p3a::second::dimension,
+      p3a::dimension<1, 0, 0>>,
       "Second is the SI unit with time dimension");
   static_assert(std::is_same_v<
-      p3a::joule,
-      p3a::unit<p3a::dimension<-2, 2, 1>>>,
+      p3a::joule::dimension,
+      p3a::dimension<-2, 2, 1>>,
       "Joule is the SI unit equal to kg * m^2 * s^-2");
-  static_assert(std::is_same_v<
-      p3a::unit_multiply<p3a::watt, p3a::second>,
+  using watt_second = p3a::unit_multiply<p3a::watt, p3a::second>;
+  static_assert(p3a::is_same_unit<
+      watt_second,
       p3a::joule>,
       "Watt times second = joule");
+  EXPECT_EQ(watt_second::name(), "W*s");
+  using second_squared = p3a::unit_multiply<p3a::second, p3a::second>;
+  EXPECT_EQ(second_squared::name(), "s^2");
+  using meter_per_meter = p3a::unit_divide<p3a::meter, p3a::meter>;
+  EXPECT_EQ(meter_per_meter::name(), "1");
+  using density_times_volume = p3a::unit_multiply<p3a::kilogram_per_cubic_meter, p3a::cubic_meter>;
+  EXPECT_EQ(density_times_volume::name(), "kg");
+  using canonical_no_unit = typename p3a::details::canonicalize_unit_product<p3a::no_unit>::type;
+  static_assert(std::is_same_v<canonical_no_unit, p3a::unit_product<>>,
+      "canonical_no_unit");
+  using canonical_joule = typename p3a::details::canonicalize_unit_product<p3a::joule>::type;
+  static_assert(std::is_same_v<canonical_joule, p3a::unit_product<p3a::unit_exp<p3a::joule, 1>>>,
+      "canonical_joule");
+  using unitless_times_joule = typename p3a::details::simplify_unit_product<
+  typename p3a::details::multiply_canonical_unit_products<
+    canonical_no_unit,
+    canonical_joule>::type>::type;
+  static_assert(std::is_same_v<unitless_times_joule, p3a::joule>,
+      "multiplying by no_unit should be identity");
+  static_assert(std::is_same_v<p3a::meter_per_second,
+      p3a::unit_product<p3a::meter, p3a::unit_exp<p3a::second, -1>>>,
+      "expected form of m/s");
+  using pascal_second_per_second = p3a::unit_multiply<p3a::pascal_second, p3a::reciprocal_second>;
+  static_assert(std::is_same_v<pascal_second_per_second, p3a::pascal>,
+      "(Pa*s)*(1/s) -> Pa");
+  using canonical_reciprocal_second = typename p3a::details::canonicalize_unit_product<p3a::reciprocal_second>::type;
+  static_assert(std::is_same_v<canonical_reciprocal_second,
+      p3a::unit_product<p3a::unit_exp<p3a::second, -1>>>,
+      "canonical reciprocal second");
+  using canonical_pascal_second = typename p3a::details::canonicalize_unit_product<p3a::pascal_second>::type;
+  static_assert(std::is_same_v<canonical_pascal_second,
+      p3a::unit_product<p3a::unit_exp<p3a::pascal, 1>, p3a::unit_exp<p3a::second, 1>>>,
+      "canonical pascal-second");
+  using canonical_product = typename p3a::details::multiply_canonical_unit_products<
+    canonical_reciprocal_second,
+    canonical_pascal_second>::type;
+  static_assert(std::is_same_v<canonical_product,
+      p3a::unit_product<p3a::unit_exp<p3a::pascal, 1>>>,
+      "canonical (1/s)*(Pa*s)");
+  using pascal_second_per_second2 = typename p3a::details::simplify_unit_product<
+      canonical_product>::type;
+  static_assert(std::is_same_v<pascal_second_per_second2, p3a::pascal>,
+      "(1/s)*(Pa*s) -> Pa");
+  EXPECT_EQ(p3a::details::trailing_negative_unit_product_name(p3a::meter_per_second()), "/s");
+  EXPECT_EQ(p3a::meter_per_second::name(), "m/s");
   auto a = p3a::watts<double>(1.0) * p3a::seconds<double>(2.0);
-  static_assert(std::is_same_v<decltype(a), p3a::joules<double>>,
+  static_assert(p3a::is_same_unit<decltype(a)::unit, p3a::joule>,
       "Watts times seconds should be Joules");
   EXPECT_FLOAT_EQ(a.value(), 2.0);
 }
@@ -83,7 +130,7 @@ TEST(quantity, cgs) {
   using megagram = p3a::mega<p3a::gram>;
   using megagram_per_cubic_meter =
     p3a::unit_divide<megagram, p3a::cubic_meter>;
-  static_assert(std::is_same_v<
+  static_assert(p3a::is_same_unit<
       megagram_per_cubic_meter,
       p3a::gram_per_cubic_centimeter>,
       "Mg/m^3 should be the same as g/cm^3");
@@ -138,5 +185,19 @@ TEST(quantity, iostream) {
   std::stringstream ss;
   ss << p3a::meters_per_second<double>(3.5);
   auto s = ss.str();
-  EXPECT_EQ(s, "3.5 m / s");
+  EXPECT_EQ(s, "3.5 m/s");
+}
+
+template <class Unit1, class Unit2>
+p3a::quantity<Unit2> quantity_fast_convert(p3a::quantity<Unit1> const& a)
+{
+  return a;
+}
+
+TEST(quantity, convert) {
+  using unit1 = p3a::unit_multiply<p3a::cubic_meter, p3a::kilogram>;
+  using unit2 = p3a::unit_multiply<p3a::kilogram, p3a::cubic_meter>;
+  static_assert(!std::is_same_v<unit1, unit2>,
+      "m^3*kg not same type as kg*m^3");
+  quantity_fast_convert<unit1, unit2>(p3a::quantity<unit1>());
 }

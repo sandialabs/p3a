@@ -48,6 +48,16 @@ using dimension_divide = dimension<
   A::amount_of_substance_exponent - B::amount_of_substance_exponent,
   A::luminous_intensity_exponent - B::luminous_intensity_exponent>;
 
+template <class A, int Exponent>
+using dimension_exp = dimension<
+  A::time_exponent * Exponent,
+  A::length_exponent * Exponent,
+  A::mass_exponent * Exponent,
+  A::electric_current_exponent * Exponent,
+  A::temperature_exponent * Exponent,
+  A::amount_of_substance_exponent * Exponent,
+  A::luminous_intensity_exponent * Exponent>;
+
 namespace details {
 
 template <class Dimension, int Root>
