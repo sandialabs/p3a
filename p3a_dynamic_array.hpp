@@ -333,6 +333,6 @@ class dynamic_array {
 template <class T>
 using device_array = dynamic_array<T, device_allocator<T>, execution::parallel_policy>;
 template <class T>
-using mirror_array = dynamic_array<T, mirror_allocator<T>, execution::sequenced_policy>;
+using host_pinned_array = dynamic_array<T, host_pinned_allocator<T>, execution::sequenced_policy>;
 
 }
