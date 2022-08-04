@@ -31,7 +31,7 @@ void decompose_double(
   mantissa = as_int & 0b1111111111111111111111111111111111111111111111111111ull;
 }
 
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 double compose_double(int sign_bit_arg, int exponent_arg, std::uint64_t mantissa_arg)
 {
   std::uint64_t const as_int = mantissa_arg |
@@ -41,7 +41,7 @@ double compose_double(int sign_bit_arg, int exponent_arg, std::uint64_t mantissa
 }
 
 template <class Abi>
-[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+[[nodiscard]] P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline
 simd<double, Abi> compose_double(
     simd<std::int32_t, Abi> const& sign_bit_arg,
     simd<std::int32_t, Abi> const& exponent_arg,
