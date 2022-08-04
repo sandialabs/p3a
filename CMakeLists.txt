@@ -85,6 +85,7 @@ set(P3A_HEADERS
   p3a_unit.hpp
   p3a_vector2.hpp
   p3a_vector3.hpp
+  p3a_scan.hpp
   )
 
 set(P3A_SOURCES
