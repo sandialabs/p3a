@@ -97,7 +97,6 @@ class quantity {
   explicit quantity(quantity<OtherUnit, OtherValueType, OtherOrigin> const& other)
     :m_value(0)
   {
-    printf("converting!\n");
     using other_dimension = typename OtherUnit::dimension;
     using other_unit_magnitude = typename OtherUnit::magnitude;
     static_assert(std::is_same_v<dimension, other_dimension>,
