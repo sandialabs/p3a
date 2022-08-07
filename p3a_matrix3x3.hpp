@@ -36,6 +36,19 @@ class matrix3x3 {
     ,m_zz(i)
   {
   }
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+  matrix3x3(symmetric3x3<T> const& a)
+    :m_xx(a.xx())
+    ,m_xy(a.xy())
+    ,m_xz(a.xz())
+    ,m_yx(a.yx())
+    ,m_yy(a.yy())
+    ,m_yz(a.yz())
+    ,m_zx(a.zx())
+    ,m_zy(a.zy())
+    ,m_zz(a.zz())
+  {
+  }
   [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T const& xx() const { return m_xx; }
   [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr

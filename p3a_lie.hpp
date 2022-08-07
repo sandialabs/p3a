@@ -12,12 +12,22 @@ namespace p3a {
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
-diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
+diagonal3x3<T> log(diagonal3x3<T> const& m)
 {
   return diagonal3x3<T>(
       p3a::log(m.xx()),
       p3a::log(m.yy()),
       p3a::log(m.zz()));
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST_DEVICE inline
+diagonal3x3<T> exp(diagonal3x3<T> const& m)
+{
+  return diagonal3x3<T>(
+      p3a::exp(m.xx()),
+      p3a::exp(m.yy()),
+      p3a::exp(m.zz()));
 }
 
 /* Polar Decomposition:
@@ -38,27 +48,22 @@ diagonal3x3<T> logarithm(diagonal3x3<T> const& m)
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
-symmetric3x3<T> spd_exponential(symmetric3x3<T> const& log_m)
+symmetric3x3<T> exp(symmetric3x3<T> const& log_m)
 {
   diagonal3x3<T> l;
   matrix3x3<T> q;
   eigendecompose(log_m, l, q);
-  diagonal3x3<T> const exp_l(p3a::exp(l.xx()), p3a::exp(l.yy()), p3a::exp(l.zz()));
-  return multiply_a_b_at(q, exp_l);
+  return multiply_a_b_at(q, exp(l));
 }
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
-symmetric3x3<T> spd_logarithm(symmetric3x3<T> const& exp_m)
+symmetric3x3<T> positive_definite_log(symmetric3x3<T> const& m)
 {
   diagonal3x3<T> l;
   matrix3x3<T> q;
-  eigendecompose(exp_m, l, q);
-  diagonal3x3<T> const log_l(
-      p3a::log(l.xx()),
-      p3a::log(l.yy()),
-      p3a::log(l.zz()));
-  return multiply_a_b_at(q, log_l);
+  eigendecompose(m, l, q);
+  return multiply_a_b_at(q, log(l));
 }
 
 enum class polar_errc {
