@@ -139,7 +139,7 @@ class matrix3x3 {
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
-symmetric3x3<T> symmetric(matrix3x3<T> const& a)
+symmetric3x3<T> symmetric_part(matrix3x3<T> const& a)
 {
   return symmetric3x3<T>(
       a.xx(), 

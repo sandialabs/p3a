@@ -139,7 +139,7 @@ class static_matrix<T, 3, 3> {
     operator()(2, 1) = a.zy();
     operator()(2, 2) = a.zz();
   }
-  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline explicit constexpr
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
   operator matrix3x3<T> () const
   {
     return matrix3x3<T>(

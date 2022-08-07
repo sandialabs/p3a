@@ -173,30 +173,13 @@ void eigendecompose(
     diagonal3x3<T>& l,
     matrix3x3<T>& q)
 {
-  static_matrix<T, 3, 3> a2;
+  static_matrix<T, 3, 3> a2(a);
   static_matrix<T, 3, 3> q2;
-  a2(0, 0) = a.xx();
-  a2(0, 1) = a.xy();
-  a2(0, 2) = a.xz();
-  a2(1, 0) = a.yx();
-  a2(1, 1) = a.yy();
-  a2(1, 2) = a.yz();
-  a2(2, 0) = a.zx();
-  a2(2, 1) = a.zy();
-  a2(2, 2) = a.zz();
   eigendecompose(a2, q2);
   l.xx() = a2(0, 0);
   l.yy() = a2(1, 1);
   l.zz() = a2(2, 2);
-  q.xx() = q2(0, 0);
-  q.xy() = q2(0, 1);
-  q.xz() = q2(0, 2);
-  q.yx() = q2(1, 0);
-  q.yy() = q2(1, 1);
-  q.yz() = q2(1, 2);
-  q.zx() = q2(2, 0);
-  q.zy() = q2(2, 1);
-  q.zz() = q2(2, 2);
+  q = static_cast<matrix3x3<T>>(q2);
 }
 
 }

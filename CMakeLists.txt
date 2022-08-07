@@ -49,6 +49,7 @@ set(P3A_HEADERS
   p3a_grid3.hpp
   p3a_identity3x3.hpp
   p3a_iostream.hpp
+  p3a_polar.hpp
   p3a_lie.hpp
   p3a_log.hpp
   p3a_macros.hpp
