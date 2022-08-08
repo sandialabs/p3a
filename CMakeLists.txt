@@ -19,7 +19,10 @@ if (p3a_ENABLE_CUDA AND p3a_ENABLE_HIP)
   message(FATAL_ERROR "CUDA and HIP cannot be simultaneously enabled")
 endif()
 
-set(p3a_LANGUAGE "${Kokkos_COMPILE_LANGUAGE}")
+set(p3a_LANGUAGE CXX)
+if (Kokkos_COMPILE_LANGUAGE)
+  set(p3a_LANGUAGE "${Kokkos_COMPILE_LANGUAGE}")
+endif()
 
 enable_language(${p3a_LANGUAGE})
 
@@ -108,7 +111,7 @@ target_include_directories(p3a
 set_target_properties(p3a PROPERTIES ${p3a_LANGUAGE}_ARCHITECTURES "${p3a_ARCHITECTURES}")
 
 target_link_libraries(p3a PUBLIC mpicpp::mpicpp)
-target_link_libraries(p3a PUBLIC Kokkos::kokkoscore Kokkos::kokkosalgorithms)
+target_link_libraries(p3a PUBLIC Kokkos::kokkos)
 
 install(
   TARGETS p3a
