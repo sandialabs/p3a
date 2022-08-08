@@ -1,9 +1,10 @@
 #pragma once
-#include <algorithm>
+
 #include "p3a_identity3x3.hpp"
 #include "p3a_symmetric3x3.hpp"
 #include "p3a_diagonal3x3.hpp"
 #include "p3a_skew3x3.hpp"
+#include "p3a_quantity.hpp"
 
 namespace p3a {
 
@@ -280,7 +281,29 @@ template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto norm(matrix3x3<T> const& a)
 {
-  return std::sqrt(norm_square(a));
+  return p3a::sqrt(norm_square(a));
+}
+
+// \f$ \max_{j \in {0,\cdots,N}}\Sigma_{i=0}^N |A_{ij}| \f$
+template <typename T>
+[[nodiscard]] P3A_HOST_DEVICE inline auto
+norm_1(matrix3x3<T> const& A)
+{
+  auto const v0 = p3a::abs(A(0, 0) + A(1, 0) + A(2, 0));
+  auto const v1 = p3a::abs(A(0, 1) + A(1, 1) + A(2, 1));
+  auto const v2 = p3a::abs(A(0, 2) + A(1, 2) + A(2, 2));
+  return p3a::max(p3a::max(v0, v1), v2);
+}
+
+// \f$ \max_{i \in {0,\cdots,N}}\Sigma_{j=0}^N |A_{ij}| \f$
+template <typename T>
+[[nodiscard]] P3A_HOST_DEVICE inline auto
+norm_infinity(matrix3x3<T> const& A)
+{
+  auto const v0 = p3a::abs(A(0, 0) + A(0, 1) + A(0, 2));
+  auto const v1 = p3a::abs(A(1, 0) + A(1, 1) + A(1, 2));
+  auto const v2 = p3a::abs(A(2, 0) + A(2, 1) + A(2, 2));
+  return max(max(v0, v1), v2);
 }
 
 template <class T>
@@ -355,11 +378,11 @@ template <class T>
 typename std::enable_if<is_scalar<T>, T>::type
 max(matrix3x3<T> const& m)
 {
-  const T a = std::max(
-    std::max(std::max(m.xx(), m.yx()), std::max(m.zx(), m.xy())),
-    std::max(std::max(m.yy(), m.zy()), std::max(m.xz(), m.yz()))
+  const T a = p3a::max(
+    p3a::max(p3a::max(m.xx(), m.yx()), p3a::max(m.zx(), m.xy())),
+    p3a::max(p3a::max(m.yy(), m.zy()), p3a::max(m.xz(), m.yz()))
   );
-  return std::max(a, m.zz());
+  return p3a::max(a, m.zz());
 }
 
 template <class T>
@@ -645,14 +668,14 @@ matrix3x3<T> inverse_full_pivot(matrix3x3<T> const& A)
   // Gauss-Jordan elimination with full pivoting
   for (auto k = 0; k < 3; ++k) {
     // Determine full pivot
-    auto pivot     = 0.0;
-    auto pivot_row = 3;
-    auto pivot_col = 3;
-    for (auto row = 0; row < 3; ++row) {
+    T pivot     = 0.0;
+    int pivot_row = 3;
+    int pivot_col = 3;
+    for (int row = 0; row < 3; ++row) {
       if (!(intact_rows & (1 << row))) continue;
-      for (auto col = 0; col < 3; ++col) {
+      for (int col = 0; col < 3; ++col) {
         if (!(intact_cols & (1 << col))) continue;
-        auto s = std::abs(S(row, col));
+        auto s = abs(S(row, col));
         if (s > pivot) {
           pivot_row = row;
           pivot_col = col;

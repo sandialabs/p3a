@@ -66,28 +66,6 @@ dev(matrix3x3<T> const A) noexcept
   return deviatoric_part(A);
 }
 
-// \f$ \max_{j \in {0,\cdots,N}}\Sigma_{i=0}^N |A_{ij}| \f$
-template <typename T>
-[[nodiscard]] P3A_HOST_DEVICE inline auto
-norm_1(matrix3x3<T> const& A)
-{
-  auto const v0 = p3a::abs(A(0, 0) + A(1, 0) + A(2, 0));
-  auto const v1 = p3a::abs(A(0, 1) + A(1, 1) + A(2, 1));
-  auto const v2 = p3a::abs(A(0, 2) + A(1, 2) + A(2, 2));
-  return max(max(v0, v1), v2);
-}
-
-// \f$ \max_{i \in {0,\cdots,N}}\Sigma_{j=0}^N |A_{ij}| \f$
-template <typename T>
-[[nodiscard]] P3A_HOST_DEVICE inline auto
-norm_infinity(matrix3x3<T> const& A)
-{
-  auto const v0 = p3a::abs(A(0, 0) + A(0, 1) + A(0, 2));
-  auto const v1 = p3a::abs(A(1, 0) + A(1, 1) + A(1, 2));
-  auto const v2 = p3a::abs(A(2, 0) + A(2, 1) + A(2, 2));
-  return max(max(v0, v1), v2);
-}
-
 // Scaling parameter theta for scaling and squaring exponential.
 template <typename T>
 [[nodiscard]] P3A_HOST_DEVICE inline auto

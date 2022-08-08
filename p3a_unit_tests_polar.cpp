@@ -3,6 +3,7 @@
 #include "p3a_polar.hpp"
 #include "p3a_counting_iterator.hpp"
 #include "p3a_for_each.hpp"
+#include "p3a_quantity.hpp"
 
 TEST(polar_decomp, stretch){
   using T = double;
@@ -99,4 +100,12 @@ TEST(polar_decomp, simple_shear){
   EXPECT_FLOAT_EQ(zero, R.zx()) << "R.zx()";
   EXPECT_FLOAT_EQ(zero, R.zy()) << "R.zy()";
   EXPECT_FLOAT_EQ(one, R.zz()) << "R.zz()";
+}
+
+TEST(polar, alejandro)
+{
+  p3a::matrix3x3<double> a = p3a::matrix3x3<double>::identity();
+  a = p3a::polar_rotation(a);
+  p3a::matrix3x3<p3a::unitless<double>> b = p3a::matrix3x3<p3a::unitless<double>>::identity();
+  b = p3a::polar_rotation(b);
 }

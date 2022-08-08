@@ -154,15 +154,15 @@ polar_rotation(matrix3x3<T> const& A)
   auto const tol_scale = 0.01;
   auto const tol_conv  = p3a::sqrt(dim) * epsilon_value<T>();
   auto       X         = A;
-  auto       gamma     = 2.0;
+  T          gamma     = 2.0;
   auto const max_iter  = 128;
   auto       num_iter  = 0;
   while (num_iter < max_iter) {
     auto const Y  = inverse_full_pivot(X);
-    auto       mu = 1.0;
+    T          mu = 1.0;
     if (scale == true) {
       mu = (norm_1(Y) * norm_infinity(Y)) / (norm_1(X) * norm_infinity(X));
-      mu = p3a::sqrt(p3a::sqrt(mu));
+      mu = sqrt(sqrt(mu));
     }
     auto const Z     = 0.5 * (mu * X + transpose(Y) / mu);
     auto const D     = Z - X;
@@ -170,7 +170,7 @@ polar_rotation(matrix3x3<T> const& A)
     if (scale == true && delta < tol_scale) {
       scale = false;
     }
-    auto const end_iter = norm(D) <= p3a::sqrt(tol_conv) || (delta > 0.5 * gamma && scale == false);
+    auto const end_iter = norm(D) <= sqrt(tol_conv) || (delta > 0.5 * gamma && scale == false);
     X                   = Z;
     gamma               = delta;
     if (end_iter == true) {
