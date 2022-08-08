@@ -1,6 +1,7 @@
 #pragma once
 
 #include "p3a_macros.hpp"
+#include "p3a_scaled_identity3x3.hpp"
 
 namespace p3a {
 
@@ -34,5 +35,39 @@ class diagonal3x3 {
   [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   T& zz() { return m_zz; }
 };
+
+template <class T>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+auto trace(diagonal3x3<T> const& d)
+{
+  return d.xx() + d.yy() + d.zz();
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+auto determinant(diagonal3x3<T> const& d)
+{
+  return d.xx() * d.yy() * d.zz();
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+diagonal3x3<T> operator-(
+    diagonal3x3<T> const& a,
+    scaled_identity3x3<T> const& b)
+{
+  return diagonal3x3<T>(
+      a.xx() - b.scale(),
+      a.yy() - b.scale(),
+      a.zz() - b.scale());
+}
+
+template <class T, class U>
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
+diagonal3x3<T>& operator-=(diagonal3x3<T>& a, U const& b)
+{
+  a = a - b;
+  return a;
+}
 
 }

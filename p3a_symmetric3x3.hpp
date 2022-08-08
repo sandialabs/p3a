@@ -469,4 +469,20 @@ T maximum_norm(symmetric3x3<T> const& a)
       p3a::abs(a.zz()));
 }
 
+template <class T, class U>
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
+symmetric3x3<T>& operator-=(symmetric3x3<T>& a, U const& b)
+{
+  a = a - b;
+  return a;
+}
+
+template <class T, class U>
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
+symmetric3x3<T>& operator/=(symmetric3x3<T>& a, U const& b)
+{
+  a = a / b;
+  return a;
+}
+
 }
