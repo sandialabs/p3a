@@ -42,7 +42,7 @@ TEST(lie, expm_spd3){
   EXPECT_FLOAT_EQ(16.39468282, exp_a.xy()) << "exp_a.xy()";
   EXPECT_FLOAT_EQ(4.71564004, exp_a.xz()) << "exp_a.xz()";
   EXPECT_FLOAT_EQ(6.96340275, exp_a.yz()) << "exp_a.yz()";
-  auto log_exp_a = log_positive_definite(exp_a);
+  auto log_exp_a = log(exp_a);
   EXPECT_FLOAT_EQ(log_exp_a.xx(), a.xx()) << "exp_a.xx()";
   EXPECT_FLOAT_EQ(log_exp_a.yy(), a.yy()) << "exp_a.yy()";
   EXPECT_FLOAT_EQ(log_exp_a.zz(), a.zz()) << "exp_a.zz()";
@@ -58,7 +58,7 @@ TEST(lie, logm){
   constexpr T zero = 0.0;
   constexpr T e = 2.718281828459045;
   p3a::symmetric3x3<T> a{e, zero, zero, e, zero, e};
-  auto log_a = log_positive_definite(a);
+  auto log_a = log(a);
   EXPECT_FLOAT_EQ(one, log_a.xx()) << "log_a.xx()";
   EXPECT_FLOAT_EQ(one, log_a.yy()) << "log_a.yy()";
   EXPECT_FLOAT_EQ(one, log_a.zz()) << "log_a.zz()";

@@ -34,7 +34,7 @@ diagonal3x3<T> exp(diagonal3x3<T> const& m)
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
-symmetric3x3<T> log_positive_definite(symmetric3x3<T> const& S)
+symmetric3x3<T> log(symmetric3x3<T> const& S)
 {
   diagonal3x3<T> D;
   matrix3x3<T> U;
