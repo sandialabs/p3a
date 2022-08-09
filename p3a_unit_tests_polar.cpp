@@ -12,8 +12,7 @@ TEST(polar_decomp, stretch){
   p3a::matrix3x3<T> R;
   p3a::symmetric3x3<T> U;
 
-  auto const e = p3a::decompose_polar_right(F, R, U);
-  EXPECT_EQ(e, p3a::polar_errc::success);
+  p3a::decompose_polar_right(F, R, U);
 
   EXPECT_FLOAT_EQ(l, U.xx()) << "U.xx()";
   EXPECT_FLOAT_EQ(2 * l, U.yy()) << "U.yy()";
@@ -41,8 +40,7 @@ TEST(polar_decomp, pure_shear){
   p3a::matrix3x3<T> R;
   p3a::symmetric3x3<T> U;
 
-  auto const e = p3a::decompose_polar_right(F, R, U);
-  EXPECT_EQ(e, p3a::polar_errc::success);
+  p3a::decompose_polar_right(F, R, U);
 
   EXPECT_FLOAT_EQ(l, U.xx()) << "U.xx()";
   EXPECT_FLOAT_EQ(1./l, U.yy()) << "U.yy()";
@@ -79,8 +77,7 @@ TEST(polar_decomp, simple_shear){
   p3a::matrix3x3<T> R;
   p3a::symmetric3x3<T> U;
 
-  auto const e = decompose_polar_right(F, R, U);
-  EXPECT_EQ(e, p3a::polar_errc::success);
+  decompose_polar_right(F, R, U);
 
   EXPECT_FLOAT_EQ(root23, U.xx()) << "U.xx()";
   EXPECT_FLOAT_EQ(two * root23, U.yy()) << "U.yy()";
@@ -102,10 +99,22 @@ TEST(polar_decomp, simple_shear){
   EXPECT_FLOAT_EQ(one, R.zz()) << "R.zz()";
 }
 
-TEST(polar, alejandro)
+TEST(polar, accuracy)
 {
-  p3a::matrix3x3<double> a = p3a::matrix3x3<double>::identity();
-  a = p3a::polar_rotation(a);
-  p3a::matrix3x3<p3a::unitless<double>> b = p3a::matrix3x3<p3a::unitless<double>>::identity();
-  b = p3a::polar_rotation(b);
+  p3a::matrix3x3<double> Fp(
+      1.00003500570297565e+00, 3.88676595523894212e-08, -1.71420107727623949e-06,
+      3.88676595523894212e-08, 1.00003500570297588e+00, -1.71420107727623949e-06,
+      -1.71420107727623949e-06, -1.71420107727623949e-06, 9.99929992275956026e-01);
+  printf("(det(Fp) - 1) %.17e\n",
+      p3a::abs(p3a::determinant(Fp) - 1.0));
+  p3a::matrix3x3<double> R_fast;
+  auto error_code = p3a::polar_rotation_fast(Fp, R_fast);
+  EXPECT_EQ(error_code, p3a::polar_errc::success);
+  auto const err_fast = p3a::abs(p3a::determinant(R_fast) - 1.0);
+  printf("(det(R) - 1) for fast algorithm %.17e\n", err_fast);
+  EXPECT_GT(err_fast, 1.0e-10);
+  auto R = p3a::polar_rotation(Fp);
+  auto const err = p3a::abs(p3a::determinant(R) - 1.0);
+  printf("(det(R) - 1) for accurate algorithm %.17e\n", err);
+  EXPECT_LT(err, 1.0e-10);
 }

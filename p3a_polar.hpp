@@ -49,7 +49,7 @@ enum class polar_errc {
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE inline
-polar_errc polar_rotation(
+polar_errc polar_rotation_fast(
     matrix3x3<T> const& F,
     matrix3x3<T>& R,
     const int maxit=200)
@@ -110,34 +110,6 @@ polar_errc polar_rotation(
   return polar_errc::no_converge;
 }
 
-template <class T>
-[[nodiscard]] P3A_HOST_DEVICE inline
-polar_errc decompose_polar_right(
-    matrix3x3<T> const& input,
-    matrix3x3<T>& rotation,
-    symmetric3x3<T>& right_stretch,
-    const int maxit=200)
-{
-  polar_errc const e = polar_rotation(input, rotation, maxit);
-  if (e != polar_errc::success) return e;
-  right_stretch = symmetric_part(transpose(rotation) * input);
-  return polar_errc::success;
-}
-
-template <class T>
-[[nodiscard]] P3A_HOST_DEVICE inline
-polar_errc decompose_polar_left(
-    matrix3x3<T> const& input,
-    symmetric3x3<T>& left_stretch,
-    matrix3x3<T>& rotation,
-    const int maxit=200)
-{
-  polar_errc const e = polar_rotation(input, rotation, maxit);
-  if (e != polar_errc::success) return e;
-  left_stretch = symmetric_part(input * transpose(rotation));
-  return polar_errc::success;
-}
-
 // Project to O(N) (Orthogonal Group) using a Newton-type algorithm.
 // See Higham's Functions of Matrices p210 [2008]
 // \param A tensor (often a deformation-gradient-like tensor)
@@ -179,6 +151,28 @@ polar_rotation(matrix3x3<T> const& A)
     num_iter++;
   }
   return X;
+}
+
+template <class T>
+P3A_HOST_DEVICE inline
+void decompose_polar_right(
+    matrix3x3<T> const& input,
+    matrix3x3<T>& rotation,
+    symmetric3x3<T>& right_stretch)
+{
+  rotation = polar_rotation(input);
+  right_stretch = symmetric_part(transpose(rotation) * input);
+}
+
+template <class T>
+P3A_HOST_DEVICE inline
+void decompose_polar_left(
+    matrix3x3<T> const& input,
+    symmetric3x3<T>& left_stretch,
+    matrix3x3<T>& rotation)
+{
+  rotation = polar_rotation(input);
+  left_stretch = symmetric_part(input * transpose(rotation));
 }
 
 }
