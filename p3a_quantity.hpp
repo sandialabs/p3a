@@ -151,6 +151,11 @@ class quantity {
   auto operator>(quantity const& other) const {
     return value() > other.value();
   }
+  template<typename T,
+    typename = std::enable_if_t<
+      (std::is_arithmetic_v<T> && std::is_arithmetic_v<ValueType>), T>>
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+  explicit operator T() const { return static_cast<T>(value()); }
 };
 
 namespace details {
