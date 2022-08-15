@@ -1,6 +1,7 @@
 #pragma once
 
 #include "p3a_vector3.hpp"
+#include "p3a_matrix3x3.hpp"
 
 namespace p3a {
 
