@@ -900,6 +900,12 @@ p3a::volts<double> operator""_V(long double v)
 }
 
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+p3a::ohms<double> operator""_Ohm(long double v)
+{
+  return p3a::ohms<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::degrees_kelvin<double> operator""_K(long double v)
 {
   return p3a::degrees_kelvin<double>(v);
