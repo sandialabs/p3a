@@ -906,6 +906,12 @@ p3a::farads<double> operator""_F(long double v)
 }
 
 P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
+p3a::henries<double> operator""_H(long double v)
+{
+  return p3a::henries<double>(v);
+}
+
+P3A_ALWAYS_INLINE P3A_HOST_DEVICE inline constexpr
 p3a::ohms<double> operator""_Ohm(long double v)
 {
   return p3a::ohms<double>(v);
