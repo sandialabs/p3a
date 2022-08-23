@@ -179,6 +179,7 @@ void back_substitution(
     throw std::invalid_argument(
         "back substitution: y wrong size");
   }
+  if (U.row_count() == 0) return;
   int const n = U.row_count();
   x(n - 1, 0) = y(n - 1, 0) / U(n - 1, n - 1);
   for (int i = n - 2; i >= 0; --i) {
