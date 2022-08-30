@@ -53,7 +53,6 @@ using Kokkos::acos;
 using Kokkos::exp;
 using Kokkos::pow;
 using Kokkos::log;
-using Kokkos::hypot;
 
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 double hypot(double x, double y, double z)
