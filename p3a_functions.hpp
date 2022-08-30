@@ -39,9 +39,9 @@ condition(bool a, T const& b, T const& c)
   return a ? b : c;
 }
 
-using Kokkos::Experimental::min;
-using Kokkos::Experimental::max;
-using Kokkos::Experimental::clamp;
+using Kokkos::min;
+using Kokkos::max;
+using Kokkos::clamp;
 using Kokkos::abs;
 using Kokkos::sqrt;
 using Kokkos::cbrt;
