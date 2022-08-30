@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdexcept>
+
 #include "p3a_memory.hpp"
 #include "p3a_allocator.hpp"
 #include "p3a_functions.hpp"
@@ -19,6 +21,8 @@ class dynamic_array {
   using allocator_type = Allocator;
   using execution_policy = ExecutionPolicy;
   using value_type = T;
+  using reference = T&;
+  using const_reference = T const&;
  private:
   T* m_begin;
   size_type m_size;
@@ -254,6 +258,18 @@ class dynamic_array {
   T const& back() const
   {
     return operator[](size() - 1);
+  }
+  reference at(size_type i)
+  {
+    if (i < 0) throw std::out_of_range("p3a::dynamic_array::at negative index");
+    if (size() <= i) throw std::out_of_range("p3a::dynamic_array::at index greater than or equal to size");
+    return operator[](i);
+  }
+  const_reference at(size_type i) const
+  {
+    if (i < 0) throw std::out_of_range("p3a::dynamic_array::at negative index");
+    if (size() <= i) throw std::out_of_range("p3a::dynamic_array::at index greater than or equal to size");
+    return operator[](i);
   }
   void pop_back()
   {
