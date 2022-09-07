@@ -104,12 +104,13 @@ OutputIt kokkos_copy_if(
     UnaryPredicate pred)
 {
   using input_difference_type = typename std::iterator_traits<InputIt>::difference_type;
+  using output_difference_type = typename std::iterator_traits<OutputIt>::difference_type;
   using kokkos_policy =
     Kokkos::RangePolicy<
       ExecutionSpace,
       Kokkos::IndexType<input_difference_type>>;
   using functor = kokkos_copy_if_functor<InputIt, OutputIt, UnaryPredicate>;
-  input_difference_type copied_count = 0;
+  output_difference_type copied_count = 0;
   Kokkos::parallel_scan("p3a::details::kokkos_copy_if",
       kokkos_policy(0, (last - first)),
       functor(first, d_first, pred),
