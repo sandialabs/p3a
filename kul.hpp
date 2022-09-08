@@ -1,5 +1,18 @@
 #pragma once
 
+/* The Kokkos-ified Units Library
+ *
+ * This is a header-only C++17 library based on Kokkos:
+ * https://github.com/kokkos/kokkos
+ * This library provides C++ classes to represent physical units
+ * and physical quantities (floating-point quantities which have
+ * physical units).
+ * What distinguishes KUL from similar projects is that it is
+ * based on Kokkos so the compile-time-unit quantities can be used
+ * on all hardware Kokkos supports including NVIDIA and AMD GPUs
+ * inside CUDA and HIP kernels.
+ */
+
 #include <string>
 #include <memory>
 #include <vector>
