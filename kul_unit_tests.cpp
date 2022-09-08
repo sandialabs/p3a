@@ -32,21 +32,21 @@ TEST(rational, compare)
 
 TEST(dimension, compare)
 {
-  auto a = kul::dimension::time();
-  auto b = kul::dimension::time();
-  auto c = kul::dimension::length();
+  auto a = kul::time();
+  auto b = kul::time();
+  auto c = kul::length();
   EXPECT_EQ(a, b);
   EXPECT_NE(a, c);
 }
 
 TEST(named_unit, second)
 {
-  static_assert(kul::second::static_dimension() == kul::dimension::time(), "second has dimension time");
+  static_assert(kul::second::static_dimension() == kul::time(), "second has dimension time");
   static_assert(kul::second::static_magnitude() == kul::rational(1), "second is an SI unit");
   static_assert(!kul::second::static_origin().has_value(), "second is relative");
   kul::second s;
   EXPECT_EQ(s.name(), "s");
-  EXPECT_EQ(s.dimension(), kul::dimension::time());
+  EXPECT_EQ(s.dimension(), kul::time());
   EXPECT_EQ(s.magnitude(), kul::rational(1));
   EXPECT_FALSE(s.origin().has_value());
 }
@@ -159,7 +159,7 @@ TEST(multiply_divide, m_per_s2)
 
 TEST(kilo, kg)
 {
-  static_assert(kul::kilo<kul::gram>::static_dimension() == kul::dimension::mass(), "kilogram is mass");
+  static_assert(kul::kilo<kul::gram>::static_dimension() == kul::mass(), "kilogram is mass");
   static_assert(kul::kilo<kul::gram>::static_magnitude() == kul::rational(1), "kilogram is SI base");
   EXPECT_EQ(kul::kilo<kul::gram>::static_name(), "kg");
 }
@@ -168,7 +168,7 @@ TEST(static_product, m_s)
 {
   using prod = kul::static_product<kul::meter, kul::second>;
   EXPECT_EQ(prod::static_name(), "m * s");
-  static_assert(prod::static_dimension() == kul::dimension::length() * kul::dimension::time(),
+  static_assert(prod::static_dimension() == kul::length() * kul::time(),
       "static_product dimension");
 }
 

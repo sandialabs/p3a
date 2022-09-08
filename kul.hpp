@@ -167,39 +167,13 @@ class dimension {
   {
     return m_luminous_intensity_exponent;
   }
-  KOKKOS_INLINE_FUNCTION static constexpr dimension dimensionless()
-  {
-    return dimension(0, 0, 0);
-  }
-  KOKKOS_INLINE_FUNCTION static constexpr dimension time()
-  {
-    return dimension(1, 0, 0);
-  }
-  KOKKOS_INLINE_FUNCTION static constexpr dimension length()
-  {
-    return dimension(0, 1, 0);
-  }
-  KOKKOS_INLINE_FUNCTION static constexpr dimension mass()
-  {
-    return dimension(0, 0, 1);
-  }
-  KOKKOS_INLINE_FUNCTION static constexpr dimension electric_current()
-  {
-    return dimension(0, 0, 0, 1);
-  }
-  KOKKOS_INLINE_FUNCTION static constexpr dimension temperature()
-  {
-    return dimension(0, 0, 0, 0, 1);
-  }
-  KOKKOS_INLINE_FUNCTION static constexpr dimension amount_of_substance()
-  {
-    return dimension(0, 0, 0, 0, 0, 1);
-  }
-  KOKKOS_INLINE_FUNCTION static constexpr dimension luminous_intensity()
-  {
-    return dimension(0, 0, 0, 0, 0, 0, 1);
-  }
 };
+
+KOKKOS_INLINE_FUNCTION constexpr dimension dimensionless()
+{
+  return dimension(0, 0, 0);
+}
+
 
 KOKKOS_INLINE_FUNCTION constexpr dimension operator*(dimension const& a, dimension const& b)
 {
@@ -251,6 +225,73 @@ KOKKOS_INLINE_FUNCTION constexpr bool operator==(dimension const& a, dimension c
 KOKKOS_INLINE_FUNCTION constexpr bool operator!=(dimension const& a, dimension const& b)
 {
   return !operator==(a, b);
+}
+
+// Section [named dimension]: commonly referred-to dimensions
+
+KOKKOS_INLINE_FUNCTION constexpr dimension time()
+{
+  return dimension(1, 0, 0);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension length()
+{
+  return dimension(0, 1, 0);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension mass()
+{
+  return dimension(0, 0, 1);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension electric_current()
+{
+  return dimension(0, 0, 0, 1);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension temperature()
+{
+  return dimension(0, 0, 0, 0, 1);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension amount_of_substance()
+{
+  return dimension(0, 0, 0, 0, 0, 1);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension luminous_intensity()
+{
+  return dimension(0, 0, 0, 0, 0, 0, 1);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension area()
+{
+  return length() * length();
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension volume()
+{
+  return area() * length();
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension speed()
+{
+  return length() / time();
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension acceleration()
+{
+  return speed() / time();
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension force()
+{
+  return mass() * acceleration();
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension pressure()
+{
+  return force() / area();
 }
 
 // Section [optiona]: constexpr-compatible and Kokkosified version of std::optional<T>
@@ -359,7 +400,7 @@ class crtp : public named {
 class unitless : public crtp<unitless> {
  public:
   static std::string static_name() { return "1"; }
-  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimension::dimensionless(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimensionless(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
@@ -620,7 +661,7 @@ class dynamic_product : public unit {
   }
 };
 
-dynamic_unit operator*(dynamic_unit const& a, dynamic_unit const& b)
+inline dynamic_unit operator*(dynamic_unit const& a, dynamic_unit const& b)
 {
   dynamic_product p;
   p.multiply_with(a);
@@ -628,7 +669,7 @@ dynamic_unit operator*(dynamic_unit const& a, dynamic_unit const& b)
   return p.simplify();
 }
 
-dynamic_unit operator/(dynamic_unit const& a, dynamic_unit const& b)
+inline dynamic_unit operator/(dynamic_unit const& a, dynamic_unit const& b)
 {
   dynamic_product p;
   p.multiply_with(a);
@@ -694,7 +735,7 @@ template <>
 class static_product<> : public crtp<static_product<>> {
  public:
   static std::string static_name() { return "1"; }
-  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimension::dimensionless(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimensionless(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return kul::rational(1); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
   std::unique_ptr<unit> copy() const override
@@ -1066,7 +1107,7 @@ class milli : public crtp<milli<T>> {
 class second : public crtp<second> {
  public:
   static std::string static_name() { return "s"; }
-  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimension::time(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return time(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
@@ -1074,7 +1115,7 @@ class second : public crtp<second> {
 class meter : public crtp<meter> {
  public:
   static std::string static_name() { return "m"; }
-  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimension::length(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return length(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
@@ -1082,7 +1123,7 @@ class meter : public crtp<meter> {
 class inch : public crtp<inch> {
  public:
   static std::string static_name() { return "in"; }
-  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimension::length(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return length(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(254, 10'000); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
@@ -1090,18 +1131,40 @@ class inch : public crtp<inch> {
 class gram : public crtp<gram> {
  public:
   static std::string static_name() { return "g"; }
-  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimension::mass(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return mass(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1, 1000); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
+using kilogram = kilo<gram>;
+
 class radian : public crtp<radian> {
  public:
   static std::string static_name() { return "rad"; }
-  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimension::dimensionless(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return dimensionless(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
+
+class kelvin : public crtp<kelvin> {
+ public:
+  static std::string static_name() { return "K"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return temperature(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return rational(0); }
+};
+
+class pascal : public crtp<pascal> {
+ public:
+  static std::string static_name() { return "Pa"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return pressure(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+using square_meter = multiply<meter, meter>;
+using cubic_meter = multiply<square_meter, meter>;
+using kilogram_per_cubic_meter = divide<kilogram, cubic_meter>;
 
 // Section [quantity]: class template for runtime value with associated unit
 
@@ -1365,5 +1428,14 @@ class quantity<T, dynamic_unit> {
   value_type& value() { return m_value; }
   dynamic_unit const& unit() const { return m_unit; }
 };
+
+// Section [named quantity]: convenience typedefs for quantities of named units
+
+template <class T>
+using kilograms_per_cubic_meter = quantity<T, kilogram_per_cubic_meter>;
+template <class T>
+using kelvins = quantity<T, kelvin>;
+template <class T>
+using pascals = quantity<T, pascal>;
 
 }
