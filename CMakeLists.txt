@@ -90,6 +90,7 @@ set(P3A_HEADERS
   p3a_vector2.hpp
   p3a_vector3.hpp
   p3a_scan.hpp
+  kul.hpp
   )
 
 set(P3A_SOURCES
@@ -125,7 +126,7 @@ install(
 if (BUILD_TESTING)
   set(unit_test_sources
     p3a_unit_tests_main.cpp
-    p3a_unit_tests_quantity.cpp
+    kul_unit_tests.cpp
     p3a_unit_tests_fixed_point.cpp
     p3a_unit_tests_polar.cpp
     p3a_unit_tests_lie.cpp
