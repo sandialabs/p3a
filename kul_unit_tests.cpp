@@ -388,6 +388,16 @@ TEST(quantity, subtract)
   EXPECT_EQ(r1 - r2, r2);
 }
 
+TEST(quantity, subtract_absolute)
+{
+  auto constexpr c1 = kul::kelvins<double>(2.0);
+  auto constexpr c2 = kul::kelvins<double>(1.0);
+  static_assert(c1.unit_origin().has_value(), "c1 is absolute");
+  static_assert(c2.unit_origin().has_value(), "c2 is absolute");
+  auto constexpr c3 = c1 - c2;
+  static_assert(!c3.unit_origin().has_value(), "c3 is relative");
+}
+
 TEST(quantity, multiply)
 {
   auto constexpr c1 = kul::quantity<double, kul::meter>(2.0);

@@ -39,12 +39,10 @@ KOKKOS_INLINE_FUNCTION constexpr std::int64_t gcd(std::int64_t a, std::int64_t b
 }
 
 class rational {
-  std::int64_t m_numerator;
-  std::int64_t m_denominator;
+  std::int64_t m_numerator{0};
+  std::int64_t m_denominator{1};
  public:
   KOKKOS_INLINE_FUNCTION constexpr rational(std::int64_t numerator_arg, std::int64_t denominator_arg)
-    :m_numerator(0)
-    ,m_denominator(0)
   {
     auto const abs_num_arg = kul::abs(numerator_arg);
     auto const abs_den_arg = kul::abs(denominator_arg);
@@ -59,6 +57,7 @@ class rational {
     :rational(numerator_arg, 1)
   {
   }
+  constexpr rational() = default;
   KOKKOS_INLINE_FUNCTION constexpr std::int64_t numerator() const
   {
     return m_numerator;
@@ -289,6 +288,11 @@ KOKKOS_INLINE_FUNCTION constexpr dimension force()
   return mass() * acceleration();
 }
 
+KOKKOS_INLINE_FUNCTION constexpr dimension energy()
+{
+  return force() * length();
+}
+
 KOKKOS_INLINE_FUNCTION constexpr dimension pressure()
 {
   return force() / area();
@@ -299,18 +303,21 @@ KOKKOS_INLINE_FUNCTION constexpr dimension pressure()
 class nullopt_t {};
 inline constexpr nullopt_t nullopt = {};
 
+// This class always has the value alive because things like placement new don't work
+// in a constexpr context, so it is limited in usefulness to trivial types
+
 template <class T>
 class optional
 {
   bool m_has_value{false};
-  alignas(alignof(T)) char m_value[sizeof(T)];
+  T m_value;
  public:
   KOKKOS_INLINE_FUNCTION constexpr optional(nullopt_t)
   {
   }
   KOKKOS_INLINE_FUNCTION constexpr optional(T const& value)
   {
-    ::new (static_cast<void*>(m_value)) T(value);
+    m_value = T(value);
     m_has_value = true;
   }
   KOKKOS_INLINE_FUNCTION constexpr bool has_value() const
@@ -319,11 +326,11 @@ class optional
   }
   KOKKOS_INLINE_FUNCTION constexpr T& value()
   {
-    return *(reinterpret_cast<T*>(m_value));
+    return m_value;
   }
   KOKKOS_INLINE_FUNCTION constexpr T const& value() const
   {
-    return *(reinterpret_cast<T const*>(m_value));
+    return m_value;
   }
 };
 
@@ -1162,9 +1169,19 @@ class pascal : public crtp<pascal> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
+class joule : public crtp<joule> {
+ public:
+  static std::string static_name() { return "J"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return energy(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+using meter_per_second = divide<meter, second>;
 using square_meter = multiply<meter, meter>;
 using cubic_meter = multiply<square_meter, meter>;
 using kilogram_per_cubic_meter = divide<kilogram, cubic_meter>;
+using joule_per_kilogram = divide<joule, kilogram>;
 
 // Section [quantity]: class template for runtime value with associated unit
 
@@ -1217,6 +1234,13 @@ class quantity {
         (is_relative<Unit> && is_relative<Unit2>),
         "cannot convert from absolute to relative or vice-versa");
   }
+  static std::string unit_name() { return unit_type::static_name(); }
+  KOKKOS_INLINE_FUNCTION static constexpr
+  dimension dimension() { return unit_type::static_dimension(); }
+  KOKKOS_INLINE_FUNCTION static constexpr
+  rational unit_magnitude() { return unit_type::static_magnitude(); }
+  KOKKOS_INLINE_FUNCTION static constexpr
+  optional<rational> unit_origin() { return unit_type::static_origin(); }
 };
 
 template <class T, class Unit>
@@ -1432,10 +1456,18 @@ class quantity<T, dynamic_unit> {
 // Section [named quantity]: convenience typedefs for quantities of named units
 
 template <class T>
-using kilograms_per_cubic_meter = quantity<T, kilogram_per_cubic_meter>;
+using kilograms = quantity<T, kilogram>;
 template <class T>
 using kelvins = quantity<T, kelvin>;
 template <class T>
+using meters_per_second = quantity<T, meter_per_second>;
+template <class T>
 using pascals = quantity<T, pascal>;
+template <class T>
+using joules = quantity<T, joule>;
+template <class T>
+using kilograms_per_cubic_meter = quantity<T, kilogram_per_cubic_meter>;
+template <class T>
+using joules_per_kilogram = quantity<T, joule_per_kilogram>;
 
 }
