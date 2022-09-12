@@ -168,7 +168,7 @@ class dimension {
   }
 };
 
-KOKKOS_INLINE_FUNCTION constexpr dimension dimensionless()
+KOKKOS_INLINE_FUNCTION constexpr dimension dimension_one()
 {
   return dimension(0, 0, 0);
 }
@@ -315,7 +315,17 @@ KOKKOS_INLINE_FUNCTION constexpr dimension electrical_resistance()
 
 KOKKOS_INLINE_FUNCTION constexpr dimension electrical_conductance()
 {
-  return dimensionless() / electrical_resistance();
+  return dimension_one() / electrical_resistance();
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension capacitance()
+{
+  return electric_charge() / electric_potential();
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension inductance()
+{
+  return electric_potential() / (electric_current() / time());
 }
 
 // Section [optiona]: constexpr-compatible and Kokkosified version of std::optional<T>
@@ -424,10 +434,10 @@ class crtp : public named {
   }
 };
 
-class unitless : public crtp<unitless> {
+class unit_one : public crtp<unit_one> {
  public:
   static std::string static_name() { return "1"; }
-  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimensionless(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimension_one(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
@@ -494,7 +504,7 @@ class dynamic_unit : public unit {
   }
   bool is_unitless() const
   {
-    return dynamic_cast<unitless const*>(m_pointer.get()) != nullptr;
+    return dynamic_cast<unit_one const*>(m_pointer.get()) != nullptr;
   }
 };
 
@@ -529,7 +539,7 @@ class dynamic_exp : public unit {
   }
   std::unique_ptr<unit> simplify() const override
   {
-    if (m_exponent == 0) return unitless().copy();
+    if (m_exponent == 0) return unit_one().copy();
     if (m_exponent == 1) return m_base.copy();
     return copy();
   }
@@ -552,7 +562,7 @@ class dynamic_product : public unit {
   }
   void push_back_unless_unitless(dynamic_unit const& term)
   {
-    if (dynamic_cast<unitless const*>(term.pointer()) == nullptr) {
+    if (dynamic_cast<unit_one const*>(term.pointer()) == nullptr) {
       push_back(term);
     }
   }
@@ -678,7 +688,7 @@ class dynamic_product : public unit {
     for (auto& u : m_terms) {
       result.push_back_unless_unitless(u.simplify());
     }
-    if (result.m_terms.empty()) return unitless().copy();
+    if (result.m_terms.empty()) return unit_one().copy();
     if (result.m_terms.size() == 1) return result.m_terms.front().copy();
     return result.copy();
   }
@@ -762,7 +772,7 @@ template <>
 class static_product<> : public crtp<static_product<>> {
  public:
   static std::string static_name() { return "1"; }
-  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimensionless(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return kul::dimension_one(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return kul::rational(1); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
   std::unique_ptr<unit> copy() const override
@@ -843,7 +853,7 @@ class push_back_unless_unitless {
 };
 
 template <class A>
-class push_back_unless_unitless<A, unitless> {
+class push_back_unless_unitless<A, unit_one> {
  public:
   using type = A;
 };
@@ -858,7 +868,7 @@ class prepend_unless_unitless {
 };
 
 template <class B>
-class prepend_unless_unitless<unitless, B> {
+class prepend_unless_unitless<unit_one, B> {
  public:
   using type = B;
 };
@@ -955,7 +965,7 @@ class simplify {
 template <class Base>
 class simplify<static_pow<Base, 0>> {
  public:
-  using type = unitless;
+  using type = unit_one;
 };
 
 template <class Base>
@@ -990,7 +1000,7 @@ class simplify_product {
 template <>
 class simplify_product<static_product<>> {
  public:
-  using type = unitless;
+  using type = unit_one;
 };
 
 template <class T>
@@ -1168,7 +1178,7 @@ using kilogram = kilo<gram>;
 class radian : public crtp<radian> {
  public:
   static std::string static_name() { return "rad"; }
-  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return dimensionless(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return dimension_one(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
@@ -1177,6 +1187,14 @@ class kelvin : public crtp<kelvin> {
  public:
   static std::string static_name() { return "K"; }
   KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return temperature(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return rational(0); }
+};
+
+class ampere : public crtp<ampere> {
+ public:
+  static std::string static_name() { return "A"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electric_current(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return rational(0); }
 };
@@ -1221,11 +1239,28 @@ class siemens : public crtp<siemens> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
+class farad : public crtp<farad> {
+ public:
+  static std::string static_name() { return "F"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return capacitance(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+class henry : public crtp<henry> {
+ public:
+  static std::string static_name() { return "H"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return inductance(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
 using meter_per_second = divide<meter, second>;
 using square_meter = multiply<meter, meter>;
 using cubic_meter = multiply<square_meter, meter>;
 using kilogram_per_cubic_meter = divide<kilogram, cubic_meter>;
 using joule_per_kilogram = divide<joule, kilogram>;
+using joule_per_kilogram_per_kelvin = divide<joule_per_kilogram, kelvin>;
 using siemens_per_meter = divide<siemens, meter>;
 
 // Section [quantity]: class template for runtime value with associated unit
@@ -1243,7 +1278,7 @@ class quantity {
   KOKKOS_DEFAULTED_FUNCTION constexpr quantity& operator=(quantity const&) = default;
   template <class U,
       std::enable_if_t<
-        (!std::is_same_v<Unit, unitless>) && (std::is_constructible_v<value_type, U>),
+        (!std::is_same_v<Unit, unit_one>) && (std::is_constructible_v<value_type, U>),
         bool> = false>
   KOKKOS_INLINE_FUNCTION constexpr explicit quantity(U const& v)
     :m_value(v)
@@ -1251,7 +1286,7 @@ class quantity {
   }
   template <class U,
       std::enable_if_t<
-        std::is_same_v<Unit, unitless> && (std::is_constructible_v<value_type, U>),
+        std::is_same_v<Unit, unit_one> && (std::is_constructible_v<value_type, U>),
         bool> = false>
   KOKKOS_INLINE_FUNCTION constexpr quantity(U const& v)
     :m_value(v)
@@ -1287,6 +1322,9 @@ class quantity {
   KOKKOS_INLINE_FUNCTION static constexpr
   optional<rational> unit_origin() { return unit_type::static_origin(); }
 };
+
+template <class T>
+using unitless = quantity<T, unit_one>;
 
 template <class T, class Unit>
 KOKKOS_INLINE_FUNCTION constexpr auto operator==(quantity<T, Unit> const& a, quantity<T, Unit> const& b)
@@ -1356,12 +1394,28 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator*(quantity<T1, Unit1> const& a, qu
   return quantity<T3, Unit3>(a.value() * b.value());
 }
 
+// multiplying a floating-point literal by a compile-time unit type
+
+template <class Arithmetic, class Unit,
+         std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator*(Arithmetic const& a, crtp<Unit> const& b)
+{
+  return quantity<Arithmetic, Unit>(a);
+}
+
 template <class T1, class Unit1, class T2, class Unit2>
 KOKKOS_INLINE_FUNCTION constexpr auto operator/(quantity<T1, Unit1> const& a, quantity<T2, Unit2> const& b)
 {
   using T3 = decltype(a.value() / b.value());
   using Unit3 = divide<Unit1, Unit2>;
   return quantity<T3, Unit3>(a.value() / b.value());
+}
+
+template <class Arithmetic, class T, class Unit,
+         std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator/(Arithmetic const& a, quantity<T, Unit> const& b)
+{
+  return quantity<Arithmetic, unit_one>(a) / b;
 }
 
 template <class T, class Unit>
@@ -1384,9 +1438,9 @@ KOKKOS_INLINE_FUNCTION constexpr auto cbrt(quantity<T, Unit> const& q)
 
 #define KUL_UNITLESS_UNARY_FUNCTION(FUNC) \
 template <class T> \
-KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, unitless> const& q) \
+KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, unit_one> const& q) \
 { \
-  return quantity<T, unitless>(Kokkos::FUNC(q.value())); \
+  return quantity<T, unit_one>(Kokkos::FUNC(q.value())); \
 }
 
 KUL_UNITLESS_UNARY_FUNCTION(exp)
@@ -1405,7 +1459,7 @@ KUL_UNITLESS_UNARY_FUNCTION(lgamma)
 template <class T> \
 KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, radian> const& q) \
 { \
-  return quantity<T, unitless>(Kokkos::FUNC(q.value())); \
+  return quantity<T, unit_one>(Kokkos::FUNC(q.value())); \
 }
 
 KUL_UNARY_TRIG_FUNCTION(sin)
@@ -1419,7 +1473,7 @@ KUL_UNARY_TRIG_FUNCTION(tanh)
 
 #define KUL_UNARY_INVERSE_TRIG_FUNCTION(FUNC) \
 template <class T> \
-KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, unitless> const& q) \
+KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, unit_one> const& q) \
 { \
   return quantity<T, radian>(Kokkos::FUNC(q.value())); \
 }
@@ -1435,9 +1489,9 @@ KUL_UNARY_INVERSE_TRIG_FUNCTION(atanh)
 
 #define KUL_UNITLESS_BINARY_FUNCTION(FUNC) \
 template <class T> \
-KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, unitless> const& a, quantity<T, unitless> const& b) \
+KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, unit_one> const& a, quantity<T, unit_one> const& b) \
 { \
-  return quantity<T, unitless>(Kokkos::FUNC(a.value(), b.value())); \
+  return quantity<T, unit_one>(Kokkos::FUNC(a.value(), b.value())); \
 }
 
 KUL_UNITLESS_BINARY_FUNCTION(pow)
@@ -1461,7 +1515,7 @@ KOKKOS_INLINE_FUNCTION constexpr auto hypot(
 }
 
 template <class T>
-KOKKOS_INLINE_FUNCTION constexpr auto atan2(quantity<T, unitless> const& a, quantity<T, unitless> const& b)
+KOKKOS_INLINE_FUNCTION constexpr auto atan2(quantity<T, unit_one> const& a, quantity<T, unit_one> const& b)
 {
   return quantity<T, radian>(Kokkos::atan2(a.value(), b.value()));
 }
@@ -1501,9 +1555,15 @@ class quantity<T, dynamic_unit> {
 // Section [named quantity]: convenience typedefs for quantities of named units
 
 template <class T>
+using seconds = quantity<T, second>;
+template <class T>
+using meters = quantity<T, meter>;
+template <class T>
 using kilograms = quantity<T, kilogram>;
 template <class T>
 using kelvins = quantity<T, kelvin>;
+template <class T>
+using amperes = quantity<T, ampere>;
 template <class T>
 using meters_per_second = quantity<T, meter_per_second>;
 template <class T>
@@ -1511,9 +1571,21 @@ using pascals = quantity<T, pascal>;
 template <class T>
 using joules = quantity<T, joule>;
 template <class T>
+using volts = quantity<T, volt>;
+template <class T>
+using ohms = quantity<T, ohm>;
+template <class T>
+using siemens_quantity = quantity<T, siemens>;
+template <class T>
+using farads = quantity<T, farad>;
+template <class T>
+using henries = quantity<T, henry>;
+template <class T>
 using kilograms_per_cubic_meter = quantity<T, kilogram_per_cubic_meter>;
 template <class T>
 using joules_per_kilogram = quantity<T, joule_per_kilogram>;
+template <class T>
+using joules_per_kilogram_per_kelvin = quantity<T, joule_per_kilogram_per_kelvin>;
 template <class T>
 using siemens_per_meter_quantity = quantity<T, siemens_per_meter>;
 

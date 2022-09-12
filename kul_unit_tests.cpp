@@ -80,7 +80,7 @@ TEST(dynamic_product, push_back)
   kul::dynamic_product p;
   p.push_back(kul::meter());
   p.push_back(kul::meter());
-  p.push_back(kul::unitless());
+  p.push_back(kul::unit_one());
   EXPECT_EQ(p.name(), "m * m * 1");
 }
 
@@ -89,7 +89,7 @@ TEST(dynamic_product, push_back_unless_unitless)
   kul::dynamic_product p;
   p.push_back_unless_unitless(kul::meter());
   p.push_back_unless_unitless(kul::meter());
-  p.push_back_unless_unitless(kul::unitless());
+  p.push_back_unless_unitless(kul::unit_one());
   EXPECT_EQ(p.name(), "m * m");
 }
 
@@ -195,8 +195,8 @@ TEST(static_product, push_back)
   using c = kul::push_back_t<b, kul::second>;
   static_assert(std::is_same_v<c, kul::static_product<kul::meter, kul::second>>,
       "second push_back");
-  using d = kul::push_back_t<c, kul::unitless>;
-  static_assert(std::is_same_v<d, kul::static_product<kul::meter, kul::second, kul::unitless>>,
+  using d = kul::push_back_t<c, kul::unit_one>;
+  static_assert(std::is_same_v<d, kul::static_product<kul::meter, kul::second, kul::unit_one>>,
       "third push_back");
 }
 
@@ -206,7 +206,7 @@ TEST(static_product, push_back_unless_unitless)
   using b = kul::push_back_unless_unitless_t<a, kul::meter>;
   static_assert(std::is_same_v<b, kul::static_product<kul::meter>>,
       "first push_back");
-  using c = kul::push_back_unless_unitless_t<b, kul::unitless>;
+  using c = kul::push_back_unless_unitless_t<b, kul::unit_one>;
   static_assert(std::is_same_v<c, kul::static_product<kul::meter>>,
       "third push_back");
 }
@@ -253,7 +253,7 @@ TEST(static_product, divide_by)
 TEST(simplify, zero_exp)
 {
   using a = kul::simplify_t<kul::static_pow<kul::meter, 0>>;
-  static_assert(std::is_same_v<a, kul::unitless>, "zero exponent is unitless");
+  static_assert(std::is_same_v<a, kul::unit_one>, "zero exponent is unitless");
 }
 
 TEST(simplify, one_exp)
@@ -287,7 +287,7 @@ TEST(simplify, unitless)
   using b = kul::static_pow<kul::second, 0>;
   using c = kul::static_product<a, b>;
   using d = kul::simplify_t<c>;
-  static_assert(std::is_same_v<d, kul::unitless>, "simplify unitless");
+  static_assert(std::is_same_v<d, kul::unit_one>, "simplify unitless");
 }
 
 TEST(static_multiply, square_meter)
@@ -307,7 +307,7 @@ TEST(static_divide, m_per_s)
 TEST(static_divide, m_per_m)
 {
   using a = kul::divide<kul::meter, kul::meter>;
-  static_assert(std::is_same_v<a, kul::unitless>, "m/m");
+  static_assert(std::is_same_v<a, kul::unit_one>, "m/m");
 }
 
 TEST(root, m3)
@@ -452,7 +452,7 @@ TEST(quantity, cbrt)
 TEST(quantity, sin)
 {
   auto r1 = kul::quantity<double, kul::radian>(0.0);
-  auto r2 = kul::quantity<double, kul::unitless>(0.0);
+  auto r2 = kul::quantity<double, kul::unit_one>(0.0);
   auto r3 = kul::sin(r1);
   static_assert(std::is_same_v<decltype(r3), decltype(r2)>,
       "sin returns unitless");
@@ -466,7 +466,7 @@ TEST(quantity, sin)
 TEST(quantity, cos)
 {
   auto r1 = kul::quantity<double, kul::radian>(0.0);
-  auto r2 = kul::quantity<double, kul::unitless>(1.0);
+  auto r2 = kul::quantity<double, kul::unit_one>(1.0);
   auto r3 = kul::cos(r1);
   static_assert(std::is_same_v<decltype(r3), decltype(r2)>,
       "cos returns unitless");
