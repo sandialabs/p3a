@@ -298,6 +298,26 @@ KOKKOS_INLINE_FUNCTION constexpr dimension pressure()
   return force() / area();
 }
 
+KOKKOS_INLINE_FUNCTION constexpr dimension electric_charge()
+{
+  return electric_current() * time();
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension electric_potential()
+{
+  return energy() / electric_charge();
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension electrical_resistance()
+{
+  return electric_potential() / electric_current();
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension electrical_conductance()
+{
+  return dimensionless() / electrical_resistance();
+}
+
 // Section [optiona]: constexpr-compatible and Kokkosified version of std::optional<T>
 
 class nullopt_t {};
@@ -1177,11 +1197,36 @@ class joule : public crtp<joule> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
+class volt : public crtp<volt> {
+ public:
+  static std::string static_name() { return "V"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electric_potential(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+class ohm : public crtp<ohm> {
+ public:
+  static std::string static_name() { return "Ohm"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electrical_resistance(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+class siemens : public crtp<siemens> {
+ public:
+  static std::string static_name() { return "S"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electrical_conductance(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
 using meter_per_second = divide<meter, second>;
 using square_meter = multiply<meter, meter>;
 using cubic_meter = multiply<square_meter, meter>;
 using kilogram_per_cubic_meter = divide<kilogram, cubic_meter>;
 using joule_per_kilogram = divide<joule, kilogram>;
+using siemens_per_meter = divide<siemens, meter>;
 
 // Section [quantity]: class template for runtime value with associated unit
 
@@ -1469,5 +1514,7 @@ template <class T>
 using kilograms_per_cubic_meter = quantity<T, kilogram_per_cubic_meter>;
 template <class T>
 using joules_per_kilogram = quantity<T, joule_per_kilogram>;
+template <class T>
+using siemens_per_meter_quantity = quantity<T, siemens_per_meter>;
 
 }

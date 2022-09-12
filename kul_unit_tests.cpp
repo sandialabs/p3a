@@ -39,6 +39,20 @@ TEST(dimension, compare)
   EXPECT_NE(a, c);
 }
 
+TEST(dimension, electric_potential)
+{
+  auto constexpr a = kul::electric_potential();
+  auto constexpr b =
+    kul::mass()
+    * kul::length()
+    * kul::length()
+    / kul::time()
+    / kul::time()
+    / kul::time()
+    / kul::electric_current();
+  static_assert(a == b, "electric potential in base dimensions");
+}
+
 TEST(named_unit, second)
 {
   static_assert(kul::second::static_dimension() == kul::time(), "second has dimension time");

@@ -20,6 +20,7 @@ using kul::pascals;
 using kul::joules;
 using kul::kilograms_per_cubic_meter;
 using kul::joules_per_kilogram;
+using kul::siemens_per_meter_quantity;
 
 template <class A, class B>
 using unit_divide = kul::divide<A, B>;
