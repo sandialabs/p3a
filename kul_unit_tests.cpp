@@ -498,3 +498,10 @@ TEST(quantity, fma)
       "fma return type");
   EXPECT_FLOAT_EQ(r5.value(), r4.value());
 }
+
+TEST(quantity, temperature_electronvolts)
+{
+  auto constexpr c1 = kul::quantity<double, kul::kilo<kul::temperature_electronvolt>>(15.0);
+  auto constexpr c2 = kul::quantity<double, kul::mega<kul::kelvin>>(c1);
+  EXPECT_FLOAT_EQ(c2.value(), 174.067771800000003);
+}

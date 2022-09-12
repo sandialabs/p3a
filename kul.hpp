@@ -1122,11 +1122,38 @@ inline constexpr conversion<T> static_conversion = conversion<T>(
 // Section [prefix]: class template versions of metric prefixes
 
 template <class T>
+class giga : public crtp<giga<T>> {
+ public:
+  static std::string static_name() { return "G" + T::static_name(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return T::static_dimension(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1'000'000'000) * T::static_magnitude(); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+template <class T>
+class mega : public crtp<mega<T>> {
+ public:
+  static std::string static_name() { return "M" + T::static_name(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return T::static_dimension(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1'000'000) * T::static_magnitude(); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+template <class T>
 class kilo : public crtp<kilo<T>> {
  public:
   static std::string static_name() { return "k" + T::static_name(); }
   KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return T::static_dimension(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1000) * T::static_magnitude(); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+template <class T>
+class centi : public crtp<centi<T>> {
+ public:
+  static std::string static_name() { return "c" + T::static_name(); }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return T::static_dimension(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1, 100) * T::static_magnitude(); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
@@ -1173,8 +1200,6 @@ class gram : public crtp<gram> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
-using kilogram = kilo<gram>;
-
 class radian : public crtp<radian> {
  public:
   static std::string static_name() { return "rad"; }
@@ -1188,6 +1213,16 @@ class kelvin : public crtp<kelvin> {
   static std::string static_name() { return "K"; }
   KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return temperature(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return rational(0); }
+};
+
+class temperature_electronvolt : public crtp<temperature_electronvolt> {
+ public:
+  static std::string static_name() { return "eV/k_B"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return temperature(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() {
+    return rational(11'604'518'12, 1'000'00); // 11 604 . 518 12
+  }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return rational(0); }
 };
 
@@ -1255,12 +1290,20 @@ class henry : public crtp<henry> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
+using kilogram = kilo<gram>;
+using centimeter = centi<meter>;
+using gigapascal = giga<pascal>;
+using megajoule = mega<joule>;
 using meter_per_second = divide<meter, second>;
 using square_meter = multiply<meter, meter>;
 using cubic_meter = multiply<square_meter, meter>;
+using square_centimeter = multiply<centimeter, centimeter>;
+using cubic_centimeter = multiply<square_centimeter, centimeter>;
 using kilogram_per_cubic_meter = divide<kilogram, cubic_meter>;
+using gram_per_cubic_centimeter = divide<gram, cubic_centimeter>;
 using joule_per_kilogram = divide<joule, kilogram>;
 using joule_per_kilogram_per_kelvin = divide<joule_per_kilogram, kelvin>;
+using megajoule_per_kilogram = divide<megajoule, kilogram>;
 using siemens_per_meter = divide<siemens, meter>;
 
 // Section [quantity]: class template for runtime value with associated unit
@@ -1305,7 +1348,7 @@ class quantity {
       std::enable_if_t<!are_equal<Unit, Unit2>, bool> = false>
   KOKKOS_INLINE_FUNCTION constexpr
   quantity(quantity<T2, Unit2> const& other)
-    :m_value(static_conversion<T2, Unit2, Unit>()(other.value()))
+    :m_value(static_conversion<T2, Unit2, Unit>(other.value()))
   {
     static_assert(Unit::static_dimension() == Unit2::static_dimension(),
         "cannot convert between quantities with different dimensions");
@@ -1563,11 +1606,15 @@ using kilograms = quantity<T, kilogram>;
 template <class T>
 using kelvins = quantity<T, kelvin>;
 template <class T>
+using temperature_electronvolts = quantity<T, temperature_electronvolt>;
+template <class T>
 using amperes = quantity<T, ampere>;
 template <class T>
 using meters_per_second = quantity<T, meter_per_second>;
 template <class T>
 using pascals = quantity<T, pascal>;
+template <class T>
+using gigapascals = quantity<T, gigapascal>;
 template <class T>
 using joules = quantity<T, joule>;
 template <class T>
@@ -1583,9 +1630,13 @@ using henries = quantity<T, henry>;
 template <class T>
 using kilograms_per_cubic_meter = quantity<T, kilogram_per_cubic_meter>;
 template <class T>
+using grams_per_cubic_centimeter = quantity<T, gram_per_cubic_centimeter>;
+template <class T>
 using joules_per_kilogram = quantity<T, joule_per_kilogram>;
 template <class T>
 using joules_per_kilogram_per_kelvin = quantity<T, joule_per_kilogram_per_kelvin>;
+template <class T>
+using megajoules_per_kilogram = quantity<T, megajoule_per_kilogram>;
 template <class T>
 using siemens_per_meter_quantity = quantity<T, siemens_per_meter>;
 

@@ -27,16 +27,20 @@ using kul::meters_per_second;
 using kul::kelvins;
 using kul::amperes;
 using kul::pascals;
+using kul::gigapascals;
 using kul::joules;
 using kul::kilograms_per_cubic_meter;
+using kul::grams_per_cubic_centimeter;
 using kul::joules_per_kilogram;
 using kul::joules_per_kilogram_per_kelvin;
+using kul::megajoules_per_kilogram;
 using kul::volts;
 using kul::ohms;
 using kul::siemens_quantity;
 using kul::farads;
 using kul::henries;
 using kul::siemens_per_meter_quantity;
+using kul::temperature_electronvolts;
 
 template <class A, class B>
 using unit_divide = kul::divide<A, B>;
