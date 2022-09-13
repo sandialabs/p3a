@@ -6,6 +6,9 @@ namespace p3a {
 
 // unit types
 
+using kul::reciprocal;
+
+using kul::second;
 using kul::kilogram;
 using kul::kelvin;
 using kul::pascal;
@@ -47,5 +50,9 @@ template <class A, class B>
 using unit_divide = kul::divide<A, B>;
 
 namespace quantity_literals = kul::literals;
+
+using kul::exp;
+using kul::sqrt;
+using kul::cbrt;
 
 }

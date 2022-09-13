@@ -1038,6 +1038,9 @@ using multiply = simplify_t<multiply_with_t<canonicalize_t<A>, B>>;
 template <class A, class B>
 using divide = simplify_t<divide_by_t<canonicalize_t<A>, B>>;
 
+template <class T>
+using reciprocal = divide<unit_one, T>;
+
 template <class A, int Exponent>
 class static_root_helper;
 
@@ -1519,12 +1522,24 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator-(quantity<T1, Unit> const& a, qua
   return quantity<T3, make_relative<Unit>>(a.value() - b.value());
 }
 
+template <class T, class Unit>
+KOKKOS_INLINE_FUNCTION constexpr auto operator-(quantity<T, Unit> const& a)
+{
+  return quantity<T, Unit>(-a.value());
+}
+
 template <class T1, class Unit1, class T2, class Unit2>
 KOKKOS_INLINE_FUNCTION constexpr auto operator*(quantity<T1, Unit1> const& a, quantity<T2, Unit2> const& b)
 {
   using T3 = decltype(a.value() * b.value());
   using Unit3 = multiply<Unit1, Unit2>;
   return quantity<T3, Unit3>(a.value() * b.value());
+}
+
+template <class T, class Unit, class U>
+KOKKOS_INLINE_FUNCTION constexpr quantity<T, Unit>& operator+=(quantity<T, Unit>& a, U const& b)
+{
+  return a = a + b;
 }
 
 // multiplying a floating-point literal by a compile-time unit type
@@ -1733,9 +1748,51 @@ using siemens_per_meter_quantity = quantity<T, siemens_per_meter>;
 namespace literals {
 
 KOKKOS_INLINE_FUNCTION constexpr
-volts<double> operator""_V(long double v)
+auto operator""_s(long double v)
+{
+  return seconds<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_m(long double v)
+{
+  return meters<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_kg(long double v)
+{
+  return kilograms<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_V(long double v)
 {
   return volts<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_Ohm(long double v)
+{
+  return ohms<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_A(long double v)
+{
+  return amperes<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_F(long double v)
+{
+  return farads<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_H(long double v)
+{
+  return henries<double>(v);
 }
 
 }
