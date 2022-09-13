@@ -1608,6 +1608,12 @@ template <class T> \
 KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, radian> const& q) \
 { \
   return quantity<T, unit_one>(Kokkos::FUNC(q.value())); \
+} \
+\
+template <class T> \
+KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, unit_one> const& q) \
+{ \
+  return FUNC(quantity<T, radian>(q)); \
 }
 
 KUL_UNARY_TRIG_FUNCTION(sin)
@@ -1763,6 +1769,12 @@ KOKKOS_INLINE_FUNCTION constexpr
 auto operator""_kg(long double v)
 {
   return kilograms<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_Pa(long double v)
+{
+  return pascals<double>(v);
 }
 
 KOKKOS_INLINE_FUNCTION constexpr
