@@ -87,6 +87,7 @@ set(P3A_HEADERS
   p3a_vector3.hpp
   p3a_scan.hpp
   kul.hpp
+  kul_iostream.hpp
   )
 
 set(P3A_SOURCES

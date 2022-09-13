@@ -18,6 +18,7 @@
 #include <vector>
 
 #include <Kokkos_Core.hpp>
+#include <Kokkos_SIMD.hpp>
 
 namespace kul {
 
@@ -1619,8 +1620,8 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator+(quantity<T1, Unit1> const& a, qu
   using value_type = decltype(a.value() + b.value());
   using unit_type = Unit1;
   using relative_unit_type = make_relative<unit_type>;
-  auto const relative_b = quantity<T2, relative_unit_type>(b);
-  return quantity<value_type, unit_type>(a.value() + relative_b.value());
+  auto const converted_b = quantity<T2, relative_unit_type>(b);
+  return quantity<value_type, unit_type>(a.value() + converted_b.value());
 }
 
 template <class Arithmetic, class T,
@@ -1637,12 +1638,26 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator+(quantity<T, unit_one> const& a, 
   return a + quantity<Arithmetic, unit_one>(b);
 }
 
-template <class T1, class Unit, class T2,
-    std::enable_if_t<is_relative<Unit>, bool> = false>
-KOKKOS_INLINE_FUNCTION constexpr auto operator-(quantity<T1, Unit> const& a, quantity<T2, Unit> const& b)
+template <class T1, class Unit1, class T2, class Unit2>
+KOKKOS_INLINE_FUNCTION constexpr auto operator-(quantity<T1, Unit1> const& a, quantity<T2, Unit2> const& b)
 {
-  using T3 = decltype(a.value() - b.value());
-  return quantity<T3, Unit>(a.value() - b.value());
+  static_assert(Unit1::static_dimension() == Unit2::static_dimension(),
+      "cannot subtract units with different physical dimension");
+  static_assert(!(is_relative<Unit1> && is_absolute<Unit2>),
+      "cannot subtract an absolute quantity from a relative one");
+  using value_type = decltype(a.value() - b.value());
+  if constexpr (is_relative<Unit1> && is_relative<Unit2>) {
+    auto const converted_b = quantity<T2, Unit1>(b);
+    return quantity<value_type, Unit1>(a.value() - converted_b.value());
+  }
+  if constexpr (is_absolute<Unit1> && is_absolute<Unit2>) {
+    auto const converted_b = quantity<T2, Unit1>(b);
+    return quantity<value_type, make_relative<Unit1>>(a.value() - converted_b.value());
+  }
+  if constexpr (is_absolute<Unit1> && is_relative<Unit2>) {
+    auto const converted_b = quantity<T2, make_relative<Unit1>>(b);
+    return quantity<value_type, Unit1>(a.value() - converted_b.value());
+  }
 }
 
 template <class T1, class Unit, class T2,
@@ -1825,23 +1840,23 @@ KUL_UNARY_INVERSE_TRIG_FUNCTION(atanh)
 
 #undef KUL_UNARY_INVERSE_TRIG_FUNCTION
 
-#define KUL_UNITLESS_BINARY_FUNCTION(FUNC) \
-template <class T> \
-KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, unit_one> const& a, quantity<T, unit_one> const& b) \
-{ \
-  return quantity<T, unit_one>(Kokkos::FUNC(a.value(), b.value())); \
-} \
-\
-template <class T> \
-KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, unit_one> const& a, T const& b) \
-{ \
-  return FUNC(a, quantity<T, unit_one>(b)); \
+template <class T>
+KOKKOS_INLINE_FUNCTION constexpr auto copysign(quantity<T, unit_one> const& a, quantity<T, unit_one> const& b)
+{
+  return quantity<T, unit_one>(Kokkos::copysign(a.value(), b.value()));
 }
 
-KUL_UNITLESS_BINARY_FUNCTION(pow)
-KUL_UNITLESS_BINARY_FUNCTION(copysign)
+template <class T>
+KOKKOS_INLINE_FUNCTION constexpr auto pow(quantity<T, unit_one> const& a, quantity<T, unit_one> const& b)
+{
+  return quantity<T, unit_one>(Kokkos::pow(a.value(), b.value()));
+}
 
-#undef KUL_UNITLESS_BINARY_FUNCTION
+template <class T1, class T2>
+KOKKOS_INLINE_FUNCTION constexpr auto pow(quantity<T1, unit_one> const& a, T2 const& b)
+{
+  return kul::pow(a, quantity<T1, unit_one>(b));
+}
 
 template <class T, class Unit>
 KOKKOS_INLINE_FUNCTION constexpr auto hypot(quantity<T, Unit> const& a, quantity<T, Unit> const& b)
@@ -2023,6 +2038,46 @@ auto operator""_H(long double v)
   return henries<double>(v);
 }
 
+}
+
+template <class M, class T, class Unit>
+class const_where_expression {
+ protected:
+  quantity<T, Unit>& m_value;
+  M m_mask;
+
+ public:
+  KOKKOS_FORCEINLINE_FUNCTION
+  const_where_expression(M mask_arg, quantity<T, Unit> const& value_arg)
+      : m_value(const_cast<quantity<T, Unit>&>(value_arg)), m_mask(mask_arg) {}
+  KOKKOS_FORCEINLINE_FUNCTION quantity<T, Unit> const& value() const { return m_value; }
+};
+
+template <class M, class T, class Unit>
+class where_expression
+  : public const_where_expression<M, T, Unit> {
+  using base_type = const_where_expression<M, T, Unit>;
+ public:
+  KOKKOS_FORCEINLINE_FUNCTION
+  where_expression(M mask_arg, quantity<T, Unit>& value_arg)
+      : base_type(mask_arg, value_arg) {}
+  KOKKOS_FORCEINLINE_FUNCTION quantity<T, Unit>& value() { return this->m_value; }
+  template <class U>
+  KOKKOS_FORCEINLINE_FUNCTION void operator=(U const& x) {
+    Kokkos::Experimental::where(this->m_mask, this->m_value.value()) = quantity<T, Unit>(x).value();
+  }
+};
+
+template <class M, class T, class Unit>
+[[nodiscard]] KOKKOS_FORCEINLINE_FUNCTION
+auto where(M const& mask, quantity<T, Unit>& value) {
+  return where_expression<M, T, Unit>(mask, value);
+}
+
+template <class M, class T, class Unit>
+[[nodiscard]] KOKKOS_FORCEINLINE_FUNCTION
+auto where(M const& mask, quantity<T, Unit> const& value) {
+  return const_where_expression<M, T, Unit>(mask, value);
 }
 
 }
