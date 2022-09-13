@@ -505,3 +505,12 @@ TEST(quantity, temperature_electronvolts)
   auto constexpr c2 = kul::quantity<double, kul::mega<kul::kelvin>>(c1);
   EXPECT_FLOAT_EQ(c2.value(), 174.067771800000003);
 }
+
+TEST(unit, gaussian_conductivity)
+{
+  auto constexpr c1 = kul::rational(29979245800);
+  auto constexpr c2 = kul::rational(100'000'000'000);
+  auto constexpr c3 = (c2 / c1) / c1;
+  auto constexpr c4 = kul::gaussian_conductivity::static_magnitude();
+  static_assert(c3 == c4, "gaussian conductivity magnitude");
+}

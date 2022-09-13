@@ -318,6 +318,16 @@ KOKKOS_INLINE_FUNCTION constexpr dimension electrical_conductance()
   return dimension_one() / electrical_resistance();
 }
 
+KOKKOS_INLINE_FUNCTION constexpr dimension electrical_resistivity()
+{
+  return electrical_resistance() * length();
+}
+
+KOKKOS_INLINE_FUNCTION constexpr dimension electrical_conductivity()
+{
+  return dimension_one() / electrical_resistivity();
+}
+
 KOKKOS_INLINE_FUNCTION constexpr dimension capacitance()
 {
   return electric_charge() / electric_potential();
@@ -817,7 +827,7 @@ class static_product<FirstUnit, OtherUnits...> : public crtp<static_product<Firs
   {
     auto p = dynamic_product();
     p.multiply_with(FirstUnit());
-    p.multiply_with(tail_type::copy());
+    p.multiply_with(tail_type());
     return p.copy();
   }
 };
@@ -1184,6 +1194,8 @@ class meter : public crtp<meter> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
+using centimeter = centi<meter>;
+
 class inch : public crtp<inch> {
  public:
   static std::string static_name() { return "in"; }
@@ -1231,7 +1243,38 @@ class ampere : public crtp<ampere> {
   static std::string static_name() { return "A"; }
   KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electric_current(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+class coulomb : public crtp<coulomb> {
+ public:
+  static std::string static_name() { return "C"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electric_charge(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+// the unit of current in the electrostatic centimeter-gram-second unit system, ESU, a.k.a Gaussian units
+
+class statampere : public crtp<statampere> {
+ public:
+  static std::string static_name() { return "statA"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electric_current(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() {
+    auto constexpr speed_of_light_in_centimeters_per_second = rational(29979245800);
+    return rational(10) / speed_of_light_in_centimeters_per_second;
+  }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return rational(0); }
+};
+
+class statcoulomb : public crtp<statcoulomb> {
+ public:
+  static std::string static_name() { return "statC"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electric_charge(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() {
+    return statampere::static_magnitude() * second::static_magnitude();
+  }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
 class pascal : public crtp<pascal> {
@@ -1250,11 +1293,29 @@ class joule : public crtp<joule> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
+class erg : public crtp<erg> {
+ public:
+  static std::string static_name() { return "erg"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return energy(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1, 10'000'000); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
 class volt : public crtp<volt> {
  public:
   static std::string static_name() { return "V"; }
   KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electric_potential(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+class statvolt : public crtp<statvolt> {
+ public:
+  static std::string static_name() { return "statV"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electric_potential(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() {
+    return erg::static_magnitude() / statcoulomb::static_magnitude();
+  }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
@@ -1290,8 +1351,37 @@ class henry : public crtp<henry> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
+class gaussian_resistance : public crtp<gaussian_resistance> {
+ public:
+  static std::string static_name() { return "s/cm"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electrical_resistance(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() {
+    return statvolt::static_magnitude() / statampere::static_magnitude();
+  }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+class gaussian_resistivity : public crtp<gaussian_resistivity> {
+ public:
+  static std::string static_name() { return "s"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electrical_resistivity(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() {
+    return gaussian_resistance::static_magnitude() * centimeter::static_magnitude();
+  }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+class gaussian_conductivity : public crtp<gaussian_conductivity> {
+ public:
+  static std::string static_name() { return "1/s"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return electrical_conductivity(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() {
+    return rational(1) / gaussian_resistivity::static_magnitude();
+  }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
 using kilogram = kilo<gram>;
-using centimeter = centi<meter>;
 using gigapascal = giga<pascal>;
 using megajoule = mega<joule>;
 using meter_per_second = divide<meter, second>;
@@ -1639,5 +1729,15 @@ template <class T>
 using megajoules_per_kilogram = quantity<T, megajoule_per_kilogram>;
 template <class T>
 using siemens_per_meter_quantity = quantity<T, siemens_per_meter>;
+
+namespace literals {
+
+KOKKOS_INLINE_FUNCTION constexpr
+volts<double> operator""_V(long double v)
+{
+  return volts<double>(v);
+}
+
+}
 
 }

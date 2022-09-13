@@ -41,8 +41,11 @@ using kul::farads;
 using kul::henries;
 using kul::siemens_per_meter_quantity;
 using kul::temperature_electronvolts;
+using kul::gaussian_conductivity;
 
 template <class A, class B>
 using unit_divide = kul::divide<A, B>;
+
+namespace quantity_literals = kul::literals;
 
 }
