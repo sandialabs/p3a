@@ -1608,6 +1608,24 @@ KOKKOS_INLINE_FUNCTION constexpr quantity<T, Unit>& operator+=(quantity<T, Unit>
   return a = a + b;
 }
 
+template <class T, class Unit, class U>
+KOKKOS_INLINE_FUNCTION constexpr quantity<T, Unit>& operator-=(quantity<T, Unit>& a, U const& b)
+{
+  return a = a - b;
+}
+
+template <class T, class Unit, class U>
+KOKKOS_INLINE_FUNCTION constexpr quantity<T, Unit>& operator*=(quantity<T, Unit>& a, U const& b)
+{
+  return a = a * b;
+}
+
+template <class T, class Unit, class U>
+KOKKOS_INLINE_FUNCTION constexpr quantity<T, Unit>& operator/=(quantity<T, Unit>& a, U const& b)
+{
+  return a = a / b;
+}
+
 // multiplying a floating-point literal by a compile-time unit type
 
 template <class Arithmetic, class Unit,
