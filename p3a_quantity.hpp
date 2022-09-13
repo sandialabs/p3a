@@ -1,5 +1,7 @@
 #pragma once
 
+#include "p3a_scalar.hpp"
+
 #include "kul.hpp"
 
 namespace p3a {
@@ -12,6 +14,7 @@ using kul::second;
 using kul::kilogram;
 using kul::kelvin;
 using kul::pascal;
+using kul::gigapascal;
 using kul::joule;
 using kul::kilogram_per_cubic_meter;
 using kul::joule_per_kilogram;
@@ -57,5 +60,14 @@ using kul::sqrt;
 using kul::cbrt;
 using kul::sin;
 using kul::cos;
+
+namespace details {
+
+template <class T, class Unit>
+struct is_scalar<quantity<T, Unit>> {
+  inline static constexpr bool value = true;
+};
+
+}
 
 }

@@ -1865,9 +1865,33 @@ auto operator""_kg(long double v)
 }
 
 KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_kg_per_m3(long double v)
+{
+  return kilograms_per_cubic_meter<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_K(long double v)
+{
+  return kelvins<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
 auto operator""_Pa(long double v)
 {
   return pascals<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_J(long double v)
+{
+  return joules<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_J_per_kg(long double v)
+{
+  return joules_per_kilogram<double>(v);
 }
 
 KOKKOS_INLINE_FUNCTION constexpr
