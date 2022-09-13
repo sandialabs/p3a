@@ -2,8 +2,6 @@
 
 #include "gtest/gtest.h"
 
-#include <iostream>
-
 TEST(rational, construct)
 {
   auto a = kul::rational(1);
@@ -537,4 +535,23 @@ TEST(quantity, square_root_unitless)
   static_assert(std::is_same_v<decltype(r2), kul::unitless<double>>,
       "square root of unitless is unitless");
   EXPECT_FLOAT_EQ(r2.value(), 2.0);
+}
+
+TEST(quantity, add_unequal)
+{
+  auto a = kul::meters<double>(0.0);
+  auto b = kul::quantity<double, kul::inch>(1.0);
+  a += b;
+  EXPECT_FLOAT_EQ(a.value(), 2.54e-2);
+}
+
+TEST(quantity, add_absolute)
+{
+  auto a = kul::kelvins<double>(200.0);
+  auto b = kul::kelvins<double>(1.0);
+  auto c = kul::kelvins<double>(0.0);
+  auto d = a + (b - c);
+  static_assert(std::is_same_v<decltype(d), kul::kelvins<double>>,
+      "result type is still absolute");
+  EXPECT_FLOAT_EQ(d.value(), 201.0);
 }

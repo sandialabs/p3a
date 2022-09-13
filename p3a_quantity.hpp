@@ -1,6 +1,7 @@
 #pragma once
 
 #include "p3a_scalar.hpp"
+#include "p3a_constants.hpp"
 
 #include "kul.hpp"
 
@@ -55,6 +56,8 @@ using unit_divide = kul::divide<A, B>;
 
 namespace quantity_literals = kul::literals;
 
+using kul::abs;
+using kul::pow;
 using kul::exp;
 using kul::sqrt;
 using kul::cbrt;
@@ -66,6 +69,16 @@ namespace details {
 template <class T, class Unit>
 struct is_scalar<quantity<T, Unit>> {
   inline static constexpr bool value = true;
+};
+
+}
+
+namespace constants {
+
+template <class T, class Unit>
+struct epsilon<quantity<T, Unit>> {
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  quantity<T, Unit> value() { return quantity<T, Unit>(epsilon_value<T>()); }
 };
 
 }

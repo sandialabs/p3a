@@ -1492,10 +1492,38 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator==(quantity<T, Unit> const& a, qua
   return a.value() == b.value();
 }
 
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator==(Arithmetic const& a, quantity<T, unit_one> const& b)
+{
+  return a == b.value();
+}
+
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator==(quantity<T, unit_one> const& a, Arithmetic const& b)
+{
+  return a.value() == b;
+}
+
 template <class T, class Unit>
 KOKKOS_INLINE_FUNCTION constexpr auto operator!=(quantity<T, Unit> const& a, quantity<T, Unit> const& b)
 {
   return a.value() != b.value();
+}
+
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator!=(Arithmetic const& a, quantity<T, unit_one> const& b)
+{
+  return a != b.value();
+}
+
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator!=(quantity<T, unit_one> const& a, Arithmetic const& b)
+{
+  return a.value() != b;
 }
 
 template <class T, class Unit>
@@ -1504,10 +1532,38 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator<=(quantity<T, Unit> const& a, qua
   return a.value() <= b.value();
 }
 
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator<=(Arithmetic const& a, quantity<T, unit_one> const& b)
+{
+  return a <= b.value();
+}
+
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator<=(quantity<T, unit_one> const& a, Arithmetic const& b)
+{
+  return a.value() <= b;
+}
+
 template <class T, class Unit>
 KOKKOS_INLINE_FUNCTION constexpr auto operator>=(quantity<T, Unit> const& a, quantity<T, Unit> const& b)
 {
   return a.value() >= b.value();
+}
+
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator>=(Arithmetic const& a, quantity<T, unit_one> const& b)
+{
+  return a >= b.value();
+}
+
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator>=(quantity<T, unit_one> const& a, Arithmetic const& b)
+{
+  return a.value() >= b;
 }
 
 template <class T, class Unit>
@@ -1516,18 +1572,55 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator<(quantity<T, Unit> const& a, quan
   return a.value() < b.value();
 }
 
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator>(Arithmetic const& a, quantity<T, unit_one> const& b)
+{
+  return a > b.value();
+}
+
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator>(quantity<T, unit_one> const& a, Arithmetic const& b)
+{
+  return a.value() > b;
+}
+
 template <class T, class Unit>
 KOKKOS_INLINE_FUNCTION constexpr auto operator>(quantity<T, Unit> const& a, quantity<T, Unit> const& b)
 {
   return a.value() > b.value();
 }
 
-template <class T1, class Unit, class T2,
-    std::enable_if_t<is_relative<Unit>, bool> = false>
-KOKKOS_INLINE_FUNCTION constexpr auto operator+(quantity<T1, Unit> const& a, quantity<T2, Unit> const& b)
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator<(Arithmetic const& a, quantity<T, unit_one> const& b)
 {
-  using T3 = decltype(a.value() + b.value());
-  return quantity<T3, Unit>(a.value() + b.value());
+  return a < b.value();
+}
+
+template <class Arithmetic, class T,
+  std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator<(quantity<T, unit_one> const& a, Arithmetic const& b)
+{
+  return a.value() < b;
+}
+
+template <class T1, class Unit1, class T2, class Unit2>
+KOKKOS_INLINE_FUNCTION constexpr auto operator+(quantity<T1, Unit1> const& a, quantity<T2, Unit2> const& b)
+{
+  static_assert(Unit1::static_dimension() == Unit2::static_dimension(),
+      "cannot add quantities with different physical dimension");
+  static_assert(!(is_absolute<Unit1> && is_absolute<Unit2>),
+      "cannot add two absolute quantities");
+  if constexpr (is_absolute<Unit2>) {
+    return b + a;
+  }
+  using value_type = decltype(a.value() + b.value());
+  using unit_type = Unit1;
+  using relative_unit_type = make_relative<unit_type>;
+  auto const relative_b = quantity<T2, relative_unit_type>(b);
+  return quantity<value_type, unit_type>(a.value() + relative_b.value());
 }
 
 template <class Arithmetic, class T,
@@ -1737,6 +1830,12 @@ template <class T> \
 KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, unit_one> const& a, quantity<T, unit_one> const& b) \
 { \
   return quantity<T, unit_one>(Kokkos::FUNC(a.value(), b.value())); \
+} \
+\
+template <class T> \
+KOKKOS_INLINE_FUNCTION constexpr auto FUNC(quantity<T, unit_one> const& a, T const& b) \
+{ \
+  return FUNC(a, quantity<T, unit_one>(b)); \
 }
 
 KUL_UNITLESS_BINARY_FUNCTION(pow)
