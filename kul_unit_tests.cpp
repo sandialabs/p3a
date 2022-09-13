@@ -514,3 +514,18 @@ TEST(unit, gaussian_conductivity)
   auto constexpr c4 = kul::gaussian_conductivity::static_magnitude();
   static_assert(c3 == c4, "gaussian conductivity magnitude");
 }
+
+TEST(unit, square_unit_one)
+{
+  using t = kul::multiply<kul::unit_one, kul::unit_one>;
+  static_assert(std::is_same_v<t, kul::unit_one>,
+      "square unit_one is unit_one");
+}
+
+TEST(quantity, square_unitless)
+{
+  auto c1 = kul::unitless<double>(2.0);
+  auto c2 = c1 * c1;
+  static_assert(std::is_same_v<decltype(c2), kul::unitless<double>>,
+      "squaring unitless is unitless");
+}

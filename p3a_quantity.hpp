@@ -24,6 +24,7 @@ using kul::unitless;
 // quantity alias templates
 
 using kul::seconds;
+using kul::reciprocal_seconds;
 using kul::meters;
 using kul::kilograms;
 using kul::meters_per_second;

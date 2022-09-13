@@ -984,6 +984,24 @@ class simplify<static_pow<Base, 1>> {
   using type = Base;
 };
 
+template <int Exponent>
+class simplify<static_pow<unit_one, Exponent>> {
+ public:
+  using type = unit_one;
+};
+
+template <>
+class simplify<static_pow<unit_one, 0>> {
+ public:
+  using type = unit_one;
+};
+
+template <>
+class simplify<static_pow<unit_one, 1>> {
+ public:
+  using type = unit_one;
+};
+
 template <class T>
 class simplify_terms;
 
@@ -1522,6 +1540,18 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator-(quantity<T1, Unit> const& a, qua
   return quantity<T3, make_relative<Unit>>(a.value() - b.value());
 }
 
+template <class Arithmetic, class T>
+KOKKOS_INLINE_FUNCTION constexpr auto operator-(Arithmetic const& a, quantity<T, unit_one> const& b)
+{
+  return quantity<Arithmetic, unit_one>(a) - b;
+}
+
+template <class Arithmetic, class T>
+KOKKOS_INLINE_FUNCTION constexpr auto operator-(quantity<T, unit_one> const& a, Arithmetic const& b)
+{
+  return a - quantity<Arithmetic, unit_one>(b);
+}
+
 template <class T, class Unit>
 KOKKOS_INLINE_FUNCTION constexpr auto operator-(quantity<T, Unit> const& a)
 {
@@ -1534,6 +1564,20 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator*(quantity<T1, Unit1> const& a, qu
   using T3 = decltype(a.value() * b.value());
   using Unit3 = multiply<Unit1, Unit2>;
   return quantity<T3, Unit3>(a.value() * b.value());
+}
+
+template <class Arithmetic, class T, class Unit,
+         std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator*(Arithmetic const& a, quantity<T, Unit> const& b)
+{
+  return quantity<Arithmetic, unit_one>(a) * b;
+}
+
+template <class Arithmetic, class T, class Unit,
+         std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator*(quantity<T, Unit> const& a, Arithmetic const& b)
+{
+  return a * quantity<Arithmetic, unit_one>(b);
 }
 
 template <class T, class Unit, class U>
@@ -1564,6 +1608,13 @@ template <class Arithmetic, class T, class Unit,
 KOKKOS_INLINE_FUNCTION constexpr auto operator/(Arithmetic const& a, quantity<T, Unit> const& b)
 {
   return quantity<Arithmetic, unit_one>(a) / b;
+}
+
+template <class Arithmetic, class T, class Unit,
+         std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator/(quantity<T, Unit> const& a, Arithmetic const& b)
+{
+  return a / quantity<Arithmetic, unit_one>(b);
 }
 
 template <class T, class Unit>
@@ -1710,6 +1761,8 @@ class quantity<T, dynamic_unit> {
 
 template <class T>
 using seconds = quantity<T, second>;
+template <class T>
+using reciprocal_seconds = quantity<T, reciprocal<second>>;
 template <class T>
 using meters = quantity<T, meter>;
 template <class T>
