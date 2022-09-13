@@ -55,6 +55,7 @@ namespace quantity_literals = kul::literals;
 using kul::exp;
 using kul::sqrt;
 using kul::cbrt;
+using kul::sin;
 using kul::cos;
 
 }

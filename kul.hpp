@@ -1530,6 +1530,20 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator+(quantity<T1, Unit> const& a, qua
   return quantity<T3, Unit>(a.value() + b.value());
 }
 
+template <class Arithmetic, class T,
+         std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator+(Arithmetic const& a, quantity<T, unit_one> const& b)
+{
+  return quantity<Arithmetic, unit_one>(a) + b;
+}
+
+template <class Arithmetic, class T,
+         std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator+(quantity<T, unit_one> const& a, Arithmetic const& b)
+{
+  return a + quantity<Arithmetic, unit_one>(b);
+}
+
 template <class T1, class Unit, class T2,
     std::enable_if_t<is_relative<Unit>, bool> = false>
 KOKKOS_INLINE_FUNCTION constexpr auto operator-(quantity<T1, Unit> const& a, quantity<T2, Unit> const& b)
