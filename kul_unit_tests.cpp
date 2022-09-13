@@ -529,3 +529,12 @@ TEST(quantity, square_unitless)
   static_assert(std::is_same_v<decltype(c2), kul::unitless<double>>,
       "squaring unitless is unitless");
 }
+
+TEST(quantity, square_root_unitless)
+{
+  auto r1 = kul::unitless<double>(4.0);
+  auto r2 = kul::sqrt(r1);
+  static_assert(std::is_same_v<decltype(r2), kul::unitless<double>>,
+      "square root of unitless is unitless");
+  EXPECT_FLOAT_EQ(r2.value(), 2.0);
+}

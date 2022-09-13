@@ -1069,6 +1069,12 @@ class static_root_helper<static_pow<A, Exponent1>, Exponent2> {
   using type = static_pow<A, Exponent1 / Exponent2>;
 };
 
+template <int Exponent1, int Exponent2>
+class static_root_helper<static_pow<unit_one, Exponent1>, Exponent2> {
+ public:
+  using type = static_pow<unit_one, 1>;
+};
+
 template <int Exponent>
 class static_root_helper<static_product<>, Exponent> {
  public:
@@ -1540,13 +1546,15 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator-(quantity<T1, Unit> const& a, qua
   return quantity<T3, make_relative<Unit>>(a.value() - b.value());
 }
 
-template <class Arithmetic, class T>
+template <class Arithmetic, class T,
+         std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
 KOKKOS_INLINE_FUNCTION constexpr auto operator-(Arithmetic const& a, quantity<T, unit_one> const& b)
 {
   return quantity<Arithmetic, unit_one>(a) - b;
 }
 
-template <class Arithmetic, class T>
+template <class Arithmetic, class T,
+         std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
 KOKKOS_INLINE_FUNCTION constexpr auto operator-(quantity<T, unit_one> const& a, Arithmetic const& b)
 {
   return a - quantity<Arithmetic, unit_one>(b);
