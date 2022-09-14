@@ -299,6 +299,11 @@ KOKKOS_INLINE_FUNCTION constexpr dimension energy()
   return force() * length();
 }
 
+KOKKOS_INLINE_FUNCTION constexpr dimension power()
+{
+  return energy() / time();
+}
+
 KOKKOS_INLINE_FUNCTION constexpr dimension pressure()
 {
   return force() / area();
@@ -1357,6 +1362,14 @@ class joule : public crtp<joule> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
+class watt : public crtp<watt> {
+ public:
+  static std::string static_name() { return "W"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return power(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
 class newton : public crtp<newton> {
  public:
   static std::string static_name() { return "N"; }
@@ -1457,6 +1470,7 @@ using kilogram = kilo<gram>;
 using gigapascal = giga<pascal>;
 using megajoule = mega<joule>;
 using meter_per_second = divide<meter, second>;
+using meter_per_second_squared = divide<meter_per_second, second>;
 using square_meter = multiply<meter, meter>;
 using cubic_meter = multiply<square_meter, meter>;
 using square_centimeter = multiply<centimeter, centimeter>;
@@ -1995,11 +2009,15 @@ using amperes = quantity<T, ampere>;
 template <class T>
 using meters_per_second = quantity<T, meter_per_second>;
 template <class T>
+using meters_per_second_squared = quantity<T, meter_per_second_squared>;
+template <class T>
 using pascals = quantity<T, pascal>;
 template <class T>
 using gigapascals = quantity<T, gigapascal>;
 template <class T>
 using joules = quantity<T, joule>;
+template <class T>
+using watts = quantity<T, watt>;
 template <class T>
 using volts = quantity<T, volt>;
 template <class T>
