@@ -12,6 +12,7 @@ namespace p3a {
 using kul::reciprocal;
 
 using kul::second;
+using kul::meter;
 using kul::kilogram;
 using kul::kelvin;
 using kul::pascal;
@@ -30,6 +31,8 @@ using kul::unitless;
 using kul::seconds;
 using kul::reciprocal_seconds;
 using kul::meters;
+using kul::square_meters;
+using kul::cubic_meters;
 using kul::kilograms;
 using kul::meters_per_second;
 using kul::kelvins;
@@ -38,6 +41,7 @@ using kul::pascals;
 using kul::gigapascals;
 using kul::joules;
 using kul::kilograms_per_cubic_meter;
+using kul::kilogram_meters_per_second;
 using kul::grams_per_cubic_centimeter;
 using kul::joules_per_kilogram;
 using kul::joules_per_kilogram_per_kelvin;
@@ -63,6 +67,8 @@ using kul::sqrt;
 using kul::cbrt;
 using kul::sin;
 using kul::cos;
+using kul::asin;
+using kul::acos;
 
 namespace details {
 
@@ -79,6 +85,12 @@ template <class T, class Unit>
 struct epsilon<quantity<T, Unit>> {
   P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
   quantity<T, Unit> value() { return quantity<T, Unit>(epsilon_value<T>()); }
+};
+
+template <class T, class Unit>
+struct zero<quantity<T, Unit>> {
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  quantity<T, Unit> value() { return quantity<T, Unit>(zero_value<T>()); }
 };
 
 }

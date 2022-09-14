@@ -1321,6 +1321,14 @@ class joule : public crtp<joule> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
+class newton : public crtp<newton> {
+ public:
+  static std::string static_name() { return "N"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return force(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
 class erg : public crtp<erg> {
  public:
   static std::string static_name() { return "erg"; }
@@ -1418,6 +1426,7 @@ using cubic_meter = multiply<square_meter, meter>;
 using square_centimeter = multiply<centimeter, centimeter>;
 using cubic_centimeter = multiply<square_centimeter, centimeter>;
 using kilogram_per_cubic_meter = divide<kilogram, cubic_meter>;
+using kilogram_meter_per_second = multiply<kilogram, meter_per_second>;
 using gram_per_cubic_centimeter = divide<gram, cubic_centimeter>;
 using joule_per_kilogram = divide<joule, kilogram>;
 using joule_per_kilogram_per_kelvin = divide<joule_per_kilogram, kelvin>;
@@ -1614,14 +1623,18 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator+(quantity<T1, Unit1> const& a, qu
       "cannot add quantities with different physical dimension");
   static_assert(!(is_absolute<Unit1> && is_absolute<Unit2>),
       "cannot add two absolute quantities");
-  if constexpr (is_absolute<Unit2>) {
+  using value_type = decltype(a.value() + b.value());
+  if constexpr (is_relative<Unit1> && is_relative<Unit2>) {
+    auto const converted_b = quantity<T2, Unit1>(b);
+    return quantity<value_type, Unit1>(a.value() + converted_b.value());
+  }
+  if constexpr (is_absolute<Unit1> && is_relative<Unit2>) {
+    auto const converted_b = quantity<T2, make_relative<Unit1>>(b);
+    return quantity<value_type, Unit1>(a.value() + converted_b.value());
+  }
+  if constexpr (is_relative<Unit1> && is_absolute<Unit2>) {
     return b + a;
   }
-  using value_type = decltype(a.value() + b.value());
-  using unit_type = Unit1;
-  using relative_unit_type = make_relative<unit_type>;
-  auto const converted_b = quantity<T2, relative_unit_type>(b);
-  return quantity<value_type, unit_type>(a.value() + converted_b.value());
 }
 
 template <class Arithmetic, class T,
@@ -1920,6 +1933,10 @@ using reciprocal_seconds = quantity<T, reciprocal<second>>;
 template <class T>
 using meters = quantity<T, meter>;
 template <class T>
+using square_meters = quantity<T, square_meter>;
+template <class T>
+using cubic_meters = quantity<T, cubic_meter>;
+template <class T>
 using kilograms = quantity<T, kilogram>;
 template <class T>
 using kelvins = quantity<T, kelvin>;
@@ -1947,6 +1964,8 @@ template <class T>
 using henries = quantity<T, henry>;
 template <class T>
 using kilograms_per_cubic_meter = quantity<T, kilogram_per_cubic_meter>;
+template <class T>
+using kilogram_meters_per_second = quantity<T, kilogram_meter_per_second>;
 template <class T>
 using grams_per_cubic_centimeter = quantity<T, gram_per_cubic_centimeter>;
 template <class T>
