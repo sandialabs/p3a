@@ -522,6 +522,10 @@ class dynamic_unit : public unit {
   {
     return dynamic_cast<unit_one const*>(m_pointer.get()) != nullptr;
   }
+  explicit operator bool() const
+  {
+    return static_cast<bool>(m_pointer);
+  }
 };
 
 class dynamic_exp : public unit {
@@ -1953,6 +1957,17 @@ class quantity<T, dynamic_unit> {
   value_type const& value() const { return m_value; }
   value_type& value() { return m_value; }
   dynamic_unit const& unit() const { return m_unit; }
+  quantity(T const& value_arg, dynamic_unit const& unit_arg)
+    :m_value(value_arg)
+    ,m_unit(unit_arg)
+  {
+  }
+  quantity<T, dynamic_unit> in(dynamic_unit const& unit_arg) const
+  {
+    auto const c = conversion<T>(unit(), unit_arg);
+    auto const new_value = c(value());
+    return quantity<T, dynamic_unit>(new_value, unit_arg);
+  }
 };
 
 // Section [named quantity]: convenience typedefs for quantities of named units

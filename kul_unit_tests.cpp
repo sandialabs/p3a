@@ -571,3 +571,11 @@ TEST(unit_system, esu_conductivity)
   auto b = kul::dynamic_unit(kul::gaussian_conductivity());
   EXPECT_EQ(a, b);
 }
+
+TEST(dynamic_quantity, convert)
+{
+  auto a = kul::quantity<double, kul::dynamic_unit>(1.0, kul::kilo<kul::meter>());
+  auto b = a.in(kul::meter());
+  EXPECT_EQ(b.unit(), kul::meter());
+  EXPECT_FLOAT_EQ(b.value(), 1000.0);
+}
