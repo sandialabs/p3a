@@ -43,6 +43,7 @@ using kul::pascals;
 using kul::gigapascals;
 using kul::joules;
 using kul::watts;
+using kul::newtons;
 using kul::kilograms_per_cubic_meter;
 using kul::kilogram_meters_per_second;
 using kul::grams_per_cubic_centimeter;

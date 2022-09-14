@@ -2021,6 +2021,8 @@ using joules = quantity<T, joule>;
 template <class T>
 using watts = quantity<T, watt>;
 template <class T>
+using newtons = quantity<T, newton>;
+template <class T>
 using volts = quantity<T, volt>;
 template <class T>
 using ohms = quantity<T, ohm>;
