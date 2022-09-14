@@ -2078,6 +2078,12 @@ auto operator""_m(long double v)
 }
 
 KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_m_per_s(long double v)
+{
+  return meters_per_second<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
 auto operator""_kg(long double v)
 {
   return kilograms<double>(v);
