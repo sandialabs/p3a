@@ -15,6 +15,7 @@ using kul::reciprocal;
 
 using kul::second;
 using kul::meter;
+using kul::cubic_meter;
 using kul::kilogram;
 using kul::kelvin;
 using kul::pascal;
