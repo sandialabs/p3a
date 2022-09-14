@@ -1807,6 +1807,13 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator*(Arithmetic const& a, crtp<Unit> 
   return quantity<Arithmetic, Unit>(a);
 }
 
+template <class Arithmetic, class Unit,
+         std::enable_if_t<std::is_arithmetic_v<Arithmetic>, bool> = false>
+KOKKOS_INLINE_FUNCTION constexpr auto operator*(crtp<Unit> const& a, Arithmetic const& b)
+{
+  return quantity<Arithmetic, Unit>(b);
+}
+
 template <class T1, class Unit1, class T2, class Unit2>
 KOKKOS_INLINE_FUNCTION constexpr auto operator/(quantity<T1, Unit1> const& a, quantity<T2, Unit2> const& b)
 {
