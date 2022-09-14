@@ -1830,6 +1830,18 @@ KOKKOS_INLINE_FUNCTION constexpr auto operator/(quantity<T, Unit> const& a, Arit
 }
 
 template <class T, class Unit>
+KOKKOS_INLINE_FUNCTION constexpr auto min(quantity<T, Unit> const& a, quantity<T, Unit> const& b)
+{
+  return quantity<T, Unit>(Kokkos::min(a.value(), b.value()));
+}
+
+template <class T, class Unit>
+KOKKOS_INLINE_FUNCTION constexpr auto max(quantity<T, Unit> const& a, quantity<T, Unit> const& b)
+{
+  return quantity<T, Unit>(Kokkos::max(a.value(), b.value()));
+}
+
+template <class T, class Unit>
 KOKKOS_INLINE_FUNCTION constexpr auto abs(quantity<T, Unit> const& q)
 {
   return quantity<T, Unit>(Kokkos::abs(q.value())); 
