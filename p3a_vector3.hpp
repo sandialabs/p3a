@@ -6,6 +6,7 @@
 #include "p3a_scalar.hpp"
 #include "p3a_functions.hpp"
 #include "p3a_simd.hpp"
+#include "p3a_quantity.hpp"
 
 namespace p3a {
 

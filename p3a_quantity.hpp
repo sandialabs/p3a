@@ -5,6 +5,8 @@
 
 #include "kul.hpp"
 
+#include "p3a_simd.hpp"
+
 namespace p3a {
 
 // unit types
@@ -98,6 +100,21 @@ struct zero<quantity<T, Unit>> {
   quantity<T, Unit> value() { return quantity<T, Unit>(zero_value<T>()); }
 };
 
+}
+
+template <class M, class T, class Unit,
+         std::enable_if_t<!std::is_same_v<M, bool>, bool> = false>
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE
+auto condition(M const& mask, quantity<T, Unit> const& a, quantity<T, Unit> const& b)
+{
+  return quantity<T, Unit>(condition(mask, a.value(), b.value()));
+}
+
+template <class T, class Unit, class Abi>
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE
+auto load(quantity<T, Unit> const* ptr, int offset, simd_mask<T, Abi> const& mask)
+{
+  return quantity<simd<T, Abi>, Unit>(load(&(ptr->value()), offset, mask));
 }
 
 }
