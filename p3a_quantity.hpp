@@ -31,6 +31,7 @@ using kul::unitless;
 using kul::seconds;
 using kul::reciprocal_seconds;
 using kul::meters;
+using kul::reciprocal_meters;
 using kul::square_meters;
 using kul::cubic_meters;
 using kul::kilograms;

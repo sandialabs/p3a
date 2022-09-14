@@ -1995,6 +1995,8 @@ using reciprocal_seconds = quantity<T, reciprocal<second>>;
 template <class T>
 using meters = quantity<T, meter>;
 template <class T>
+using reciprocal_meters = quantity<T, reciprocal<meter>>;
+template <class T>
 using square_meters = quantity<T, square_meter>;
 template <class T>
 using cubic_meters = quantity<T, cubic_meter>;
