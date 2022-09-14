@@ -1468,6 +1468,7 @@ using joule_per_kilogram = divide<joule, kilogram>;
 using joule_per_kilogram_per_kelvin = divide<joule_per_kilogram, kelvin>;
 using megajoule_per_kilogram = divide<megajoule, kilogram>;
 using siemens_per_meter = divide<siemens, meter>;
+using pascal_second = multiply<pascal, second>;
 
 // Section [quantity]: class template for runtime value with associated unit
 
@@ -2023,6 +2024,8 @@ template <class T>
 using megajoules_per_kilogram = quantity<T, megajoule_per_kilogram>;
 template <class T>
 using siemens_per_meter_quantity = quantity<T, siemens_per_meter>;
+template <class T>
+using pascal_seconds = quantity<T, pascal_second>;
 
 // Section [literals]: C++ user-defined literals for floating-point quantities
 
@@ -2074,6 +2077,12 @@ KOKKOS_INLINE_FUNCTION constexpr
 auto operator""_J_per_kg(long double v)
 {
   return joules_per_kilogram<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_Pa_s(long double v)
+{
+  return pascal_seconds<double>(v);
 }
 
 KOKKOS_INLINE_FUNCTION constexpr

@@ -54,6 +54,7 @@ using kul::henries;
 using kul::siemens_per_meter_quantity;
 using kul::temperature_electronvolts;
 using kul::gaussian_conductivity;
+using kul::pascal_seconds;
 
 template <class A, class B>
 using unit_divide = kul::divide<A, B>;
