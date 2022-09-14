@@ -69,6 +69,8 @@ using unit_divide = kul::divide<A, B>;
 namespace quantity_literals = kul::literals;
 
 using kul::abs;
+using kul::min;
+using kul::max;
 using kul::pow;
 using kul::exp;
 using kul::sqrt;
