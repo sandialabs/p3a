@@ -579,3 +579,21 @@ TEST(dynamic_quantity, convert)
   EXPECT_EQ(b.unit(), kul::meter());
   EXPECT_FLOAT_EQ(b.value(), 1000.0);
 }
+
+TEST(to_static, has_unit)
+{
+  auto a = kul::quantity<double>(1.0, kul::kilogram());
+  auto b = kul::to_static<kul::gram>(a);
+  static_assert(std::is_same_v<decltype(b), kul::quantity<double, kul::gram>>,
+      "to_static return type");
+  EXPECT_FLOAT_EQ(b.value(), 1000.0);
+}
+
+TEST(to_static, from_unit_system)
+{
+  auto a = kul::quantity<double>(1.0, kul::dynamic_unit());
+  auto b = kul::to_static<kul::gram>(a, kul::si());
+  static_assert(std::is_same_v<decltype(b), kul::quantity<double, kul::gram>>,
+      "to_static return type");
+  EXPECT_FLOAT_EQ(b.value(), 1000.0);
+}

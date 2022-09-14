@@ -463,6 +463,7 @@ class unit_one : public crtp<unit_one> {
 class dynamic_unit : public unit {
   std::unique_ptr<unit> m_pointer;
  public:
+  dynamic_unit() = default;
   dynamic_unit(unit const& u)
     :m_pointer(u.copy())
   {
@@ -478,7 +479,7 @@ class dynamic_unit : public unit {
   dynamic_unit(dynamic_unit&&) = default;
   dynamic_unit& operator=(dynamic_unit&&) = default;
   dynamic_unit(dynamic_unit const& other)
-    :m_pointer(other.m_pointer->copy())
+    :m_pointer(other ? other.m_pointer->copy() : std::unique_ptr<unit>())
   {
   }
   dynamic_unit& operator=(dynamic_unit const& other)
@@ -2223,5 +2224,28 @@ class esu : public unit_system {
     return statampere();
   }
 };
+
+template <class StaticUnit, class T>
+quantity<T, StaticUnit> to_static(quantity<T, dynamic_unit> a)
+{
+  a = a.in(StaticUnit());
+  return quantity<T, StaticUnit>(a.value());
+}
+
+template <class StaticUnit, class T>
+quantity<T, StaticUnit> to_static(T const& a, unit_system const& s)
+{
+  return to_static<StaticUnit>(
+      quantity<T, dynamic_unit>(
+        a,
+        s.unit(StaticUnit::static_dimension())));
+}
+
+template <class StaticUnit, class T>
+quantity<T, StaticUnit> to_static(quantity<T, dynamic_unit> a, unit_system const& s)
+{
+  if (!a.unit()) return to_static<StaticUnit>(a.value(), s);
+  return to_static<StaticUnit>(a);
+}
 
 }
