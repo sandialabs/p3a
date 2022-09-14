@@ -21,6 +21,7 @@ using kul::kelvin;
 using kul::pascal;
 using kul::gigapascal;
 using kul::joule;
+using kul::watt;
 using kul::kilogram_per_cubic_meter;
 using kul::joule_per_kilogram;
 using kul::joule_per_kilogram_per_kelvin;
