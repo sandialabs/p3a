@@ -104,6 +104,18 @@ struct zero<quantity<T, Unit>> {
   quantity<T, Unit> value() { return quantity<T, Unit>(zero_value<T>()); }
 };
 
+template <class T, class Unit>
+struct maximum<quantity<T, Unit>> {
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  quantity<T, Unit> value() { return quantity<T, Unit>(maximum_value<T>()); }
+};
+
+template <class T, class Unit>
+struct minimum<quantity<T, Unit>> {
+  P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline static constexpr
+  quantity<T, Unit> value() { return quantity<T, Unit>(minimum_value<T>()); }
+};
+
 }
 
 template <class M, class T, class Unit,
