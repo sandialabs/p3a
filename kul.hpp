@@ -1478,6 +1478,7 @@ using cubic_centimeter = multiply<square_centimeter, centimeter>;
 using kilogram_per_cubic_meter = divide<kilogram, cubic_meter>;
 using kilogram_meter_per_second = multiply<kilogram, meter_per_second>;
 using gram_per_cubic_centimeter = divide<gram, cubic_centimeter>;
+using joule_per_cubic_meter = divide<joule, cubic_meter>;
 using joule_per_kilogram = divide<joule, kilogram>;
 using joule_per_kilogram_per_kelvin = divide<joule_per_kilogram, kelvin>;
 using megajoule_per_kilogram = divide<megajoule, kilogram>;
@@ -2058,6 +2059,8 @@ using kilogram_meters_per_second = quantity<T, kilogram_meter_per_second>;
 template <class T>
 using grams_per_cubic_centimeter = quantity<T, gram_per_cubic_centimeter>;
 template <class T>
+using joules_per_cubic_meter = quantity<T, joule_per_cubic_meter>;
+template <class T>
 using joules_per_kilogram = quantity<T, joule_per_kilogram>;
 template <class T>
 using joules_per_kilogram_per_kelvin = quantity<T, joule_per_kilogram_per_kelvin>;
@@ -2082,6 +2085,12 @@ KOKKOS_INLINE_FUNCTION constexpr
 auto operator""_m(long double v)
 {
   return meters<double>(v);
+}
+
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_m3(long double v)
+{
+  return cubic_meters<double>(v);
 }
 
 KOKKOS_INLINE_FUNCTION constexpr

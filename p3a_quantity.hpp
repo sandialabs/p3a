@@ -50,6 +50,7 @@ using kul::newtons;
 using kul::kilograms_per_cubic_meter;
 using kul::kilogram_meters_per_second;
 using kul::grams_per_cubic_centimeter;
+using kul::joules_per_cubic_meter;
 using kul::joules_per_kilogram;
 using kul::joules_per_kilogram_per_kelvin;
 using kul::megajoules_per_kilogram;
