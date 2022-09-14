@@ -289,6 +289,11 @@ KOKKOS_INLINE_FUNCTION constexpr dimension force()
   return mass() * acceleration();
 }
 
+KOKKOS_INLINE_FUNCTION constexpr dimension momentum()
+{
+  return mass() * speed();
+}
+
 KOKKOS_INLINE_FUNCTION constexpr dimension energy()
 {
   return force() * length();
@@ -723,6 +728,16 @@ inline dynamic_unit operator/(dynamic_unit const& a, dynamic_unit const& b)
   p.multiply_with(a);
   p.divide_by(b);
   return p.simplify();
+}
+
+inline dynamic_unit& operator*=(dynamic_unit& a, dynamic_unit const& b)
+{
+  return a = a * b;
+}
+
+inline dynamic_unit& operator/=(dynamic_unit& a, dynamic_unit const& b)
+{
+  return a = a / b;
 }
 
 inline dynamic_unit root(dynamic_unit const& base, int exponent)
@@ -1254,6 +1269,22 @@ class kelvin : public crtp<kelvin> {
   KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return temperature(); }
   KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return rational(0); }
+};
+
+class mole : public crtp<mole> {
+ public:
+  static std::string static_name() { return "mol"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return amount_of_substance(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
+};
+
+class candela : public crtp<candela> {
+ public:
+  static std::string static_name() { return "cd"; }
+  KOKKOS_INLINE_FUNCTION static constexpr kul::dimension static_dimension() { return luminous_intensity(); }
+  KOKKOS_INLINE_FUNCTION static constexpr rational static_magnitude() { return rational(1); }
+  KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
 };
 
 class temperature_electronvolt : public crtp<temperature_electronvolt> {
@@ -1977,6 +2008,8 @@ using megajoules_per_kilogram = quantity<T, megajoule_per_kilogram>;
 template <class T>
 using siemens_per_meter_quantity = quantity<T, siemens_per_meter>;
 
+// Section [literals]: C++ user-defined literals for floating-point quantities
+
 namespace literals {
 
 KOKKOS_INLINE_FUNCTION constexpr
@@ -2059,6 +2092,8 @@ auto operator""_H(long double v)
 
 }
 
+// Section [where]: where(mask, quantity) = rhs for compatibility with SIMD
+
 template <class M, class T, class Unit>
 class const_where_expression {
  protected:
@@ -2098,5 +2133,80 @@ template <class M, class T, class Unit>
 auto where(M const& mask, quantity<T, Unit> const& value) {
   return const_where_expression<M, T, Unit>(mask, value);
 }
+
+// Section [unit system]: representation of a runtime-defined unit system
+
+class unit_system {
+ public:
+  virtual ~unit_system() = default;
+  virtual dynamic_unit time_unit() const
+  {
+    return second();
+  }
+  virtual dynamic_unit length_unit() const
+  {
+    return meter();
+  }
+  virtual dynamic_unit mass_unit() const
+  {
+    return kilogram();
+  }
+  virtual dynamic_unit electric_current_unit() const
+  {
+    return ampere();
+  }
+  virtual dynamic_unit temperature_unit() const
+  {
+    return kelvin();
+  }
+  virtual dynamic_unit amount_of_substance_unit() const
+  {
+    return mole();
+  }
+  virtual dynamic_unit luminous_intensity_unit() const
+  {
+    return candela();
+  }
+  dynamic_unit unit(dimension const& d) const
+  {
+    dynamic_unit result = unit_one();
+    for (int i = 0; i < d.time_exponent(); ++i) result *= time_unit();
+    for (int i = 0; i < -d.time_exponent(); ++i) result /= time_unit();
+    for (int i = 0; i < d.length_exponent(); ++i) result *= length_unit();
+    for (int i = 0; i < -d.length_exponent(); ++i) result /= length_unit();
+    for (int i = 0; i < d.mass_exponent(); ++i) result *= mass_unit();
+    for (int i = 0; i < -d.mass_exponent(); ++i) result /= mass_unit();
+    for (int i = 0; i < d.electric_current_exponent(); ++i) result *= electric_current_unit();
+    for (int i = 0; i < -d.electric_current_exponent(); ++i) result /= electric_current_unit();
+    for (int i = 0; i < d.amount_of_substance_exponent(); ++i) result *= amount_of_substance_unit();
+    for (int i = 0; i < -d.amount_of_substance_exponent(); ++i) result /= amount_of_substance_unit();
+    for (int i = 0; i < d.luminous_intensity_exponent(); ++i) result *= luminous_intensity_unit();
+    for (int i = 0; i < -d.luminous_intensity_exponent(); ++i) result /= luminous_intensity_unit();
+    return result;
+  }
+};
+
+class si : public unit_system {
+};
+
+class esu : public unit_system {
+ public:
+  virtual dynamic_unit time_unit() const
+  {
+    return second();
+  }
+  virtual dynamic_unit length_unit() const
+  {
+    return centimeter();
+  }
+  virtual dynamic_unit mass_unit() const
+  {
+    return gram();
+  }
+  virtual dynamic_unit electric_current_unit() const
+  {
+    return statampere();
+  }
+};
 
 }

@@ -555,3 +555,19 @@ TEST(quantity, add_absolute)
       "result type is still absolute");
   EXPECT_FLOAT_EQ(d.value(), 201.0);
 }
+
+TEST(unit_system, si_momentum)
+{
+  auto si = kul::si();
+  auto a = si.unit(kul::momentum());
+  auto b = kul::dynamic_unit(kul::kilogram_meter_per_second());
+  EXPECT_EQ(a, b);
+}
+
+TEST(unit_system, esu_conductivity)
+{
+  auto esu = kul::esu();
+  auto a = esu.unit(kul::electrical_conductivity());
+  auto b = kul::dynamic_unit(kul::gaussian_conductivity());
+  EXPECT_EQ(a, b);
+}
