@@ -2200,9 +2200,15 @@ class unit_system {
     for (int i = 0; i < -d.luminous_intensity_exponent(); ++i) result /= luminous_intensity_unit();
     return result;
   }
+  virtual std::unique_ptr<unit_system> copy() const = 0;
 };
 
 class si : public unit_system {
+ public:
+  virtual std::unique_ptr<unit_system> copy() const
+  {
+    return std::make_unique<si>();
+  }
 };
 
 class esu : public unit_system {
@@ -2222,6 +2228,71 @@ class esu : public unit_system {
   virtual dynamic_unit electric_current_unit() const
   {
     return statampere();
+  }
+  virtual std::unique_ptr<unit_system> copy() const
+  {
+    return std::make_unique<esu>();
+  }
+};
+
+class dynamic_unit_system : public unit_system {
+  std::unique_ptr<unit_system> m_pointer;
+ public:
+  dynamic_unit_system() = default;
+  dynamic_unit_system(unit_system const& u)
+    :m_pointer(u.copy())
+  {
+  }
+  dynamic_unit_system(std::unique_ptr<unit_system>&& ptr)
+    :m_pointer(std::move(ptr))
+  {
+  }
+  dynamic_unit_system(std::unique_ptr<unit_system> const& ptr)
+    :m_pointer(ptr->copy())
+  {
+  }
+  dynamic_unit_system(dynamic_unit_system&&) = default;
+  dynamic_unit_system& operator=(dynamic_unit_system&&) = default;
+  dynamic_unit_system(dynamic_unit_system const& other)
+    :m_pointer(other ? other.m_pointer->copy() : std::unique_ptr<unit_system>())
+  {
+  }
+  dynamic_unit_system& operator=(dynamic_unit_system const& other)
+  {
+    m_pointer = other.m_pointer->copy();
+    return *this;
+  }
+  std::unique_ptr<unit_system> copy() const override
+  {
+    return m_pointer->copy();
+  }
+  explicit operator bool() const
+  {
+    return static_cast<bool>(m_pointer);
+  }
+  dynamic_unit time_unit() const override
+  {
+    return m_pointer->time_unit();
+  }
+  dynamic_unit length_unit() const override
+  {
+    return m_pointer->length_unit();
+  }
+  dynamic_unit mass_unit() const override
+  {
+    return m_pointer->mass_unit();
+  }
+  dynamic_unit electric_current_unit() const override
+  {
+    return m_pointer->electric_current_unit();
+  }
+  dynamic_unit amount_of_substance_unit() const override
+  {
+    return m_pointer->amount_of_substance_unit();
+  }
+  dynamic_unit luminous_intensity_unit() const override
+  {
+    return m_pointer->luminous_intensity_unit();
   }
 };
 
