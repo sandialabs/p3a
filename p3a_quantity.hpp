@@ -25,6 +25,7 @@ using kul::watt;
 using kul::kilogram_per_cubic_meter;
 using kul::joule_per_kilogram;
 using kul::joule_per_kilogram_per_kelvin;
+using kul::siemens;
 using kul::siemens_per_meter;
 
 using kul::quantity;
