@@ -75,6 +75,7 @@ using kul::min;
 using kul::max;
 using kul::pow;
 using kul::exp;
+using kul::log;
 using kul::sqrt;
 using kul::cbrt;
 using kul::sin;
@@ -129,14 +130,42 @@ auto condition(M const& mask, quantity<T, Unit> const& a, quantity<T, Unit> cons
 
 template <class T, class Unit, class Abi>
 P3A_HOST_DEVICE P3A_ALWAYS_INLINE
-auto load(quantity<T, Unit> const* ptr, int offset, simd_mask<T, Abi> const& mask)
+auto load(
+    quantity<T, Unit> const* ptr,
+    int offset,
+    simd_mask<T, Abi> const& mask)
 {
   return quantity<simd<T, Abi>, Unit>(load(&(ptr->value()), offset, mask));
 }
 
 template <class T, class Unit, class Abi>
 P3A_HOST_DEVICE P3A_ALWAYS_INLINE
-void store(quantity<simd<T, Abi>, Unit> const& q, quantity<T, Unit>* ptr, int offset, simd_mask<T, Abi> const& mask)
+void store(
+    quantity<simd<T, Abi>, Unit> const& q,
+    quantity<T, Unit>* ptr,
+    int offset,
+    simd_mask<T, Abi> const& mask)
+{
+  store(q.value(), &(ptr->value()), offset, mask);
+}
+
+template <class T, class Unit, class Abi, class Integral>
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE
+auto load(
+    quantity<T, Unit> const* ptr,
+    simd<Integral, Abi> const& offset,
+    simd_mask<T, Abi> const& mask)
+{
+  return quantity<simd<T, Abi>, Unit>(load(&(ptr->value()), offset, mask));
+}
+
+template <class T, class Unit, class Abi, class Integral>
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE
+void store(
+    quantity<simd<T, Abi>, Unit> const& q,
+    quantity<T, Unit>* ptr,
+    simd<Integral, Abi> const& offset,
+    simd_mask<T, Abi> const& mask)
 {
   store(q.value(), &(ptr->value()), offset, mask);
 }
