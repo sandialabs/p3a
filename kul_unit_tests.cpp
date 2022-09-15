@@ -331,7 +331,7 @@ TEST(conversion, in_mm)
 
 TEST(static_conversion, in_mm)
 {
-  auto constexpr c = kul::static_conversion<double, kul::inch, kul::milli<kul::meter>>;
+  auto constexpr c = kul::static_conversion<double, kul::inch, kul::milli<kul::meter>>();
   auto constexpr v = c(1.0);
   static_assert(v == 25.4, "static inch to mm");
 }
@@ -364,20 +364,20 @@ TEST(quantity, compare)
   static_assert(c1 >= c1, "constexpr greater-than-or-equal of equal");
   auto const r1 = kul::quantity<double, kul::meter>(1.0);
   auto const r2 = kul::quantity<double, kul::meter>(2.0);
-  EXPECT_TRUE(c1 == c1);
-  EXPECT_TRUE(!(c1 != c1));
-  EXPECT_TRUE(!(c1 == c2));
-  EXPECT_TRUE(c1 != c2);
-  EXPECT_TRUE(c1 < c2);
-  EXPECT_TRUE(!(c1 > c2));
-  EXPECT_TRUE(!(c2 < c1));
-  EXPECT_TRUE(c2 > c1);
-  EXPECT_TRUE(c1 <= c2);
-  EXPECT_TRUE(!(c1 >= c2));
-  EXPECT_TRUE(!(c2 <= c1));
-  EXPECT_TRUE(c2 >= c1);
-  EXPECT_TRUE(c1 <= c1);
-  EXPECT_TRUE(c1 >= c1);
+  EXPECT_TRUE(r1 == r1);
+  EXPECT_TRUE(!(r1 != r1));
+  EXPECT_TRUE(!(r1 == r2));
+  EXPECT_TRUE(r1 != r2);
+  EXPECT_TRUE(r1 < r2);
+  EXPECT_TRUE(!(r1 > r2));
+  EXPECT_TRUE(!(r2 < r1));
+  EXPECT_TRUE(r2 > r1);
+  EXPECT_TRUE(r1 <= r2);
+  EXPECT_TRUE(!(r1 >= r2));
+  EXPECT_TRUE(!(r2 <= r1));
+  EXPECT_TRUE(r2 >= r1);
+  EXPECT_TRUE(r1 <= r1);
+  EXPECT_TRUE(r1 >= r1);
 }
 
 TEST(quantity, add)

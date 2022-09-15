@@ -123,14 +123,14 @@ struct minimum<quantity<T, Unit>> {
 
 template <class M, class T, class Unit,
          std::enable_if_t<!std::is_same_v<M, bool>, bool> = false>
-P3A_HOST_DEVICE P3A_ALWAYS_INLINE
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 auto condition(M const& mask, quantity<T, Unit> const& a, quantity<T, Unit> const& b)
 {
   return quantity<T, Unit>(condition(mask, a.value(), b.value()));
 }
 
 template <class T, class Unit, class Abi>
-P3A_HOST_DEVICE P3A_ALWAYS_INLINE
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 auto load(
     quantity<T, Unit> const* ptr,
     int offset,
@@ -140,7 +140,7 @@ auto load(
 }
 
 template <class T, class Unit, class Abi>
-P3A_HOST_DEVICE P3A_ALWAYS_INLINE
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 void store(
     quantity<simd<T, Abi>, Unit> const& q,
     quantity<T, Unit>* ptr,
@@ -151,7 +151,7 @@ void store(
 }
 
 template <class T, class Unit, class Abi, class Integral>
-P3A_HOST_DEVICE P3A_ALWAYS_INLINE
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 auto load(
     quantity<T, Unit> const* ptr,
     simd<Integral, Abi> const& offset,
@@ -161,7 +161,7 @@ auto load(
 }
 
 template <class T, class Unit, class Abi, class Integral>
-P3A_HOST_DEVICE P3A_ALWAYS_INLINE
+P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
 void store(
     quantity<simd<T, Abi>, Unit> const& q,
     quantity<T, Unit>* ptr,

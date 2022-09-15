@@ -1179,9 +1179,12 @@ class conversion {
 };
 
 template <class T, class From, class To>
-inline constexpr conversion<T> static_conversion = conversion<T>(
+KOKKOS_INLINE_FUNCTION constexpr conversion<T> static_conversion()
+{
+  return conversion<T>(
     From::static_magnitude(), From::static_origin(),
     To::static_magnitude(), To::static_origin());
+}
 
 // Section [prefix]: class template versions of metric prefixes
 
@@ -1528,7 +1531,7 @@ class quantity {
       std::enable_if_t<!are_equal<Unit, Unit2>, bool> = false>
   KOKKOS_INLINE_FUNCTION constexpr
   quantity(quantity<T2, Unit2> const& other)
-    :m_value(static_conversion<T2, Unit2, Unit>(other.value()))
+    :m_value(static_conversion<T2, Unit2, Unit>()(other.value()))
   {
     static_assert(Unit::static_dimension() == Unit2::static_dimension(),
         "cannot convert between quantities with different dimensions");
