@@ -148,6 +148,13 @@ class subgrid3 {
   }
   [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
   box3<int> const& box() const { return m_box; }
+  [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+  subgrid3 relative_to(subgrid3 const& parent) const
+  {
+    return subgrid3(
+        box().lower() - parent.box().lower(),
+        box().upper() - parent.box().lower());
+  }
 };
 
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
