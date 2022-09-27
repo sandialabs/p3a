@@ -1542,7 +1542,7 @@ class quantity {
   }
   static std::string unit_name() { return unit_type::static_name(); }
   KOKKOS_INLINE_FUNCTION static constexpr
-  dimension dimension() { return unit_type::static_dimension(); }
+  kul::dimension dimension() { return unit_type::static_dimension(); }
   KOKKOS_INLINE_FUNCTION static constexpr
   rational unit_magnitude() { return unit_type::static_magnitude(); }
   KOKKOS_INLINE_FUNCTION static constexpr
