@@ -798,7 +798,7 @@ class static_pow : public crtp<static_pow<Base, Exponent>> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
   std::unique_ptr<unit> copy() const override
   {
-    return dynamic_exp(Base(), Exponent).copy();
+    return dynamic_exp(Base(), Exponent).simplify();
   }
 };
 
@@ -814,7 +814,7 @@ class static_product<> : public crtp<static_product<>> {
   KOKKOS_INLINE_FUNCTION static constexpr optional<rational> static_origin() { return nullopt; }
   std::unique_ptr<unit> copy() const override
   {
-    return dynamic_product().copy();
+    return dynamic_product().simplify();
   }
 };
 
@@ -829,7 +829,7 @@ class static_product<Unit> : public crtp<static_product<Unit>> {
   {
     auto p = dynamic_product();
     p.multiply_with(Unit());
-    return p.copy();
+    return p.simplify();
   }
 };
 
@@ -855,7 +855,7 @@ class static_product<FirstUnit, OtherUnits...> : public crtp<static_product<Firs
     auto p = dynamic_product();
     p.multiply_with(FirstUnit());
     p.multiply_with(tail_type());
-    return p.copy();
+    return p.simplify();
   }
 };
 
