@@ -1504,15 +1504,57 @@ class quantity {
   KOKKOS_DEFAULTED_FUNCTION constexpr quantity& operator=(quantity const&) = default;
   template <class U,
       std::enable_if_t<
-        (!std::is_same_v<Unit, unit_one>) && (std::is_constructible_v<value_type, U>),
+        (std::is_constructible_v<value_type, U>),
         bool> = false>
   KOKKOS_INLINE_FUNCTION constexpr explicit quantity(U const& v)
     :m_value(v)
   {
   }
+  KOKKOS_INLINE_FUNCTION constexpr value_type const& value() const { return m_value; }
+  KOKKOS_INLINE_FUNCTION constexpr value_type& value() { return m_value; }
+  template <class T2, class Unit2,
+      std::enable_if_t<are_equal<unit_type, Unit2>, bool> = false>
+  KOKKOS_INLINE_FUNCTION constexpr
+  quantity(quantity<T2, Unit2> const& other)
+    :m_value(other.value())
+  {
+  }
+  template <class T2, class Unit2,
+      std::enable_if_t<!are_equal<unit_type, Unit2>, bool> = false>
+  KOKKOS_INLINE_FUNCTION constexpr
+  quantity(quantity<T2, Unit2> const& other)
+    :m_value(static_conversion<T2, Unit2, unit_type>()(other.value()))
+  {
+    static_assert(unit_type::static_dimension() == Unit2::static_dimension(),
+        "cannot convert between quantities with different dimensions");
+    static_assert(
+        (is_absolute<unit_type> && is_absolute<Unit2>) ||
+        (is_relative<unit_type> && is_relative<Unit2>),
+        "cannot convert from absolute to relative or vice-versa");
+  }
+  static std::string unit_name() { return unit_type::static_name(); }
+  KOKKOS_INLINE_FUNCTION static constexpr
+  kul::dimension dimension() { return unit_type::static_dimension(); }
+  KOKKOS_INLINE_FUNCTION static constexpr
+  rational unit_magnitude() { return unit_type::static_magnitude(); }
+  KOKKOS_INLINE_FUNCTION static constexpr
+  optional<rational> unit_origin() { return unit_type::static_origin(); }
+};
+
+template <class T>
+class quantity<T, unit_one> {
+  T m_value;
+ public:
+  using value_type = T;
+  using unit_type = unit_one;
+  KOKKOS_DEFAULTED_FUNCTION quantity() = default;
+  KOKKOS_DEFAULTED_FUNCTION constexpr quantity(quantity&&) = default;
+  KOKKOS_DEFAULTED_FUNCTION constexpr quantity(quantity const&) = default;
+  KOKKOS_DEFAULTED_FUNCTION constexpr quantity& operator=(quantity&&) = default;
+  KOKKOS_DEFAULTED_FUNCTION constexpr quantity& operator=(quantity const&) = default;
   template <class U,
       std::enable_if_t<
-        std::is_same_v<Unit, unit_one> && (std::is_constructible_v<value_type, U>),
+        (std::is_constructible_v<value_type, U>),
         bool> = false>
   KOKKOS_INLINE_FUNCTION constexpr quantity(U const& v)
     :m_value(v)
@@ -1521,23 +1563,23 @@ class quantity {
   KOKKOS_INLINE_FUNCTION constexpr value_type const& value() const { return m_value; }
   KOKKOS_INLINE_FUNCTION constexpr value_type& value() { return m_value; }
   template <class T2, class Unit2,
-      std::enable_if_t<are_equal<Unit, Unit2>, bool> = false>
+      std::enable_if_t<are_equal<unit_type, Unit2>, bool> = false>
   KOKKOS_INLINE_FUNCTION constexpr
   quantity(quantity<T2, Unit2> const& other)
     :m_value(other.value())
   {
   }
   template <class T2, class Unit2,
-      std::enable_if_t<!are_equal<Unit, Unit2>, bool> = false>
+      std::enable_if_t<!are_equal<unit_type, Unit2>, bool> = false>
   KOKKOS_INLINE_FUNCTION constexpr
   quantity(quantity<T2, Unit2> const& other)
-    :m_value(static_conversion<T2, Unit2, Unit>()(other.value()))
+    :m_value(static_conversion<T2, Unit2, unit_type>()(other.value()))
   {
-    static_assert(Unit::static_dimension() == Unit2::static_dimension(),
+    static_assert(unit_type::static_dimension() == Unit2::static_dimension(),
         "cannot convert between quantities with different dimensions");
     static_assert(
-        (is_absolute<Unit> && is_absolute<Unit2>) ||
-        (is_relative<Unit> && is_relative<Unit2>),
+        (is_absolute<unit_type> && is_absolute<Unit2>) ||
+        (is_relative<unit_type> && is_relative<Unit2>),
         "cannot convert from absolute to relative or vice-versa");
   }
   static std::string unit_name() { return unit_type::static_name(); }
