@@ -1,11 +1,20 @@
 #pragma once
 
 #include <stdexcept>
+#include <string>
 
 #include "p3a_dynamic_array.hpp"
 #include "p3a_reduce.hpp"
 
 namespace p3a {
+
+class convergence_failure : public std::runtime_error {
+ public:
+  convergence_failure(std::string const& msg)
+    :std::runtime_error(msg)
+  {
+  }
+};
 
 template <
   class T,
@@ -20,6 +29,8 @@ class preconditioned_conjugate_gradient {
   array_type m_p;
   array_type m_scratch;
   associative_sum<T, Allocator, ExecutionPolicy> m_adder;
+  T m_relative_tolerance = 1.0e-6;
+  int m_maximum_iterations = 1'000'000;
  public:
   using M_inv_action_type = std::function<
     void(array_type const&, array_type&)>;
@@ -31,12 +42,19 @@ class preconditioned_conjugate_gradient {
   preconditioned_conjugate_gradient(mpicpp::comm&& comm_arg)
     :m_adder(std::move(comm_arg))
   {}
+  void set_relative_tolerance(T const& arg)
+  {
+    m_relative_tolerance = arg;
+  }
+  void set_maximum_iterations(int arg)
+  {
+    m_maximum_iterations = arg;
+  }
   P3A_NEVER_INLINE int solve(
       M_inv_action_type const& M_inv_action,
       A_action_type const& A_action,
       b_filler_type const& b_filler,
-      array_type& x,
-      T const& relative_tolerance);
+      array_type& x);
 };
 
 template <
@@ -90,8 +108,7 @@ int preconditioned_conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
       M_inv_action_type const& M_inv_action,
       A_action_type const& A_action,
       b_filler_type const& b_filler,
-      array_type& x,
-      T const& relative_tolerance)
+      array_type& x)
 {
   this->m_r.resize(x.size());
   this->m_z.resize(x.size());
@@ -107,9 +124,9 @@ int preconditioned_conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
   T const b_dot_b = dot_product(m_adder, b, b);
   T const b_magnitude = p3a::sqrt(b_dot_b);
   if (b_magnitude == T(0)) {
-    throw std::runtime_error("p3a::preconditioned_conjugate_gradient: b_magnitude = 0");
+    throw std::invalid_argument("P3A CG solver: the magnitude of the right hand side vector is zero");
   }
-  T const absolute_tolerance = b_magnitude * relative_tolerance;
+  T const absolute_tolerance = b_magnitude * m_relative_tolerance;
   A_action(x, Ax); // Ax = A * x
   axpy(T(-1), Ax, b, r); // r = A * x - b
   T residual_magnitude = p3a::sqrt(dot_product(m_adder, r, r));
@@ -126,6 +143,14 @@ int preconditioned_conjugate_gradient<T, Allocator, ExecutionPolicy>::solve(
     residual_magnitude = p3a::sqrt(dot_product(m_adder, r, r));
     if (residual_magnitude <= absolute_tolerance) {
       return k;
+    }
+    if (k == m_maximum_iterations) {
+      throw convergence_failure(
+          "P3A CG solver failed to converge in " + std::to_string(m_maximum_iterations) +
+          " iterations. relative tolerance was " + std::to_string(m_relative_tolerance) +
+          ", right hand side magnitude was " + std::to_string(b_magnitude) +
+          ", absolute_tolerance was " + std::to_string(absolute_tolerance) +
+          ", and final residual magnitude was " + std::to_string(residual_magnitude));
     }
     M_inv_action(r, z); // z = M^-1 r
     T const r_dot_z_new = dot_product(m_adder, r, z);
