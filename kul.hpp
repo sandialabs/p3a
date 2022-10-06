@@ -2245,6 +2245,12 @@ auto operator""_H(long double v)
   return henries<double>(v);
 }
 
+KOKKOS_INLINE_FUNCTION constexpr
+auto operator""_S_per_m(long double v)
+{
+  return siemens_per_meter_quantity<double>(v);
+}
+
 }
 
 // Section [where]: where(mask, quantity) = rhs for compatibility with SIMD
