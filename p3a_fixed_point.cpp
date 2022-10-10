@@ -72,14 +72,14 @@ double fixed_point_double_sum<Allocator, ExecutionPolicy>::compute()
   m_comm.iallreduce(
       &global_max_exponent, 1, mpicpp::op::max());
   int128 const local_sum =
-  simd_transform_reduce(
+  transform_reduce(
         ExecutionPolicy(),
         counting_iterator<int>(0),
         counting_iterator<int>(value_count),
         int128(0),
         adds<int128>,
-  [=] P3A_HOST_DEVICE (int i, simd_mask<int128, simd_abi_type> const& mask) P3A_ALWAYS_INLINE {
-    auto const value = load(values, i, simd_mask<double, simd_abi_type>(mask));
+  [=] P3A_HOST_DEVICE (int i) P3A_ALWAYS_INLINE {
+    auto const value = load(values, i);
     auto significand_64 = decompose_double(value, global_max_exponent);
     return significand_64;
   });
