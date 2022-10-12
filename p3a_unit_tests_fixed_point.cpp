@@ -45,14 +45,9 @@ TEST(fixed_point, sum){
   printf("maximum exponent %d\n", maximum_exponent);
   auto fixed_point_sum_128 = p3a::details::int128(0);
   for (int i = 0; i < count; ++i) {
-    p3a::simd<double, abi_type> value;
-    where(mask, value).copy_from(values + i, p3a::element_aligned_tag());
-    p3a::simd<std::int64_t, abi_type> significand;
-    significand = p3a::details::decompose_double(value, maximum_exponent);
-    fixed_point_sum_128 += p3a::reduce(
-        where(p3a::simd_mask<std::int64_t, abi_type>(mask), significand),
-        p3a::details::int128(0),
-        p3a::adder<p3a::details::int128>());
+    auto value = values[i];
+    auto significand = p3a::details::decompose_double(value, maximum_exponent);
+    fixed_point_sum_128 += significand;
   }
   double const recomposed_fixed_point_sum = p3a::details::compose_double(fixed_point_sum_128, maximum_exponent);
   // in this small example, the sums are exactly the same
