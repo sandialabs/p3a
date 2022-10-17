@@ -86,6 +86,7 @@ set(P3A_HEADERS
   p3a_vector2.hpp
   p3a_vector3.hpp
   p3a_scan.hpp
+  p3a_device_ptr.hpp
   kul.hpp
   kul_iostream.hpp
   )
@@ -131,6 +132,7 @@ if (BUILD_TESTING)
     p3a_unit_tests_dynamic_array.cpp
     p3a_unit_tests_search.cpp
     p3a_unit_tests_mandel.cpp
+    p3a_unit_tests_device_ptr.cpp
     )
   set_source_files_properties(
     ${unit_test_sources} PROPERTIES LANGUAGE ${p3a_LANGUAGE})
