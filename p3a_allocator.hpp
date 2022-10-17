@@ -4,6 +4,7 @@
 #include <cstdlib> //malloc
 
 #include <Kokkos_Macros.hpp>
+#include <p3a_macros.hpp>
 
 namespace p3a {
 
