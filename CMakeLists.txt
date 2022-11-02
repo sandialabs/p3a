@@ -87,6 +87,7 @@ set(P3A_HEADERS
   p3a_vector3.hpp
   p3a_scan.hpp
   p3a_device_ptr.hpp
+  p3a_error_code.hpp
   kul.hpp
   kul_iostream.hpp
   )
