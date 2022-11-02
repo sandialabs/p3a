@@ -4,7 +4,9 @@
 #include <cstdlib> //malloc
 
 #include <Kokkos_Macros.hpp>
-#include <p3a_macros.hpp>
+
+#include "p3a_macros.hpp"
+#include "p3a_execution.hpp"
 
 namespace p3a {
 
@@ -61,7 +63,7 @@ class cuda_host_pinned_allocator {
   }
   P3A_NEVER_INLINE static void deallocate(T* p, size_type)
   {
-    cudaFreeHost(p);
+    details::handle_cuda_error(cudaFreeHost(p));
   }
 };
 
@@ -81,7 +83,7 @@ class cuda_device_allocator {
   }
   P3A_NEVER_INLINE static void deallocate(T* p, size_type)
   {
-    cudaFree(p);
+    details::handle_cuda_error(cudaFree(p));
   }
 };
 
@@ -105,7 +107,7 @@ class hip_host_pinned_allocator {
   }
   P3A_NEVER_INLINE static void deallocate(T* p, size_type)
   {
-    hipHostFree(p);
+    details::handle_hip_error(hipHostFree(p));
   }
 };
 
@@ -125,7 +127,7 @@ class hip_device_allocator {
   }
   P3A_NEVER_INLINE static void deallocate(T* p, size_type)
   {
-    hipFree(p);
+    details::handle_hip_error(hipFree(p));
   }
 };
 

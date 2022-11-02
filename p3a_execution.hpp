@@ -102,7 +102,7 @@ class hip_policy {
  public:
   void synchronize() const;
   using simd_abi_type = simd_abi::scalar;
-  using kokkos_execution_space = Kokkos::Hip;
+  using kokkos_execution_space = Kokkos::HIP;
 };
 
 inline constexpr hip_policy hip = {};

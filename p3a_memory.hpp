@@ -347,11 +347,11 @@ namespace details {
 template <class T, class U>
 bool are_in_same_space(T* from, U* to)
 {
-  hipPointerAttributes from_attributes;
-  hipPointerAttributes to_attributes;
+  hipPointerAttribute_t from_attributes;
+  hipPointerAttribute_t to_attributes;
   details::handle_hip_error(hipPointerGetAttributes(&from_attributes, from));
   details::handle_hip_error(hipPointerGetAttributes(&to_attributes, to));
-  return from_attributes.type == to_attributes.type;
+  return from_attributes.memoryType == to_attributes.memoryType;
 }
 
 template <class T>
