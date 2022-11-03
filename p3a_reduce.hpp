@@ -35,25 +35,6 @@ class int128 {
   std::uint64_t low() const { return m_low; }
 };
 
-}
-
-// hack! in the fixed point reduction we assume that individual significands
-// have at most 52 significant bits, so the sum of a small number of these
-// (about 10) should not exceed 63 significant bits.
-// this overload is a way to trick the system into first adding the 64-bit
-// numbers and then converting to a 128-bit class
-template <class Abi>
-[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline
-details::int128
-reduce(
-    const_where_expression<simd_mask<std::int64_t, Abi>, simd<std::int64_t, Abi>> const& we,
-    details::int128 identity_value,
-    adder<details::int128>)
-{
-  return details::int128(p3a::reduce(we, std::int64_t(0), p3a::adder<std::int64_t>()));
-}
-namespace details {
-
 template <class T, class BinaryReductionOp>
 class kokkos_reducer {
  public:
@@ -359,6 +340,24 @@ template <
 {
   return details::kokkos_transform_reduce<typename ExecutionPolicy::kokkos_execution_space>(
       first, last, init, binary_op, unary_op);
+}
+
+template <
+  class Iterator,
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] T transform_reduce(
+    execution::sequenced_policy,
+    Iterator first, Iterator last,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  for (; first != last; ++first) {
+    init = binary_op(init, unary_op(*first));
+  }
+  return init;
 }
 
 template <
