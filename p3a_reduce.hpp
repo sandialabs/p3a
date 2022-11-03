@@ -348,15 +348,16 @@ template <
   class BinaryReductionOp,
   class UnaryTransformOp>
 [[nodiscard]] T transform_reduce(
-    execution::sequenced_policy,
+    execution::sequenced_policy policy,
     Iterator first, Iterator last,
     T init,
     BinaryReductionOp binary_op,
     UnaryTransformOp unary_op)
 {
-  for (; first != last; ++first) {
-    init = binary_op(init, unary_op(*first));
-  }
+  for_each(policy, first, last,
+  [&] (typename std::iterator_traits<Iterator>::reference r) {
+    init = binary_op(init, unary_op(r));
+  });
   return init;
 }
 
@@ -379,6 +380,26 @@ template <
       init,
       binary_op,
       unary_op);
+}
+
+template <
+  class T,
+  class BinaryReductionOp,
+  class UnaryTransformOp>
+[[nodiscard]] T transform_reduce(
+    execution::sequenced_policy policy,
+    subgrid3 subgrid,
+    T init,
+    BinaryReductionOp binary_op,
+    UnaryTransformOp unary_op)
+{
+  for_each(policy,
+  counting_iterator3<int>{subgrid.lower()},
+  counting_iterator3<int>{subgrid.upper()},
+  [&] (p3a::vector3<int> const& v) {
+    init = binary_op(init, unary_op(v));
+  });
+  return init;
 }
 
 template <
