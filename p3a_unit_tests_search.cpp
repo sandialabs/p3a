@@ -130,3 +130,29 @@ TEST(search, tabulated_interval)
   EXPECT_EQ(result, p3a::search_errc::success);
   EXPECT_EQ(i, 2);
 }
+
+TEST(search, cos_no_deriv)
+{
+  auto const function =
+  [] P3A_HOST_DEVICE (double x)
+  {
+    return std::sin(x);
+  };
+  double const domain_lower_bound = 0.0;
+  double const domain_upper_bound = 1.5;
+  double const desired_range_value = 0.9;
+  double domain_value;
+  double const tolerance = 1.0e-6;
+  int const maximum_iterations = 100;
+  auto const error = p3a::invert_function(
+      function,
+      desired_range_value,
+      domain_value,
+      domain_lower_bound,
+      domain_upper_bound,
+      tolerance,
+      maximum_iterations);
+  EXPECT_EQ(error, p3a::search_errc::success);
+  double const range_value = function(domain_value);
+  EXPECT_NEAR(range_value, desired_range_value, tolerance);
+}

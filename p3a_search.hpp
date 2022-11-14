@@ -272,4 +272,44 @@ class iterator_as_functor {
   }
 };
 
+template <
+  class DomainValue,
+  class RangeValue,
+  class Tolerance,
+  class Function>
+[[nodiscard]] P3A_HOST_DEVICE inline
+search_errc invert_function(
+    Function const& function,
+    RangeValue const& desired_range_value,
+    DomainValue& domain_value,
+    DomainValue minimum_domain_value,
+    DomainValue maximum_domain_value,
+    Tolerance const& tolerance,
+    int maximum_iterations)
+{
+  auto range_value_at_maximum_domain_value = function(maximum_domain_value);
+  domain_value = minimum_domain_value;
+  auto range_value_at_minimum_domain_value = function(minimum_domain_value);
+  auto range_value = range_value_at_minimum_domain_value;
+  for (int iteration = 0; iteration < maximum_iterations; ++iteration) {
+    if (are_close(range_value, desired_range_value, tolerance)) return search_errc::success;
+    auto const next_domain_value_bisection =
+      minimum_domain_value + (maximum_domain_value - minimum_domain_value) / 2;
+    domain_value = next_domain_value_bisection;
+    range_value = function(domain_value);
+    auto const is_new_minimum = 
+      // this is a logical XOR operation, designed to flip the logic if the function
+      // is decreasing rather than increasing
+      (!(range_value < desired_range_value)) !=
+      (!(range_value_at_maximum_domain_value < range_value_at_minimum_domain_value)); 
+    minimum_domain_value = condition(is_new_minimum, domain_value, minimum_domain_value);
+    maximum_domain_value = condition(is_new_minimum, maximum_domain_value, domain_value);
+    range_value_at_minimum_domain_value = condition(is_new_minimum,
+        range_value, range_value_at_minimum_domain_value);
+    range_value_at_maximum_domain_value = condition(is_new_minimum,
+        range_value_at_maximum_domain_value, range_value);
+  }
+  return search_errc::exceeded_maximum_iterations;
+}
+
 }
