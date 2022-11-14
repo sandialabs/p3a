@@ -176,8 +176,8 @@ auto are_close(Value const& a, Value const& b, Tolerance const& tolerance)
 {
   using p3a::abs;
   auto const difference = abs(b - a);
-  auto const scale = abs(a) + abs(b);
-  return difference <= tolerance * p3a::max(scale, Value(1));
+  auto const scale = abs(a - Value(0)) + abs(b - Value(0));
+  return difference <= tolerance * p3a::max(scale, Value(1) - Value(0));
 }
 
 }
