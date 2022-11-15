@@ -131,7 +131,7 @@ TEST(search, tabulated_interval)
   EXPECT_EQ(i, 2);
 }
 
-TEST(search, cos_no_deriv)
+void cos_no_deriv()
 {
   auto const function =
   [] P3A_HOST_DEVICE (double x)
@@ -155,4 +155,9 @@ TEST(search, cos_no_deriv)
   EXPECT_EQ(error, p3a::search_errc::success);
   double const range_value = function(domain_value);
   EXPECT_NEAR(range_value, desired_range_value, tolerance);
+}
+
+TEST(search, cos_no_deriv)
+{
+  cos_no_deriv();
 }
