@@ -289,7 +289,13 @@ search_errc invert_function(
 {
   auto range_value_at_maximum_domain_value = function(maximum_domain_value);
   domain_value = minimum_domain_value;
+  if (desired_range_value > range_value_at_maximum_domain_value) {
+    return search_errc::desired_value_above_maximum;
+  }
   auto range_value_at_minimum_domain_value = function(minimum_domain_value);
+  if (desired_range_value < range_value_at_minimum_domain_value) {
+    return search_errc::desired_value_below_minimum;
+  }
   auto range_value = range_value_at_minimum_domain_value;
   for (int iteration = 0; iteration < maximum_iterations; ++iteration) {
     if (are_close(range_value, desired_range_value, tolerance)) return search_errc::success;
