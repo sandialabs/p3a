@@ -54,7 +54,21 @@ class device_deleter {
 // a few common argument counts because CUDA does not support
 // capturing a member of a parameter pack in a host/device lambda,
 // nor do we have the metaprogramming skills to construct
-// a functor containing the members of a parameter pack ourselves
+// a good enough tuple type that can cross this boundary
+
+template <class T>
+class device_constructor0 {
+  T* m_pointer;
+ public:
+  device_constructor0(T* pointer_arg)
+    :m_pointer(pointer_arg)
+  {
+  }
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE void operator()(int) const
+  {
+    ::new (static_cast<void*>(m_pointer)) T();
+  }
+};
 
 template <class T>
 void construct_on_device(T* ptr)
@@ -62,11 +76,24 @@ void construct_on_device(T* ptr)
   for_each(execution::par,
       counting_iterator<int>(0),
       counting_iterator<int>(1),
-  [=] P3A_HOST_DEVICE (int)
-  {
-    ::new (static_cast<void*>(ptr)) T();
-  });
+  device_constructor0<T>{ptr});
 }
+
+template <class T, class Arg1>
+class device_constructor1 {
+  T* m_pointer;
+  Arg1 m_arg1;
+ public:
+  device_constructor1(T* pointer_arg, Arg1 arg1_arg)
+    :m_pointer(pointer_arg)
+    ,m_arg1(arg1_arg)
+  {
+  }
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE void operator()(int) const
+  {
+    ::new (static_cast<void*>(m_pointer)) T(m_arg1);
+  }
+};
 
 template <class T, class Arg1>
 void construct_on_device(T* ptr, Arg1 arg1)
@@ -74,11 +101,26 @@ void construct_on_device(T* ptr, Arg1 arg1)
   for_each(execution::par,
       counting_iterator<int>(0),
       counting_iterator<int>(1),
-  [=] P3A_HOST_DEVICE (int)
-  {
-    ::new (static_cast<void*>(ptr)) T(arg1);
-  });
+  device_constructor1<T, Arg1>{ptr, arg1});
 }
+
+template <class T, class Arg1, class Arg2>
+class device_constructor2 {
+  T* m_pointer;
+  Arg1 m_arg1;
+  Arg2 m_arg2;
+ public:
+  device_constructor2(T* pointer_arg, Arg1 arg1_arg, Arg2 arg2_arg)
+    :m_pointer(pointer_arg)
+    ,m_arg1(arg1_arg)
+    ,m_arg2(arg2_arg)
+  {
+  }
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE void operator()(int) const
+  {
+    ::new (static_cast<void*>(m_pointer)) T(m_arg1, m_arg2);
+  }
+};
 
 template <class T, class Arg1, class Arg2>
 void construct_on_device(T* ptr, Arg1 arg1, Arg2 arg2)
@@ -86,11 +128,28 @@ void construct_on_device(T* ptr, Arg1 arg1, Arg2 arg2)
   for_each(execution::par,
       counting_iterator<int>(0),
       counting_iterator<int>(1),
-  [=] P3A_HOST_DEVICE (int)
-  {
-    ::new (static_cast<void*>(ptr)) T(arg1, arg2);
-  });
+  device_constructor2<T, Arg1, Arg2>{ptr, arg1, arg2});
 }
+
+template <class T, class Arg1, class Arg2, class Arg3>
+class device_constructor3 {
+  T* m_pointer;
+  Arg1 m_arg1;
+  Arg2 m_arg2;
+  Arg3 m_arg3;
+ public:
+  device_constructor3(T* pointer_arg, Arg1 arg1_arg, Arg2 arg2_arg, Arg3 arg3_arg)
+    :m_pointer(pointer_arg)
+    ,m_arg1(arg1_arg)
+    ,m_arg2(arg2_arg)
+    ,m_arg3(arg3_arg)
+  {
+  }
+  P3A_ALWAYS_INLINE P3A_HOST_DEVICE void operator()(int) const
+  {
+    ::new (static_cast<void*>(m_pointer)) T(m_arg1, m_arg2, m_arg3);
+  }
+};
 
 template <class T, class Arg1, class Arg2, class Arg3>
 void construct_on_device(T* ptr, Arg1 arg1, Arg2 arg2, Arg3 arg3)
@@ -98,10 +157,7 @@ void construct_on_device(T* ptr, Arg1 arg1, Arg2 arg2, Arg3 arg3)
   for_each(execution::par,
       counting_iterator<int>(0),
       counting_iterator<int>(1),
-  [=] P3A_HOST_DEVICE (int)
-  {
-    ::new (static_cast<void*>(ptr)) T(arg1, arg2, arg3);
-  });
+  device_constructor3<T, Arg1, Arg2, Arg3>{ptr, arg1, arg2, arg3});
 }
 
 }
