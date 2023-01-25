@@ -350,6 +350,13 @@ T determinant(symmetric3x3<T> const& a)
 }
 
 template <class T>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE inline constexpr
+bool is_isochoric(symmetric3x3<T> const& a)
+{
+  return abs(determinant(a) - 1.0) < 1.0e-12;
+}
+
+template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto adjugate(symmetric3x3<T> const& a)
 {

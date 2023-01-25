@@ -330,6 +330,13 @@ auto determinant(matrix3x3<T> const& m)
 
 template <class T>
 [[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
+bool is_isochoric(matrix3x3<T> const& a)
+{
+  return abs(determinant(a) - 1.0) < 1.0e-12;
+}
+
+template <class T>
+[[nodiscard]] P3A_HOST_DEVICE P3A_ALWAYS_INLINE constexpr
 auto adjugate(matrix3x3<T> const& m)
 {
   T const& a = m.xx();
